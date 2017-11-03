@@ -123,22 +123,22 @@ class MyTable extends AbstractEntity
     /**
      * @var int
      */
-    private $code;
+    protected $code;
 
     /**
      * @var int
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string
      */
-    private $field;
+    protected $field;
 
     /**
      * @var array
      */
-    private $columns = array(
+    protected $columns = array(
         'code'      => 'Code',
         'name'      => 'Name',
         'field'      => 'U_W3C_FIELD'
