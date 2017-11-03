@@ -1,4 +1,4 @@
 services:
-#    w3com_boom.example:
-#        class: W3com\BoomBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
+    W3com\BoomBundle\Service\BoomManager:
+        arguments:
+            - '%boom.config%'

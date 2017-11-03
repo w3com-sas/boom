@@ -20,9 +20,54 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('w3com_boom');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode
+            ->children()
+            ->arrayNode('service_layer')
+            ->children()
+            ->scalarNode('base_uri')->end()
+            ->scalarNode('path')
+            ->defaultValue('/')
+            ->end()
+            ->booleanNode('verify_https')
+            ->defaultFalse()
+            ->end()
+            ->integerNode('max_login_attempts')
+            ->defaultValue(5)
+            ->end()
+            ->scalarNode('cookies_storage_path')->end()
+            ->arrayNode('connections')
+            ->useAttributeAsKey('name')
+            ->arrayPrototype()
+            ->children()
+            ->scalarNode('username')->end()
+            ->scalarNode('password')->end()
+            ->scalarNode('database')->end()
+            ->end()
+            ->end()
+            ->end()
+            ->end()
+            ->end()
+            ->arrayNode('odata_service')
+            ->children()
+            ->scalarNode('base_uri')->end()
+            ->scalarNode('path')
+            ->defaultValue('/')
+            ->end()
+            ->booleanNode('verify_https')
+            ->defaultFalse()
+            ->end()
+            ->arrayNode('login')
+            ->children()
+            ->scalarNode('username')->end()
+            ->scalarNode('password')->end()
+            ->end()
+            ->end()
+            ->end()
+            ->end()
+            ->scalarNode('app_namespace')
+            ->defaultValue('AppBundle')
+            ->end()
+            ->end();
 
         return $treeBuilder;
     }
