@@ -154,7 +154,7 @@ class MyTable extends AbstractEntity
 
     /**
      * @param int $code
-     * @return TestProxy
+     * @return MyTable
      */
     public function setCode(int $code)
     {

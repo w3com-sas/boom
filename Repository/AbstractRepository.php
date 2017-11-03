@@ -3,6 +3,7 @@
 namespace W3com\BoomBundle\Repository;
 
 use GuzzleHttp\Client;
+use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Service\BoomConstants;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -49,16 +50,24 @@ abstract class AbstractRepository implements RepositoryInterface
     private $key;
 
     /**
+     * @var array
+     */
+    private $columns;
+
+    /**
      * AbstractRepository constructor.
      *
      * @param string $entityName
+     * @param $className
      * @param BoomManager $manager
      * @param string $read
      * @param string $write
      * @param string $aliasSL
      * @param string $aliasODS
+     * @param string $key
+     * @param array $columns
      */
-    public function __construct($entityName, $className, $manager, $read, $write, $aliasSL, $aliasODS, $key)
+    public function __construct($entityName, $className, $manager, $read, $write, $aliasSL, $aliasODS, $key, $columns)
     {
         $this->entityName = $entityName;
         $this->className = $className;
@@ -68,6 +77,7 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->aliasSL = $aliasSL;
         $this->aliasODS = $aliasODS;
         $this->key = $key;
+        $this->columns = $columns;
     }
 
     public function find($id)
@@ -81,7 +91,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw new \Exception("Unknown entity READ method");
         }
 
-        return new $this->className($res);
+        return $this->hydrate($res);
     }
 
     public function findAll()
@@ -96,8 +106,7 @@ abstract class AbstractRepository implements RepositoryInterface
         }
         $ret = array();
         foreach ($res as $array) {
-            $obj = new $this->className($array);
-            $ret[] = $obj;
+            $ret[] = $this->hydrate($array);
         }
 
         return $ret;
@@ -106,6 +115,31 @@ abstract class AbstractRepository implements RepositoryInterface
     public function findBy(array $criteria)
     {
 
+    }
+
+    public function findByEquals(array $criteria)
+    {
+        /** @var Client $client */
+        if ($this->read == BoomConstants::SL) {
+            $uri = $this->aliasSL.'?$filter=';
+            $filterAr = array();
+            foreach ($criteria as $field => $value) {
+                $filterAr[] = $this->columns[$field]['column']."%20eq%20'".$value."'";
+            }
+            $filter = implode('%20and%20', $filterAr);
+            dump($uri.$filter);
+            $res = $this->manager->restClients['sl']->get($uri.$filter);
+        } elseif ($this->read == BoomConstants::ODS) {
+
+        } else {
+            throw new \Exception("Unknown entity READ method");
+        }
+        $ret = array();
+        foreach ($res as $array) {
+            $ret[] = $this->hydrate($array);
+        }
+
+        return $ret;
     }
 
     public function delete($id)
@@ -121,6 +155,17 @@ abstract class AbstractRepository implements RepositoryInterface
     public function persist($entity, $id)
     {
 
+    }
+
+    public function hydrate($array)
+    {
+        /** @var AbstractEntity $obj */
+        $obj = new $this->className();
+        foreach ($this->columns as $attribute => $column) {
+            $obj->set($attribute, $array[$column['column']]);
+        }
+
+        return $obj;
     }
 
     public function getEntityName()

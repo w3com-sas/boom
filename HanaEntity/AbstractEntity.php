@@ -1,15 +1,12 @@
 <?php
 
-
 namespace W3com\BoomBundle\HanaEntity;
 
-
-class AbstractEntity implements EntityInterface
+class AbstractEntity
 {
-    public function __construct($rawData)
+
+    public function set($field, $value)
     {
-        foreach ($this->columns as $column => $value) {
-            $this->$column = $rawData[$value] ?? null;
-        }
+        $this->$field = $value;
     }
 }

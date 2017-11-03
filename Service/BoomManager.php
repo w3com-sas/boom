@@ -4,6 +4,7 @@
 namespace W3com\BoomBundle\Service;
 
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use ReflectionClass;
@@ -133,6 +134,23 @@ class BoomManager
         $entityClass = new ReflectionClass($entityClassName);
         // TODO check if all constants exists
 
+        $columns = array();
+
+        $reader = new AnnotationReader();
+
+        $attributes = $entityClass->getProperties();
+        foreach ($attributes as $attribute) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $attribute,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+                $columns[$attribute->getName()] = array(
+                    'column' => $annotation->column,
+                    'quotes' => $annotation->quotes,
+                );
+            }
+        }
+
         // TODO getting the right repo
         $repo = new DefaultRepository(
             $entityName,
@@ -142,7 +160,8 @@ class BoomManager
             $entityClass->getConstant('WRITE'),
             $entityClass->getConstant('ALIAS_SL'),
             $entityClass->getConstant('ALIAS_ODS'),
-            $entityClass->getConstant('KEY')
+            $entityClass->getConstant('KEY'),
+            $columns
         );
 
         $this->repositories[$entityName] = $repo;
