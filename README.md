@@ -99,50 +99,39 @@ $bundles = [
 
 For each table you want to use, you need to write an entity.  
 ❗️ Entities should be placed in `AppBundle\HanaEntity` and extend the `W3com\BoomBundle\HanaEntity\AbstractEntity` class.  
-❗️ They also should have five constants : `READ`, `WRITE`, `ALIAS_SL`, `ALIAS_ODS` and `KEY`.  
-❗️ They also should have an attribute named `columns` which maps all the other attributes to the Hana columns.
+❗️ You must use annotations to map class fields to table columns, doctrine-like.
 
 They should look like this :
 
 ````php
 namespace AppBundle\HanaEntity;
 
+use W3com\BoomBundle\Annotation\EntityColumnMeta;
+use W3com\BoomBundle\Annotation\EntityMeta;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
-use W3com\BoomBundle\Service\BoomConstants;
 
+/**
+ * @EntityMeta(read="sl", write="sl", aliasSl="U_W3C_TABLE", aliasOds="U_W3C_TABLE")
+ */
 class MyTable extends AbstractEntity
 {
-    const READ      = BoomConstants::SL;
-    const WRITE     = BoomConstants::ODS;
-
-    const ALIAS_SL  = 'U_W3C_TESTP';
-    const ALIAS_ODS = 'U_W3C_TESTP';
-
-    const KEY       = 'Code';
-
     /**
      * @var int
+     * @EntityColumnMeta(column="Code", isKey=true)
      */
     protected $code;
 
     /**
      * @var int
+     * @EntityColumnMeta(column="Name")
      */
     protected $name;
 
     /**
      * @var string
+     * @EntityColumnMeta(column="U_W3C_FIELD")
      */
     protected $field;
-
-    /**
-     * @var array
-     */
-    protected $columns = array(
-        'code'      => 'Code',
-        'name'      => 'Name',
-        'field'      => 'U_W3C_FIELD'
-    );
 
     /**
      * @return int
