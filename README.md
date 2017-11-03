@@ -98,18 +98,19 @@ $bundles = [
 #### Write your entities
 
 For each table you want to use, you need to write an entity.  
-❗️ Entities should be placed in `AppBundle\HanaEntity` and implement the `W3com\BoomBundle\HanaEntity\EntityInterface`.  
-They also should have five constants : `READ`, `WRITE`, `ALIAS_SL`, `ALIAS_ODS` and `KEY`.
+❗️ Entities should be placed in `AppBundle\HanaEntity` and extend the `W3com\BoomBundle\HanaEntity\AbstractEntity` class.  
+❗️ They also should have five constants : `READ`, `WRITE`, `ALIAS_SL`, `ALIAS_ODS` and `KEY`.  
+❗️ They also should have an attribute named `columns` which maps all the other attributes to the Hana columns.
 
 They should look like this :
 
 ````php
 namespace AppBundle\HanaEntity;
 
-use W3com\BoomBundle\HanaEntity\EntityInterface;
+use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Service\BoomConstants;
 
-class MyTable implements EntityInterface
+class MyTable extends AbstractEntity
 {
     const READ      = BoomConstants::SL;
     const WRITE     = BoomConstants::ODS;
@@ -134,12 +135,14 @@ class MyTable implements EntityInterface
      */
     private $field;
 
-    public function __construct($rawData)
-    {
-        $this->code         = $rawData['Code'] ?? null;
-        $this->name         = $rawData['Name'] ?? null;
-        $this->field        = $rawData['U_W3C_FIELD'] ?? null;
-    }
+    /**
+     * @var array
+     */
+    private $columns = array(
+        'code'      => 'Code',
+        'name'      => 'Name',
+        'field'      => 'U_W3C_FIELD'
+    );
 
     /**
      * @return int
