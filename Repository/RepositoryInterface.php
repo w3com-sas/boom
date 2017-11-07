@@ -20,5 +20,7 @@ interface RepositoryInterface
 
     public function count();
 
-    public function persist(AbstractEntity $entity, $id);
+    public function update(AbstractEntity $entity, $id);
+
+    public function add(AbstractEntity $entity);
 }
