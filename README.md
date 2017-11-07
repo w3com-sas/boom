@@ -99,9 +99,10 @@ $bundles = [
 
 For each table you want to use, you need to write an entity.  
 ❗️ Entities should be placed in `AppBundle\HanaEntity` and extend the `W3com\BoomBundle\HanaEntity\AbstractEntity` class.  
-❗️ You must use annotations to map class fields to table columns, doctrine-like.
+❗️ You must use annotations to map class fields to table columns, doctrine-like.  
+❗️ Setters should use the `set($field, $value)` method from parent class.
 
-They should look like this :
+Entities should look like this :
 
 ````php
 namespace AppBundle\HanaEntity;
@@ -147,9 +148,7 @@ class MyTable extends AbstractEntity
      */
     public function setCode(int $code)
     {
-        $this->code = $code;
-
-        return $this;
+        return $this->set('code', $code);
     }
 
     // lots of getters and setters

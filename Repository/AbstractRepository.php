@@ -82,7 +82,8 @@ abstract class AbstractRepository implements RepositoryInterface
     public function find($id)
     {
         if ($this->read == BoomConstants::SL) {
-            $res = $this->manager->restClients['sl']->get($this->aliasSL."('".$id."')");
+            $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+            $res = $this->manager->restClients['sl']->get($this->aliasSL."($quotes".$id."$quotes)");
         } elseif ($this->read == BoomConstants::ODS) {
 
         } else {
@@ -148,7 +149,14 @@ abstract class AbstractRepository implements RepositoryInterface
 
     public function delete($id)
     {
+        if ($this->read == BoomConstants::SL) {
+            $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+            $res = $this->manager->restClients['sl']->delete($this->aliasSL."($quotes".$id."$quotes)");
+        } elseif ($this->read == BoomConstants::ODS) {
 
+        } else {
+            throw new \Exception("Unknown entity READ method");
+        }
     }
 
     public function count(array $criteria = null)
@@ -168,9 +176,38 @@ abstract class AbstractRepository implements RepositoryInterface
         return $res;
     }
 
-    public function persist($entity, $id)
+    public function persist(AbstractEntity $entity, $id = null)
     {
+        if ($this->write == BoomConstants::SL) {
+            if ($id == null) {
+                // add
+                $uri = $this->aliasSL;
+                $data = array();
+                foreach ($entity->getChangedFields() as $field => $value) {
+                    $data[$this->columns[$field]['column']] = $entity->get($field);
+                }
+                $res = $this->manager->restClients['sl']->post($uri, $data);
 
+                return $this->hydrate($res);
+            } else {
+                // update
+                $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+                $uri = $this->aliasSL."($quotes".$id."$quotes)";
+                $data = array();
+                $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
+                foreach ($entity->getChangedFields() as $field => $value) {
+                    $data[$this->columns[$field]['column']] = $entity->get($field);
+                }
+                $res = $this->manager->restClients['sl']->patch($uri, $data);
+                $entity->hydrate('changedFields', array());
+
+                return $entity;
+            }
+        } elseif ($this->write == BoomConstants::ODS) {
+
+        } else {
+            throw new \Exception("Unknown entity WRITE method");
+        }
     }
 
     public function hydrate($array)
@@ -178,7 +215,7 @@ abstract class AbstractRepository implements RepositoryInterface
         /** @var AbstractEntity $obj */
         $obj = new $this->className();
         foreach ($this->columns as $attribute => $column) {
-            $obj->set($attribute, $array[$column['column']]);
+            $obj->hydrate($attribute, $array[$column['column']]);
         }
 
         return $obj;

@@ -4,6 +4,8 @@
 namespace W3com\BoomBundle\Repository;
 
 
+use W3com\BoomBundle\HanaEntity\AbstractEntity;
+
 interface RepositoryInterface
 {
     public function find($id);
@@ -18,5 +20,5 @@ interface RepositoryInterface
 
     public function count();
 
-    public function persist($entity, $id);
+    public function persist(AbstractEntity $entity, $id);
 }

@@ -41,12 +41,58 @@ class SLRestClient implements RestClientInterface
 
     public function post(string $uri, $data)
     {
-        // TODO: Implement post() method.
+        /** @var Client $client */
+        $client = $this->manager->getCurrentClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                $attempts++;
+                $res = $client->request(
+                    'POST',
+                    $uri,
+                    array(
+                        'json' => $data,
+                    )
+                );
+
+                return $this->getValuesFromResponse($res->getBody()->getContents());
+            } catch (ClientException $e) {
+                if ($e->getCode() == 401) {
+                    $this->login();
+                } else {
+                    dump($e->getResponse()->getBody()->getContents());
+                    throw new \Exception("Unknown error while launching POST request");
+                }
+            }
+        }
     }
 
     public function patch(string $uri, $data)
     {
-        // TODO: Implement patch() method.
+        /** @var Client $client */
+        $client = $this->manager->getCurrentClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                $attempts++;
+                $res = $client->request(
+                    'PATCH',
+                    $uri,
+                    array(
+                        'json' => $data,
+                    )
+                );
+
+                return true;
+            } catch (ClientException $e) {
+                if ($e->getCode() == 401) {
+                    $this->login();
+                } else {
+                    dump($e->getResponse()->getBody()->getContents());
+                    throw new \Exception("Unknown error while launching PATCH request");
+                }
+            }
+        }
     }
 
     public function put(string $uri, $data)
@@ -56,7 +102,24 @@ class SLRestClient implements RestClientInterface
 
     public function delete(string $uri)
     {
-        // TODO: Implement delete() method.
+        /** @var Client $client */
+        $client = $this->manager->getCurrentClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                $attempts++;
+                $res = $client->request('DELETE', $uri);
+
+                return $this->getValuesFromResponse($res->getBody()->getContents());
+            } catch (ClientException $e) {
+                if ($e->getCode() == 401) {
+                    $this->login();
+                } else {
+                    dump($e->getResponse()->getBody()->getContents());
+                    throw new \Exception("Unknown error while launching DELETE request");
+                }
+            }
+        }
     }
 
     public function getValuesFromResponse($response)
