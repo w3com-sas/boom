@@ -41,14 +41,18 @@ class BoomManager
      */
     public $restClients = array();
 
+    private $reader;
+
     /**
      * BoomManager constructor.
      *
      * @param array $config
+     * @param AnnotationReader $reader
      */
     public function __construct($config)
     {
         $this->config = $config;
+        $this->reader = new AnnotationReader();
 
         // creating cookie jar if needed
         $fs = new Filesystem();
@@ -132,15 +136,13 @@ class BoomManager
             throw new \Exception("Missing $entityName entity.");
         }
         $entityClass = new ReflectionClass($entityClassName);
-        // TODO check if all constants exists
 
+        // reading EntityColumnMeta annotations
         $columns = array();
-
-        $reader = new AnnotationReader();
-
+        $key = null;
         $attributes = $entityClass->getProperties();
         foreach ($attributes as $attribute) {
-            if ($annotation = $reader->getPropertyAnnotation(
+            if ($annotation = $this->reader->getPropertyAnnotation(
                 $attribute,
                 'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
             )) {
@@ -148,22 +150,41 @@ class BoomManager
                     'column' => $annotation->column,
                     'quotes' => $annotation->quotes,
                 );
+                if ($annotation->isKey) {
+                    $key = $attribute->getName();
+                }
             }
         }
+        if ($key == null) {
+            throw new \Exception("No key attribute for $entityName class.");
+        }
+
+        // reading EntityMeta annotation
+        $annotation = $this->reader->getClassAnnotation(
+            $entityClass,
+            'W3com\\BoomBundle\\Annotation\\EntityMeta'
+        );
+        if (!$annotation) {
+            throw new \Exception("Missing EntityMeta annotation on $entityName class.");
+        }
+        $read = $annotation->read;
+        $write = $annotation->write;
+        $aliasSl = $annotation->aliasSl;
+        $aliasOds = $annotation->aliasOds;
+
 
         // TODO getting the right repo
         $repo = new DefaultRepository(
             $entityName,
             $entityClassName,
             $this,
-            $entityClass->getConstant('READ'),
-            $entityClass->getConstant('WRITE'),
-            $entityClass->getConstant('ALIAS_SL'),
-            $entityClass->getConstant('ALIAS_ODS'),
-            $entityClass->getConstant('KEY'),
+            $read,
+            $write,
+            $aliasSl,
+            $aliasOds,
+            $key,
             $columns
         );
-
         $this->repositories[$entityName] = $repo;
 
         return $repo;

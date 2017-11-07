@@ -12,9 +12,15 @@ use Doctrine\Common\Annotations\Annotation;
  */
 class EntityColumnMeta extends Annotation
 {
+    /**
+     * @Annotation\Required()
+     * @var string
+     */
     public $column;
 
+    /** @var bool */
     public $isKey = false;
 
+    /** @var bool */
     public $quotes = true;
 }
