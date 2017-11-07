@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Repository;
 
-use GuzzleHttp\Client;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Service\BoomConstants;
 use W3com\BoomBundle\Service\BoomManager;
@@ -82,7 +81,6 @@ abstract class AbstractRepository implements RepositoryInterface
 
     public function find($id)
     {
-        /** @var Client $client */
         if ($this->read == BoomConstants::SL) {
             $res = $this->manager->restClients['sl']->get($this->aliasSL."('".$id."')");
         } elseif ($this->read == BoomConstants::ODS) {
@@ -94,11 +92,17 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->hydrate($res);
     }
 
-    public function findAll()
+    public function findAll($orderBy = null, $order = null)
     {
-        /** @var Client $client */
+        $uri = $this->aliasSL;
+        if ($orderBy != null) {
+            if ($order == null) {
+                $order = 'desc';
+            }
+            $uri .= '?$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+        }
         if ($this->read == BoomConstants::SL) {
-            $res = $this->manager->restClients['sl']->get($this->aliasSL);
+            $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
 
         } else {
@@ -117,18 +121,18 @@ abstract class AbstractRepository implements RepositoryInterface
 
     }
 
-    public function findByEquals(array $criteria)
+    public function findByEquals(array $criteria, $orderBy = null, $order = null)
     {
-        /** @var Client $client */
         if ($this->read == BoomConstants::SL) {
             $uri = $this->aliasSL.'?$filter=';
-            $filterAr = array();
-            foreach ($criteria as $field => $value) {
-                $filterAr[] = $this->columns[$field]['column']."%20eq%20'".$value."'";
+            $uri .= $this->createFilterFromCriteria($criteria);
+            if ($orderBy != null) {
+                if ($order == null) {
+                    $order = 'desc';
+                }
+                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
             }
-            $filter = implode('%20and%20', $filterAr);
-            dump($uri.$filter);
-            $res = $this->manager->restClients['sl']->get($uri.$filter);
+            $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
 
         } else {
@@ -147,9 +151,21 @@ abstract class AbstractRepository implements RepositoryInterface
 
     }
 
-    public function count()
+    public function count(array $criteria = null)
     {
+        if ($this->read == BoomConstants::SL) {
+            $uri = $this->aliasSL.'/$count';
+            if ($criteria != null) {
+                $uri .= '?$filter='.$this->createFilterFromCriteria($criteria);
+            }
+            $res = $this->manager->restClients['sl']->get($uri);
+        } elseif ($this->read == BoomConstants::ODS) {
 
+        } else {
+            throw new \Exception("Unknown entity READ method");
+        }
+
+        return $res;
     }
 
     public function persist($entity, $id)
@@ -171,5 +187,15 @@ abstract class AbstractRepository implements RepositoryInterface
     public function getEntityName()
     {
         return $this->entityName;
+    }
+
+    private function createFilterFromCriteria($criteria)
+    {
+        $filterAr = array();
+        foreach ($criteria as $field => $value) {
+            $filterAr[] = $this->columns[$field]['column']."%20eq%20'".$value."'";
+        }
+
+        return implode('%20and%20', $filterAr);
     }
 }

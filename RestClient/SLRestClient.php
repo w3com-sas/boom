@@ -65,6 +65,9 @@ class SLRestClient implements RestClientInterface
         if (json_last_error() != 0) {
             throw new \Exception("Error while parsing response");
         }
+        if (is_int($ar)) {
+            return $ar;
+        } // we just counted something
         if (array_key_exists('value', $ar)) {
             return $ar['value'];
         }
