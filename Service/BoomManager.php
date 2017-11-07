@@ -89,6 +89,11 @@ class BoomManager
         return $this->clients[$this->currentConnection];
     }
 
+    public function getOdsClient()
+    {
+        return $this->clients['odata'];
+    }
+
     /**
      * @param $connection
      * @return BoomManager

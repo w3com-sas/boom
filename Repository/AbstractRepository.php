@@ -85,7 +85,8 @@ abstract class AbstractRepository implements RepositoryInterface
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $res = $this->manager->restClients['sl']->get($this->aliasSL."($quotes".$id."$quotes)");
         } elseif ($this->read == BoomConstants::ODS) {
-
+            $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+            $res = $this->manager->restClients['odata']->get($this->aliasODS."($quotes".$id."$quotes)".'?$format=json');
         } else {
             throw new \Exception("Unknown entity READ method");
         }
@@ -95,17 +96,25 @@ abstract class AbstractRepository implements RepositoryInterface
 
     public function findAll($orderBy = null, $order = null)
     {
-        $uri = $this->aliasSL;
-        if ($orderBy != null) {
-            if ($order == null) {
-                $order = 'desc';
-            }
-            $uri .= '?$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
-        }
+
         if ($this->read == BoomConstants::SL) {
+            $uri = $this->aliasSL;
+            if ($orderBy != null) {
+                if ($order == null) {
+                    $order = 'desc';
+                }
+                $uri .= '?$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+            }
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
-
+            $uri = $this->aliasODS.'?$format=json';
+            if ($orderBy != null) {
+                if ($order == null) {
+                    $order = 'desc';
+                }
+                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+            }
+            $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
         }
@@ -135,7 +144,15 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
-
+            $uri = $this->aliasODS.'?$format=json&$filter=';
+            $uri .= $this->createFilterFromCriteria($criteria);
+            if ($orderBy != null) {
+                if ($order == null) {
+                    $order = 'desc';
+                }
+                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+            }
+            $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
         }
@@ -168,11 +185,14 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
-
+            $uri = $this->aliasODS.'/$count';
+            if ($criteria != null) {
+                $uri .= '?$filter='.$this->createFilterFromCriteria($criteria);
+            }
+            $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
         }
-
         return $res;
     }
 
@@ -236,9 +256,9 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         $filterAr = array();
         foreach ($criteria as $field => $value) {
-            $filterAr[] = $this->columns[$field]['column']."%20eq%20'".$value."'";
+            $quotes = $this->columns[$field]['quotes'] ? "'" : '';
+            $filterAr[] = $this->columns[$field]['column']."%20eq%20$quotes".$value."$quotes";
         }
-
         return implode('%20and%20', $filterAr);
     }
 }
