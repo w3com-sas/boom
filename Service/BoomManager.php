@@ -69,6 +69,9 @@ class BoomManager
         );
         $this->clients['odata'] = $client;
 
+        // creating the default SL connection
+        $this->setCurrentConnection('default');
+
         // creating rest clients
         $slRestClient = new SLRestClient($this);
         $this->restClients['sl'] = $slRestClient;
