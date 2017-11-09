@@ -5,6 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 
 
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 use W3com\BoomBundle\Service\BoomManager;
 
 class OdataRestClient implements RestClientInterface
@@ -32,11 +33,16 @@ class OdataRestClient implements RestClientInterface
     {
         try {
             $res = $this->client->request('GET', $uri, array('auth' => $this->auth));
+            $response = $res->getBody()->getContents();
+            $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, $response);
 
-            return $this->getValuesFromResponse($res->getBody()->getContents());
+            return $this->getValuesFromResponse($response);
         } catch (ClientException $e) {
-            dump($e->getResponse()->getBody()->getContents());
+            $this->manager->logger->error($e->getResponse()->getBody()->getContents());
             throw new \Exception("Unknown error while launching GET request");
+        } catch (ConnectException $e) {
+            $this->manager->logger->error($e->getMessage());
+            throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
         }
     }
 
@@ -64,7 +70,7 @@ class OdataRestClient implements RestClientInterface
     {
         $ar = json_decode($response, true);
         if (json_last_error() != 0) {
-
+            $this->manager->logger->error(substr(0, 255, $response));
             throw new \Exception("Error while parsing response");
         }
         if (is_int($ar)) {

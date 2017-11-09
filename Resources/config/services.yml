@@ -1,4 +1,14 @@
 services:
-    W3com\BoomBundle\Service\BoomManager:
+    boom.manager:
+        class: W3com\BoomBundle\Service\BoomManager
         arguments:
             - '%boom.config%'
+            - '@logger'
+        tags:
+            - { name: monolog.logger, channel: hana }
+    W3com\BoomBundle\DataCollector\HanaDataCollector:
+        arguments:
+            - '@boom.manager'
+        tags :
+            - { name: data_collector, template: 'W3comBoomBundle:profiler:toolbar.html.twig', id: 'boom.hana_collector'}
+        public: true

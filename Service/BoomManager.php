@@ -8,6 +8,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use ReflectionClass;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
@@ -41,18 +42,32 @@ class BoomManager
      */
     public $restClients = array();
 
+    /**
+     * @var AnnotationReader
+     */
     private $reader;
+
+    /**
+     * @var Logger linked to 'hana' channel
+     */
+    public $logger;
+
+    /**
+     * @var array
+     */
+    private $collectedData;
 
     /**
      * BoomManager constructor.
      *
      * @param array $config
-     * @param AnnotationReader $reader
+     * @param Logger $logger
      */
-    public function __construct($config)
+    public function __construct($config, Logger $logger)
     {
         $this->config = $config;
         $this->reader = new AnnotationReader();
+        $this->logger = $logger;
 
         // creating cookie jar if needed
         $fs = new Filesystem();
@@ -79,6 +94,21 @@ class BoomManager
         $this->restClients['odata'] = $odataRestClient;
     }
 
+    public function getCollectedData()
+    {
+        return $this->collectedData;
+    }
+
+    public function addToCollectedData($type, $code, $uri, $response)
+    {
+        $this->collectedData[] = array(
+            'type' => $type,
+            'code' => $code,
+            'uri' => $uri,
+            'response' => $response,
+        );
+    }
+
     /**
      * @return string
      */
@@ -87,11 +117,17 @@ class BoomManager
         return $this->currentConnection;
     }
 
+    /**
+     * @return Client
+     */
     public function getCurrentClient()
     {
         return $this->clients[$this->currentConnection];
     }
 
+    /**
+     * @return Client
+     */
     public function getOdsClient()
     {
         return $this->clients['odata'];
@@ -180,6 +216,7 @@ class BoomManager
         $aliasSl = $annotation->aliasSl;
         $aliasOds = $annotation->aliasOds;
 
+        $this->logger->info("Successfully read $entityName entity class");
 
         // TODO getting the right repo
         $repo = new DefaultRepository(

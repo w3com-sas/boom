@@ -6,6 +6,7 @@ namespace W3com\BoomBundle\RestClient;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 use W3com\BoomBundle\Service\BoomManager;
 
 class SLRestClient implements RestClientInterface
@@ -14,6 +15,11 @@ class SLRestClient implements RestClientInterface
      * @var BoomManager
      */
     private $manager;
+
+    public function __construct(BoomManager $manager)
+    {
+        $this->manager = $manager;
+    }
 
     public function get(string $uri)
     {
@@ -24,15 +30,20 @@ class SLRestClient implements RestClientInterface
             try {
                 $attempts++;
                 $res = $client->request('GET', $uri);
+                $response = $res->getBody()->getContents();
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response);
 
-                return $this->getValuesFromResponse($res->getBody()->getContents());
+                return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
                 if ($e->getCode() == 401) {
                     $this->login();
                 } else {
-                    dump($e->getResponse()->getBody()->getContents());
+                    $this->manager->logger->error($e->getResponse()->getBody()->getContents());
                     throw new \Exception("Unknown error while launching GET request");
                 }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage());
+                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
             }
         }
 
@@ -54,15 +65,20 @@ class SLRestClient implements RestClientInterface
                         'json' => $data,
                     )
                 );
+                $response = $res->getBody()->getContents();
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response);
 
-                return $this->getValuesFromResponse($res->getBody()->getContents());
+                return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
                 if ($e->getCode() == 401) {
                     $this->login();
                 } else {
-                    dump($e->getResponse()->getBody()->getContents());
+                    $this->manager->logger->error($e->getResponse()->getBody()->getContents());
                     throw new \Exception("Unknown error while launching POST request");
                 }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage());
+                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
             }
         }
     }
@@ -82,15 +98,18 @@ class SLRestClient implements RestClientInterface
                         'json' => $data,
                     )
                 );
-
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $res->getBody()->getContents());
                 return true;
             } catch (ClientException $e) {
                 if ($e->getCode() == 401) {
                     $this->login();
                 } else {
-                    dump($e->getResponse()->getBody()->getContents());
+                    $this->manager->logger->error($e->getResponse()->getBody()->getContents());
                     throw new \Exception("Unknown error while launching PATCH request");
                 }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage());
+                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
             }
         }
     }
@@ -109,15 +128,20 @@ class SLRestClient implements RestClientInterface
             try {
                 $attempts++;
                 $res = $client->request('DELETE', $uri);
+                $response = $res->getBody()->getContents();
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response);
 
-                return $this->getValuesFromResponse($res->getBody()->getContents());
+                return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
                 if ($e->getCode() == 401) {
                     $this->login();
                 } else {
-                    dump($e->getResponse()->getBody()->getContents());
+                    $this->manager->logger->error($e->getResponse()->getBody()->getContents());
                     throw new \Exception("Unknown error while launching DELETE request");
                 }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage());
+                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
             }
         }
     }
@@ -126,6 +150,7 @@ class SLRestClient implements RestClientInterface
     {
         $ar = json_decode($response, true);
         if (json_last_error() != 0) {
+            $this->manager->logger->error(substr($response, 0, 255));
             throw new \Exception("Error while parsing response");
         }
         if (is_int($ar)) {
@@ -152,18 +177,17 @@ class SLRestClient implements RestClientInterface
                     ),
                 )
             );
+            $this->manager->addToCollectedData('sl', $res->getStatusCode(), 'Login', $res->getBody()->getContents());
             if ($res->getStatusCode() == 200) {
                 // on est loggués
+                $this->manager->logger->info('Successfully loggued as '.$loginData['username'].'.');
             } else {
                 // le log a planté :(
+                $this->manager->logger->info('Loging as '.$loginData['username'].' failed.');
             }
         } catch (ClientException $e) {
-            dump($e->getResponse()->getBody()->getContents());
+            $this->manager->logger->error($e->getResponse()->getBody()->getContents());
+            throw new \Exception("Unknown error while loging in");
         }
-    }
-
-    public function __construct(BoomManager $manager)
-    {
-        $this->manager = $manager;
     }
 }

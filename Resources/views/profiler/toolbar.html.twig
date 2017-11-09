@@ -1,0 +1,101 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% set icon %}
+        {# this is the content displayed as a panel in the toolbar #}
+        <span class="icon">
+            <svg version="1.1" id="Calque_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+                <style type="text/css">
+                    .st0 {
+                        fill: none;
+                        stroke: #AAAAAA;
+                        stroke-miterlimit: 10;
+                    }
+
+                    .st1 {
+                        fill: #AAAAAA;
+                    }
+                </style>
+                <path id="XMLID_1_" class="st0"
+                      d="M16.3,5.5c-0.4-1-0.2-1.6,0-1.8c0.3-0.5,0.9-0.4,1.5-1c0.4-0.4,0.5-0.9,0.5-1.2"/>
+                <path id="XMLID_7_" class="st1" d="M18,9.4l1.6-3.2L13.1,3l-1.6,3.2c-3,0-5.9,1.7-7.3,4.6c-2,4.1-0.3,9,3.8,10.9s9,0.3,10.9-3.8
+                    C20.3,15.1,19.8,11.7,18,9.4z M7.2,12.2c-0.9,2.1,0.2,4.1,0.3,4.3l-1.7,1C5.5,17,4,14.3,5.4,11.4c1-2.3,3.4-3.8,5.9-3.9l0.1,2
+                    C9.5,9.5,7.9,10.6,7.2,12.2z"/>
+            </svg>
+        </span>
+        <span class="sf-toolbar-value">{{ collector.data|length }}</span>
+    {% endset %}
+
+    {#{% set text %}
+        <div class="sf-toolbar-info-piece">
+            <b>Method</b>
+            <span>{{ collector.method }}</span>
+        </div>
+
+        <div class="sf-toolbar-info-piece">
+            <b>Accepted content type</b>
+            <span>{{ collector.acceptableContentTypes|join(', ') }}</span>
+        </div>
+    {% endset %} #}
+
+    {# the 'link' value set to 'false' means that this panel doesn't
+       show a section in the web profiler #}
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
+{% endblock %}
+
+
+{% block menu %}
+    {# This left-hand menu appears when using the full-screen profiler. #}
+    <span class="label">
+        <span class="icon">
+            <svg version="1.1" id="Calque_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+                <style type="text/css">
+                    .st0 {
+                        fill: none;
+                        stroke: #AAAAAA;
+                        stroke-miterlimit: 10;
+                    }
+
+                    .st1 {
+                        fill: #AAAAAA;
+                    }
+                </style>
+                <path id="XMLID_1_" class="st0"
+                      d="M16.3,5.5c-0.4-1-0.2-1.6,0-1.8c0.3-0.5,0.9-0.4,1.5-1c0.4-0.4,0.5-0.9,0.5-1.2"/>
+                <path id="XMLID_7_" class="st1" d="M18,9.4l1.6-3.2L13.1,3l-1.6,3.2c-3,0-5.9,1.7-7.3,4.6c-2,4.1-0.3,9,3.8,10.9s9,0.3,10.9-3.8
+                    C20.3,15.1,19.8,11.7,18,9.4z M7.2,12.2c-0.9,2.1,0.2,4.1,0.3,4.3l-1.7,1C5.5,17,4,14.3,5.4,11.4c1-2.3,3.4-3.8,5.9-3.9l0.1,2
+                    C9.5,9.5,7.9,10.6,7.2,12.2z"/>
+            </svg>
+        </span>
+        <strong>BOOM</strong>
+    </span>
+{% endblock %}
+
+{% block panel %}
+    <h2>Hana Requests</h2>
+    {% if collector.data|length == 0 %}
+        <p><em>No requests profiled.</em></p>
+    {% else %}
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Code</th>
+                <th>URI</th>
+                <th>Response</th>
+            </tr>
+
+            {% for line in collector.data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ line.type }}</td>
+                    <td>{{ line.code }}</td>
+                    <td>{{ line.uri }}</td>
+                    <td>{{ line.response }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
