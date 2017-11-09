@@ -81,19 +81,20 @@
         <table>
             <tr>
                 <th>#</th>
-                <th>Type</th>
-                <th>Code</th>
-                <th>URI</th>
+                <th>Request</th>
                 <th>Response</th>
             </tr>
 
             {% for line in collector.data %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ line.type }}</td>
-                    <td>{{ line.code }}</td>
-                    <td>{{ line.uri }}</td>
-                    <td>{{ line.response }}</td>
+                    <td>
+                        <strong>{{ line.type|upper }} : </strong>{{ line.uri }}<br>
+                        {% if line.duration is defined %}
+                            <small>{{ line.duration }} ms</small>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ line.code }}</strong><br>{{ line.response }}</td>
                 </tr>
             {% endfor %}
         </table>

@@ -10,6 +10,8 @@ use GuzzleHttp\Cookie\FileCookieJar;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Stopwatch\Stopwatch;
+use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\RestClient\OdataRestClient;
@@ -53,6 +55,11 @@ class BoomManager
     public $logger;
 
     /**
+     * @var null|Stopwatch
+     */
+    public $stopwatch;
+
+    /**
      * @var array
      */
     private $collectedData;
@@ -62,12 +69,14 @@ class BoomManager
      *
      * @param array $config
      * @param Logger $logger
+     * @param Stopwatch|null $stopwatch
      */
-    public function __construct($config, Logger $logger)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch)
     {
         $this->config = $config;
         $this->reader = new AnnotationReader();
         $this->logger = $logger;
+        $this->stopwatch = $stopwatch;
 
         // creating cookie jar if needed
         $fs = new Filesystem();
@@ -99,14 +108,18 @@ class BoomManager
         return $this->collectedData;
     }
 
-    public function addToCollectedData($type, $code, $uri, $response)
+    public function addToCollectedData($type, $code, $uri, $response, $stop = null)
     {
-        $this->collectedData[] = array(
+        $data = array(
             'type' => $type,
             'code' => $code,
             'uri' => $uri,
             'response' => $response,
         );
+        if ($stop instanceof StopwatchEvent) {
+            $data['duration'] = $stop->getDuration();
+        }
+        $this->collectedData[] = $data;
     }
 
     /**

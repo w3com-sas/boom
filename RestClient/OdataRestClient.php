@@ -32,15 +32,19 @@ class OdataRestClient implements RestClientInterface
     public function get(string $uri)
     {
         try {
+            $this->manager->stopwatch->start('ODS-get');
             $res = $this->client->request('GET', $uri, array('auth' => $this->auth));
             $response = $res->getBody()->getContents();
-            $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, $response);
+            $stop = $this->manager->stopwatch->stop('ODS-get');
+            $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, $response, $stop);
 
             return $this->getValuesFromResponse($response);
         } catch (ClientException $e) {
+            $this->manager->stopwatch->stop('ODS-get');
             $this->manager->logger->error($e->getResponse()->getBody()->getContents());
             throw new \Exception("Unknown error while launching GET request");
         } catch (ConnectException $e) {
+            $this->manager->stopwatch->stop('ODS-get');
             $this->manager->logger->error($e->getMessage());
             throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
         }
