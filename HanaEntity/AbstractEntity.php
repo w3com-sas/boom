@@ -31,7 +31,7 @@ class AbstractEntity
         return $this->changedFields;
     }
 
-    public function getJsonEntity()
+    public function getEntityJson()
     {
         $refl = new \ReflectionClass(get_class($this));
         $reader = new AnnotationReader();
