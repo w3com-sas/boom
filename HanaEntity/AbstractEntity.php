@@ -2,6 +2,8 @@
 
 namespace W3com\BoomBundle\HanaEntity;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+
 class AbstractEntity
 {
     protected $changedFields = array();
@@ -27,5 +29,22 @@ class AbstractEntity
     public function getChangedFields()
     {
         return $this->changedFields;
+    }
+
+    public function getJsonEntity()
+    {
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+        $ar = array();
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+                $ar[$annotation->column] = $this->get($property->getName());
+            }
+        }
+
+        return \GuzzleHttp\json_encode($ar);
     }
 }
