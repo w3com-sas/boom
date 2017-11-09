@@ -49,8 +49,14 @@ class SLRestClient implements RestClientInterface
                         $response,
                         $stop
                     );
-                    $this->manager->logger->error($response);
-                    throw new \Exception("Unknown error while launching GET request");
+                    if ($e->getCode() == 404) {
+                        $this->manager->logger->info($response);
+
+                        return null;
+                    } else {
+                        $this->manager->logger->error($response);
+                        throw new \Exception("Unknown error while launching GET request");
+                    }
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-get');

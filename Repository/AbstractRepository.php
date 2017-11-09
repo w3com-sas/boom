@@ -90,7 +90,9 @@ abstract class AbstractRepository implements RepositoryInterface
         } else {
             throw new \Exception("Unknown entity READ method");
         }
-
+        if ($res == null) {
+            return null;
+        }
         return $this->hydrate($res);
     }
 
