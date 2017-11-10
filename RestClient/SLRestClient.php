@@ -33,7 +33,7 @@ class SLRestClient implements RestClientInterface
                 $res = $client->request('GET', $uri);
                 $stop = $this->manager->stopwatch->stop('SL-get');
                 $response = $res->getBody()->getContents();
-                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response, $stop);
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
 
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
@@ -46,6 +46,7 @@ class SLRestClient implements RestClientInterface
                         'sl',
                         $e->getResponse()->getStatusCode(),
                         $uri,
+                        null,
                         $response,
                         $stop
                     );
@@ -86,7 +87,7 @@ class SLRestClient implements RestClientInterface
                 );
                 $stop = $this->manager->stopwatch->stop('SL-post');
                 $response = $res->getBody()->getContents();
-                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response, $stop);
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $data, $response, $stop);
 
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
@@ -99,6 +100,7 @@ class SLRestClient implements RestClientInterface
                         'sl',
                         $e->getResponse()->getStatusCode(),
                         $uri,
+                        $data,
                         $response,
                         $stop
                     );
@@ -134,6 +136,7 @@ class SLRestClient implements RestClientInterface
                     'sl',
                     $res->getStatusCode(),
                     $uri,
+                    $data,
                     $res->getBody()->getContents(),
                     $stop
                 );
@@ -148,6 +151,7 @@ class SLRestClient implements RestClientInterface
                         'sl',
                         $e->getResponse()->getStatusCode(),
                         $uri,
+                        $data,
                         $response,
                         $stop
                     );
@@ -179,7 +183,7 @@ class SLRestClient implements RestClientInterface
                 $res = $client->request('DELETE', $uri);
                 $stop = $this->manager->stopwatch->stop('SL-delete');
                 $response = $res->getBody()->getContents();
-                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, $response, $stop);
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
 
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
@@ -192,6 +196,7 @@ class SLRestClient implements RestClientInterface
                         'sl',
                         $e->getResponse()->getStatusCode(),
                         $uri,
+                        null,
                         $response,
                         $stop
                     );
@@ -225,8 +230,11 @@ class SLRestClient implements RestClientInterface
 
     private function login()
     {
+        $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentConnection()];
+        $collectedData = $loginData;
+        unset($collectedData['password']);
         try {
-            $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentConnection()];
+
             $this->manager->stopwatch->start('SL-login');
             $res = $this->manager->getCurrentClient()->post(
                 'Login',
@@ -243,6 +251,7 @@ class SLRestClient implements RestClientInterface
                 'sl',
                 $res->getStatusCode(),
                 'Login',
+                $collectedData,
                 $res->getBody()->getContents(),
                 $stop
             );
@@ -256,7 +265,14 @@ class SLRestClient implements RestClientInterface
         } catch (ClientException $e) {
             $stop = $this->manager->stopwatch->stop('SL-login');
             $response = $e->getResponse()->getBody()->getContents();
-            $this->manager->addToCollectedData('sl', $e->getResponse()->getStatusCode(), 'Login', $response, $stop);
+            $this->manager->addToCollectedData(
+                'sl',
+                $e->getResponse()->getStatusCode(),
+                'Login',
+                $collectedData,
+                $response,
+                $stop
+            );
             $this->manager->logger->error($response);
             throw new \Exception("Unknown error while loging in");
         }

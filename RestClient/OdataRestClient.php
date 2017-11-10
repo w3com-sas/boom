@@ -36,12 +36,12 @@ class OdataRestClient implements RestClientInterface
             $res = $this->client->request('GET', $uri, array('auth' => $this->auth));
             $response = $res->getBody()->getContents();
             $stop = $this->manager->stopwatch->stop('ODS-get');
-            $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, $response, $stop);
+            $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, null, $response, $stop);
             return $this->getValuesFromResponse($response);
         } catch (ClientException $e) {
             $stop = $this->manager->stopwatch->stop('ODS-get');
             $response = $e->getResponse()->getBody()->getContents();
-            $this->manager->addToCollectedData('ods', $e->getResponse()->getStatusCode(), $uri, $response, $stop);
+            $this->manager->addToCollectedData('ods', $e->getResponse()->getStatusCode(), $uri, null, $response, $stop);
             if ($e->getCode() == 404) {
                 $this->manager->logger->info($e->getResponse()->getBody()->getContents());
 

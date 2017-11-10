@@ -93,6 +93,16 @@
                         {% if line.duration is defined %}
                             <small>{{ line.duration }} ms</small>
                         {% endif %}
+                        {% if line.parameters is defined %}
+                            <small>
+                                <ul>
+                                    {% for param,value in line.parameters %}
+                                        <li>{{ param }} : {{ value }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </small>
+                        {% endif %}
+
                     </td>
                     <td><strong>{{ line.code }}</strong><br>{{ line.response }}</td>
                 </tr>

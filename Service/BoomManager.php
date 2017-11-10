@@ -108,12 +108,13 @@ class BoomManager
         return $this->collectedData;
     }
 
-    public function addToCollectedData($type, $code, $uri, $response, $stop = null)
+    public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
     {
         $data = array(
             'type' => $type,
             'code' => $code,
             'uri' => $uri,
+            'parameters' => $params,
             'response' => $response,
         );
         if ($stop instanceof StopwatchEvent) {
