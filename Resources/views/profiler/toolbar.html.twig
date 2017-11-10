@@ -44,6 +44,15 @@
     {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
 {% endblock %}
 
+{% block head %}
+    {{ parent() }}
+    <style>
+        .no-word-break {
+            word-break: normal;
+            hyphens: auto;
+        }
+    </style>
+{% endblock %}
 
 {% block menu %}
     {# This left-hand menu appears when using the full-screen profiler. #}
@@ -79,19 +88,21 @@
         <p><em>No requests profiled.</em></p>
     {% else %}
         <table>
+            <thead>
             <tr>
                 <th>#</th>
                 <th>Request</th>
                 <th>Response</th>
             </tr>
-
+            </thead>
+            <tbody>
             {% for line in collector.data %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>
-                        <strong>{{ line.type|upper }} : </strong>{{ line.uri }}<br>
+                    <td class="font-normal no-word-break">
+                        <span class="colored text-bold">{{ line.type|upper }} : {{ line.uri }}</span>
                         {% if line.duration is defined %}
-                            <small>{{ line.duration }} ms</small>
+                            <span class="text-muted newline">{{ line.duration }} ms</span>
                         {% endif %}
                         {% if line.parameters is defined %}
                             <small>
@@ -107,6 +118,7 @@
                     <td><strong>{{ line.code }}</strong><br>{{ line.response }}</td>
                 </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% endif %}
 {% endblock %}

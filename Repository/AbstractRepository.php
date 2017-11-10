@@ -263,6 +263,11 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->entityName;
     }
 
+    public function getClassName()
+    {
+        return $this->className;
+    }
+
     private function createFilterFromCriteria($criteria)
     {
         $filterAr = array();
