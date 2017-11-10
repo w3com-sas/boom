@@ -249,6 +249,15 @@ abstract class AbstractRepository implements RepositoryInterface
         return $obj;
     }
 
+    public function rehydrate(AbstractEntity $obj, $array)
+    {
+        foreach ($this->columns as $attribute => $column) {
+            $obj->hydrate($attribute, $array[$column['column']]);
+        }
+
+        return $obj;
+    }
+
     public function getEntityName()
     {
         return $this->entityName;
