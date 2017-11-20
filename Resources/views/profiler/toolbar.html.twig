@@ -1,5 +1,7 @@
 {% extends '@WebProfiler/Profiler/layout.html.twig' %}
 
+
+
 {% block toolbar %}
     {% set icon %}
         {# this is the content displayed as a panel in the toolbar #}
@@ -27,17 +29,23 @@
         <span class="sf-toolbar-value">{{ collector.data|length }}</span>
     {% endset %}
 
-    {#{% set text %}
+    {% set text %}
+        {% set sommeDuration = 0 %}
+        {% for line in collector.data %}
+            {% set sommeDuration = sommeDuration+ line.duration %}
+        {% endfor %}
         <div class="sf-toolbar-info-piece">
-            <b>Method</b>
-            <span>{{ collector.method }}</span>
+            <b>Total queries : {{ collector.data|length }}</b>
+            <span></span>
         </div>
 
+
         <div class="sf-toolbar-info-piece">
-            <b>Accepted content type</b>
-            <span>{{ collector.acceptableContentTypes|join(', ') }}</span>
+            <b>Total duration : {{ sommeDuration }} ms </b>
+            <span></span>
         </div>
-    {% endset %} #}
+
+    {% endset %}
 
     {# the 'link' value set to 'false' means that this panel doesn't
        show a section in the web profiler #}
@@ -84,9 +92,18 @@
 
 {% block panel %}
     <h2>Hana Requests</h2>
+
+
+
     {% if collector.data|length == 0 %}
         <p><em>No requests profiled.</em></p>
     {% else %}
+
+
+
+
+
+
         <table>
             <thead>
             <tr>
@@ -95,30 +112,72 @@
                 <th>Response</th>
             </tr>
             </thead>
-            <tbody>
-            {% for line in collector.data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td class="font-normal no-word-break">
-                        <span class="colored text-bold">{{ line.type|upper }} : {{ line.uri }}</span>
-                        {% if line.duration is defined %}
-                            <span class="text-muted newline">{{ line.duration }} ms</span>
-                        {% endif %}
-                        {% if line.parameters is defined %}
-                            <small>
-                                <ul>
-                                    {% for param,value in line.parameters %}
-                                        <li>{{ param }} : {{ value }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </small>
-                        {% endif %}
 
-                    </td>
-                    <td><strong>{{ line.code }}</strong><br>{{ line.response }}</td>
-                </tr>
-            {% endfor %}
+            <tbody>
+            {% set sommeDuration = 0 %}
+            {% for line in collector.data %}
+            {% set sommeDuration = sommeDuration+ line.duration %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="font-normal no-word-break">
+                    <span class="no-word-break"><strong>{{ line.type }} : </strong>{{ line.uri }}</span>
+                    {% if line.duration is defined %}
+                        <span class="newline"><strong>Render time : </strong> {{ line.duration }} ms</span>
+                    {% endif %}
+                    {% if line.parameters is defined %}
+                        <small>
+                            <ul>
+                                {% for param,value in line.parameters %}
+                                    <li>{{ param }} : {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </small>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a id="btn-in-{{ loop.index }}" class="btn btn-primary btn-sm"
+                       onclick="showResponse({{ loop.index }})">Show response</a></li>
+                    <a id="btn-out-{{ loop.index }}" class="btn btn-secondary btn-sm"
+                       onclick="hideResponse({{ loop.index }})" style="display: none;">Hide Response</a>
+                    <div id="response-content-{{ loop.index }}" style="display:none;">{{ line.response }}
+
+                    </div>
+                </td>
+            </tr>
             </tbody>
+
+            {% endfor %}
+
+            <div class="metrics">
+                <div class="metric">
+                    <span class="value">{{ collector.data|length }}</span>
+                    <span class="label">Data Queries</span>
+                </div>
+                <div class="metric">
+                    <span class="value"> {{ sommeDuration }}
+                        <small>ms</small></span>
+                    <span class="label">Total duration </span>
+                </div>
+            </div>
+
+            <script>
+                function showResponse(index) {
+                    document.getElementById('response-content-' + index).style.display = 'block';
+                    document.getElementById('btn-out-' + index).style.display = 'block';
+                    document.getElementById('btn-in-' + index).style.display = 'none';
+
+                }
+
+                function hideResponse(findex) {
+                    document.getElementById('response-content-' + findex).style.display = 'none';
+                    document.getElementById('btn-out-' + findex).style.display = 'none';
+                    document.getElementById('btn-in-' + findex).style.display = 'block';
+
+                }
+            </script>
+
         </table>
     {% endif %}
 {% endblock %}
+
