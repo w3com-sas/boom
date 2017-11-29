@@ -3,6 +3,7 @@
 namespace W3com\BoomBundle\Repository;
 
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
+use W3com\BoomBundle\Parameters\Parameters;
 use W3com\BoomBundle\Service\BoomConstants;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -79,14 +80,18 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->columns = $columns;
     }
 
-    public function find($id)
+    public function find($id, Parameters $params = null)
     {
         if ($this->read == BoomConstants::SL) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $res = $this->manager->restClients['sl']->get($this->aliasSL."($quotes".$id."$quotes)");
+            $uri = $this->aliasSL."($quotes".$id."$quotes)";
+            $uri .= ($params == null) ? '' : $params->getParameters();
+            $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $res = $this->manager->restClients['odata']->get($this->aliasODS."($quotes".$id."$quotes)".'?$format=json');
+            $uri = $this->aliasODS."($quotes".$id."$quotes)";
+            $uri .= $params->setFormat('json')->getParameters();
+            $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
         }
@@ -96,26 +101,18 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->hydrate($res);
     }
 
-    public function findAll($orderBy = null, $order = null)
+    public function findAll(Parameters $params = null)
     {
-
         if ($this->read == BoomConstants::SL) {
             $uri = $this->aliasSL;
-            if ($orderBy != null) {
-                if ($order == null) {
-                    $order = 'desc';
-                }
-                $uri .= '?$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
-            }
+            $uri .= ($params == null) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
-            $uri = $this->aliasODS.'?$format=json';
-            if ($orderBy != null) {
-                if ($order == null) {
-                    $order = 'desc';
-                }
-                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+            $uri = $this->aliasODS;
+            if ($params === null) {
+                $params = $this->createParams();
             }
+            $uri .= $params->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
@@ -133,27 +130,18 @@ abstract class AbstractRepository implements RepositoryInterface
 
     }
 
-    public function findByEquals(array $criteria, $orderBy = null, $order = null)
+    public function findByEquals(Parameters $params = null)
     {
         if ($this->read == BoomConstants::SL) {
-            $uri = $this->aliasSL.'?$filter=';
-            $uri .= $this->createFilterFromCriteria($criteria);
-            if ($orderBy != null) {
-                if ($order == null) {
-                    $order = 'desc';
-                }
-                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
-            }
+            $uri = $this->aliasSL;
+            $uri .= ($params == null) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
-            $uri = $this->aliasODS.'?$format=json&$filter=';
-            $uri .= $this->createFilterFromCriteria($criteria);
-            if ($orderBy != null) {
-                if ($order == null) {
-                    $order = 'desc';
-                }
-                $uri .= '&$orderby='.$this->columns[$orderBy]['column'].'%20'.$order;
+            $uri = $this->aliasODS;
+            if ($params === null) {
+                $params = $this->createParams();
             }
+            $uri .= $params->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
@@ -178,19 +166,18 @@ abstract class AbstractRepository implements RepositoryInterface
         }
     }
 
-    public function count(array $criteria = null)
+    public function count(Parameters $params = null)
     {
         if ($this->read == BoomConstants::SL) {
             $uri = $this->aliasSL.'/$count';
-            if ($criteria != null) {
-                $uri .= '?$filter='.$this->createFilterFromCriteria($criteria);
-            }
+            $uri .= ($params == null) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
             $uri = $this->aliasODS.'/$count';
-            if ($criteria != null) {
-                $uri .= '?$filter='.$this->createFilterFromCriteria($criteria);
+            if ($params === null) {
+                $params = $this->createParams();
             }
+            $uri .= ($params == null) ? '' : $params->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
@@ -243,7 +230,9 @@ abstract class AbstractRepository implements RepositoryInterface
         /** @var AbstractEntity $obj */
         $obj = new $this->className();
         foreach ($this->columns as $attribute => $column) {
-            $obj->hydrate($attribute, $array[$column['column']]);
+            if (array_key_exists($column['column'], $array)) {
+                $obj->hydrate($attribute, $array[$column['column']]);
+            }
         }
 
         return $obj;
@@ -268,13 +257,31 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->className;
     }
 
-    private function createFilterFromCriteria($criteria)
+    public function createParams()
     {
-        $filterAr = array();
-        foreach ($criteria as $field => $value) {
-            $quotes = $this->columns[$field]['quotes'] ? "'" : '';
-            $filterAr[] = $this->columns[$field]['column']."%20eq%20$quotes".$value."$quotes";
+        return new Parameters($this->columns);
+    }
+
+    /**
+     * @return int
+     * @throws \Exception
+     */
+    public function getNextCode()
+    {
+        if ($this->key == 'code') {
+            $params = $this->createParams();
+            $params->setTop(1)->addOrder('code', Parameters::ORDER_DESC);
+            $res = $this->findAll($params);
+            switch (count($res)) {
+                case 0 :
+                    return 1000000000;
+                    break;
+                default:
+                    return intval($res[0]->getCode()) + 1;
+                    break;
+            }
+        } else {
+            throw new \Exception('Unsupported entity, is there a Code column ?');
         }
-        return implode('%20and%20', $filterAr);
     }
 }

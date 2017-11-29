@@ -70,6 +70,7 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
+     * @throws \Exception
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch)
     {

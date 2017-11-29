@@ -53,7 +53,7 @@ class OdataRestClient implements RestClientInterface
         } catch (ConnectException $e) {
             $this->manager->stopwatch->stop('ODS-get');
             $this->manager->logger->error($e->getMessage());
-            throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
+            throw new \Exception("Connection error, check if config is OK, or if some needed VPN is on.");
         }
     }
 
