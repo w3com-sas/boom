@@ -144,7 +144,7 @@ class Parameters
                 $quotes = $this->columns[$field]['quotes'] ? "'" : '';
                 $filterAr[] = $this->columns[$field]['column']." eq $quotes".$value."$quotes";
             }
-            $params[] = '$select='.implode(',', $filterAr);
+            $params[] = '$filter='.implode(',', $filterAr);
         }
         // gestion du orderBy
         if (count($this->orderBy) > 0) {
