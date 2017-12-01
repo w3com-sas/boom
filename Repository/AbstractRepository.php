@@ -276,7 +276,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $res = $this->findAll($params);
             switch (count($res)) {
                 case 0 :
-                    return 1000000000;
+                    return 1000000000000;
                     break;
                 default:
                     return intval($res[0]->getCode()) + 1;
