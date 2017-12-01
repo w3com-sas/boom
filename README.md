@@ -95,7 +95,9 @@ $bundles = [
 
 ## Usage
 
-#### Write your entities
+### Writing entities and repositories
+
+#### Entities
 
 For each table you want to use, you need to write an entity.  
 ❗️ Entities should be placed in `AppBundle\HanaEntity` and extend the `W3com\BoomBundle\HanaEntity\AbstractEntity` class.  
@@ -156,6 +158,32 @@ class MyTable extends AbstractEntity
 }
 ````
 
+Note that it's not mandatory that your entities are placed just in the `HanaEntity` folder. You can use any subfolders you want to keep your entities organized.
+
+#### Custom repositories (optionnal)
+
+If you need to write some methods that you want to use here and there in your app, you should write repositories for your entities.
+
+❗️ Repos should be placed in `AppBundle\HanaRepository` and extend the `W3com\BoomBundle\HanaRepository\AbstractRepository` class.  
+❗️ If you placed your entities in subfolders (see above), you must respect the exact same organization for your repos.
+ 
+````php
+namespace AppBundle\HanaRepository;
+
+
+use W3com\BoomBundle\Repository\AbstractRepository;
+
+class MyTableRepository extends AbstractRepository
+{
+    // this is an example, write whatever is usefull !
+    public function findByToken($token)
+    {
+        //...
+    }
+}
+````
+
+### Start sending requests
 
 #### Get the manager
 
@@ -172,3 +200,38 @@ class DefaultController extends Controller
     }
 }
 ````
+
+#### Get the repo
+
+Now that you have retreived the manager, use it to get the repo for your entity.  
+You must type the namespace to your entity, minus the `AppBundle\HanaRepository` part :
+
+````php
+$repo = $manager->getRepository('MyTable');
+$repo2 = $manager->getRepository('Namespace\Entity');
+````
+
+If you wrote a custom repo, it will be instanciated, and if you didn't, you will get a `AppBundle\HanaRepository\DefaultRepository` object.
+
+#### Finding objects
+
+You now have access to a few methods to help you find objects.
+
+To find a specific object :
+````php
+// Boom will know on which column to test key. 
+// This will return an AbstractEntity object, or null if not exactly one result was returned.
+$object = $repo->find($key);
+````
+
+To create a more complex request, use the `Parameters` class.
+
+`````
+TODO écrire doc Parameters
+`````
+
+#### Creating or updating
+
+`````
+TODO écrire doc add/update
+`````

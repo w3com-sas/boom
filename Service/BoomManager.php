@@ -233,18 +233,35 @@ class BoomManager
 
         $this->logger->info("Successfully read $entityName entity class");
 
-        // TODO getting the right repo
-        $repo = new DefaultRepository(
-            $entityName,
-            $entityClassName,
-            $this,
-            $read,
-            $write,
-            $aliasSl,
-            $aliasOds,
-            $key,
-            $columns
-        );
+        // checks if custom repo exists
+        $repoClassName = $this->config['app_namespace'].'\\HanaRepository\\'.$entityName.'Repository';
+        if (!class_exists($repoClassName)) {
+            $repo = new DefaultRepository(
+                $entityName,
+                $entityClassName,
+                $this,
+                $read,
+                $write,
+                $aliasSl,
+                $aliasOds,
+                $key,
+                $columns
+            );
+        } else {
+            $repo = new $repoClassName(
+                $entityName,
+                $entityClassName,
+                $this,
+                $read,
+                $write,
+                $aliasSl,
+                $aliasOds,
+                $key,
+                $columns
+            );
+            $this->logger->info("Loaded custom repo $repoClassName");
+        }
+
         $this->repositories[$entityName] = $repo;
 
         return $repo;
