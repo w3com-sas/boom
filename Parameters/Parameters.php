@@ -24,6 +24,13 @@ class Parameters
      */
 
     private $filter = array();
+
+
+    /**
+     * @var string
+     */
+    private $rawFilter = '';
+
     /**
      * @var string
      */
@@ -90,16 +97,28 @@ class Parameters
     }
 
     /**
-     * @param array|string $filter
+     * @param string $column
+     * @param int|string|array $value
+     * @param string $operator
      * @return $this
+     * @throws \Exception
      */
-    public function addFilter($filter)
+    public function addFilter($column, $value, $operator = Clause::EQUALS)
     {
-        if (is_array($filter)) {
-            $this->filter = array_merge($this->filter, $filter);
-        } else {
-            $this->filter[] = $filter;
+        // on traduit la column vers un nommage Hana
+        if (!array_key_exists($column, $this->columns)) {
+            throw new \Exception('Cannot filter on unknown column '.$column);
         }
+        $columnHana = $this->columns[$column]['column'];
+        $usingQuote = $this->columns[$column]['quotes'];
+        $this->filter[] = new Clause($columnHana,$value,$operator,$usingQuote);
+
+        return $this;
+    }
+
+    public function addRawFilter($rawFilter)
+    {
+        $this->rawFilter = $rawFilter;
 
         return $this;
     }
@@ -137,15 +156,22 @@ class Parameters
             }
             $params[] = '$select='.implode(',', $select);
         }
+
         // gestion du filter
-        if (count($this->filter) > 0) {
+        if (count($this->filter) > 0 || $this->rawFilter != '') {
             $filterAr = array();
-            foreach ($this->filter as $field => $value) {
-                $quotes = $this->columns[$field]['quotes'] ? "'" : '';
-                $filterAr[] = $this->columns[$field]['column']." eq $quotes".$value."$quotes";
+            if(count($this->filter) > 0){
+                foreach ($this->filter as $clause) {
+                    $filterAr[] = $clause->render();
+                }
             }
-            $params[] = '$filter='.implode(',', $filterAr);
+            if($this->rawFilter != ''){
+                $filterAr[] = $this->rawFilter;
+            }
+
+            $params[] = '$filter='.implode(' and ', $filterAr);
         }
+
         // gestion du orderBy
         if (count($this->orderBy) > 0) {
             $orderBy = array();
