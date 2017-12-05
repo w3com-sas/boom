@@ -107,9 +107,9 @@
         <table>
             <thead>
             <tr>
-                <th>#</th>
-                <th>Request</th>
-                <th>Response</th>
+                <th colspan="1">#</th>
+                <th colspan="2">Request</th>
+                <th colspan="2">Response</th>
             </tr>
             </thead>
 
@@ -118,8 +118,9 @@
             {% for line in collector.data %}
             {% set sommeDuration = sommeDuration+ line.duration %}
             <tr>
-                <td>{{ loop.index }}</td>
-                <td class="font-normal no-word-break">
+                <td colspan="1">{{ loop.index }}</td>
+                <td class="font-normal no-word-break" colspan="2" style="max-width: 300px;">
+
                     <span class="no-word-break"><strong>{{ line.type }} : </strong>{{ line.uri }}</span>
                     {% if line.duration is defined %}
                         <span class="newline"><strong>Render time : </strong> {{ line.duration }} ms</span>
@@ -135,11 +136,11 @@
                     {% endif %}
                 </td>
 
-                <td>
+                <td colspan="2" style="max-width: 500px;">
                     <a id="btn-in-{{ loop.index }}" class="btn btn-primary btn-sm"
-                       onclick="showResponse({{ loop.index }})">Show response</a></li>
+                       onclick="showResponse({{ loop.index }})" style="width: 150px;">Show response</a></li>
                     <a id="btn-out-{{ loop.index }}" class="btn btn-secondary btn-sm"
-                       onclick="hideResponse({{ loop.index }})" style="display: none;">Hide Response</a>
+                       onclick="hideResponse({{ loop.index }})" style="display: none; width: 20%;">Hide Response</a>
                     <div id="response-content-{{ loop.index }}" style="display:none;">{{ line.response }}
 
                     </div>
