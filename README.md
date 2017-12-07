@@ -160,7 +160,7 @@ class MyTable extends AbstractEntity
 
 Note that it's not mandatory that your entities are placed just in the `HanaEntity` folder. You can use any subfolders you want to keep your entities organized.
 
-#### Custom repositories (optionnal)
+#### Custom repositories (optional)
 
 If you need to write some methods that you want to use here and there in your app, you should write repositories for your entities.
 

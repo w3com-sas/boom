@@ -194,7 +194,10 @@ abstract class AbstractRepository implements RepositoryInterface
             $data = array();
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
-                $data[$this->columns[$field]['column']] = $entity->get($field);
+                if ($this->columns[$field]['readOnly'] === false) {
+                    // on exclut les column en readonly
+                    $data[$this->columns[$field]['column']] = $entity->get($field);
+                }
             }
             $res = $this->manager->restClients['sl']->patch($uri, $data);
             $entity->hydrate('changedFields', array());

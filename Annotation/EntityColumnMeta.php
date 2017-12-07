@@ -23,4 +23,7 @@ class EntityColumnMeta extends Annotation
 
     /** @var bool */
     public $quotes = true;
+
+    /** @var bool */
+    public $readOnly = false;
 }

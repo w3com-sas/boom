@@ -208,6 +208,7 @@ class BoomManager
                 $columns[$attribute->getName()] = array(
                     'column' => $annotation->column,
                     'quotes' => $annotation->quotes,
+                    'readOnly' => $annotation->readOnly,
                 );
                 if ($annotation->isKey) {
                     $key = $attribute->getName();
