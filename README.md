@@ -1,6 +1,7 @@
 # W3COM BOOM : Business One Object Manager
 
-This bundle provides a bridge between an SAP HANA database, via its Service Layer and OData Service connections.
+This bundle provides a bridge between an SAP HANA database, via its Service Layer and OData Service connections.  
+Compatible with Symfony 3.3.* and 4.0.*.
 
 ## Installation
 
@@ -24,14 +25,17 @@ Also add the dependency :
 ```json
 {
 "require": {
-        "w3com-sas/boom": "dev-master"
+        "w3com-sas/boom": "^0.2"
     }
 }
 ```
 
 #### Configure the bundle
 
-Add this to your `config.yml` file :
+**Warning :** the config is not the same if you use Symfony Flex. There is no automated Flex recipe since this is a private package.
+
+Not using Flex ? Add the following snippet to the `app/config/config.yml` file  
+Using Flex ? Add it to a new `config/packages/boom.yaml` file.
 ````yaml
 w3com_boom:
     service_layer:
@@ -48,26 +52,26 @@ w3com_boom:
         login:
             username: '%ods_login%'
             password: '%ods_password%'
-    app_namespace: AppBundle
+    app_namespace: AppBundle # It's App if you're using Flex
 ````
 
-Add this to your `paramaters.yml.dist` :
+Non-Flex apps : add this to your `parameters.yml.dist` :
 ````yaml
 # W3com BOOM
     sl_base_uri: https://xxxxxx
     sl_path: /
     sl_connections:
-            default:
-                username: xxxxx
-                password: xxxxx
-                database: xxxxx
+        default:
+            username: xxxxx
+            password: xxxxx
+            database: xxxxx
     ods_base_uri: https://xxxxx
     ods_path: /
     ods_login: xxxxx
     ods_password: xxxxx
 ````
 
-And adjust your `parameters.yml` on each machine accordingly. You can define as many Service Layer connections as you want :
+Non-Flex apps : adjust your `parameters.yml` on each machine accordingly. You can define as many Service Layer connections as you want :
 ````yaml
 sl_connections:
         default:
@@ -82,9 +86,35 @@ sl_connections:
             username: user2
             password: user2pass
             database: SBO_OTHER
+# Other parameters not shown, refer to your parameters.dist.yml
 ````
 
+Flex apps : add the following snippet to the `parameters` key in the `config/services.yaml` file. You can define as many Service Layer connections as you want. Here we have two connections, `default` and `prod`.
+````yaml
+parameters:
+    sl_base_uri: '%env(boom_sl_baseuri)%'
+    sl_path: '%env(boom_sl_path)%'
+    sl_connections:
+        default:
+            username: '%env(boom_sl_default_username)%'
+            password: '%env(boom_sl_default_password)%'
+            database: '%env(boom_sl_default_database)%'
+        prod:
+            username: '%env(boom_sl_prod_username)%'
+            password: '%env(boom_sl_prod_password)%'
+            database: '%env(boom_sl_prod_database)%'
+    ods_base_uri: '%env(boom_ods_baseuri)%'
+    ods_path: '%env(boom_ods_path)%'
+    ods_login: '%env(boom_ods_login)%'
+    ods_password: '%env(boom_ods_password)%'
+````
+
+Flex apps : set your external parameters, see the [Symfony doc](https://symfony.com/doc/current/configuration/external_parameters.html).  
+Feel free to rename your parameters, as long as you modify the `config/services.yaml` file accordingly.
+
 #### Register the bundle in `app/AppKernel.php` :
+
+If you're not using Flex, you should enable the bundle.
 
 ````php
 $bundles = [

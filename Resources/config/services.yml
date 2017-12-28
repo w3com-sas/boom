@@ -11,5 +11,5 @@ services:
         arguments:
             - '@W3com\BoomBundle\Service\BoomManager'
         tags :
-            - { name: data_collector, template: 'W3comBoomBundle:profiler:toolbar.html.twig', id: 'boom.hana_collector'}
+            - { name: data_collector, template: '@W3comBoom/profiler/toolbar.html.twig', id: 'boom.hana_collector'}
         public: true

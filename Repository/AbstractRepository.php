@@ -80,6 +80,9 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->columns = $columns;
     }
 
+    /**
+     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
+     */
     public function find($id, Parameters $params = null)
     {
         if ($this->read == BoomConstants::SL) {
@@ -125,11 +128,17 @@ abstract class AbstractRepository implements RepositoryInterface
         return $ret;
     }
 
+    /**
+     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
+     */
     public function findBy(array $criteria)
     {
 
     }
 
+    /**
+     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
+     */
     public function findByEquals(Parameters $params = null)
     {
         if ($this->read == BoomConstants::SL) {
