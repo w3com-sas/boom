@@ -107,9 +107,9 @@
         <table>
             <thead>
             <tr>
-                <th colspan="1">#</th>
-                <th colspan="2">Request</th>
-                <th colspan="2">Response</th>
+                <th>#</th>
+                <th>Request</th>
+                <th>Response</th>
             </tr>
             </thead>
 
@@ -118,8 +118,8 @@
             {% for line in collector.data %}
             {% set sommeDuration = sommeDuration+ line.duration %}
             <tr>
-                <td colspan="1">{{ loop.index }}</td>
-                <td class="font-normal no-word-break" colspan="2" style="max-width: 300px;">
+                <td style="border-bottom: none">{{ loop.index }}</td>
+                <td class="font-normal no-word-break" style="border-bottom: none">
 
                     <span class="no-word-break"><strong>{{ line.type }} : </strong>{{ line.uri }}</span>
                     {% if line.duration is defined %}
@@ -129,20 +129,29 @@
                         <small>
                             <ul>
                                 {% for param,value in line.parameters %}
-                                    <li>{{ param }} : {{ value }}</li>
+                                    <li style="margin-bottom: 0">{{ param }} : {{ value }}</li>
                                 {% endfor %}
                             </ul>
                         </small>
                     {% endif %}
                 </td>
 
-                <td colspan="2" style="max-width: 500px;">
-                    <a id="btn-in-{{ loop.index }}" class="btn btn-primary btn-sm"
-                       onclick="showResponse({{ loop.index }})" style="width: 150px;">Show response</a></li>
+                <td style="border-bottom: none">
+                    <a id="btn-in-{{ loop.index }}" class="btn btn-primary btn-sm" style="display: block;"
+                       onclick="showResponse({{ loop.index }})">Show response</a></li>
                     <a id="btn-out-{{ loop.index }}" class="btn btn-secondary btn-sm"
-                       onclick="hideResponse({{ loop.index }})" style="display: none; width: 20%;">Hide Response</a>
-                    <div id="response-content-{{ loop.index }}" style="display:none;">{{ line.response }}
-
+                       onclick="hideResponse({{ loop.index }})" style="display: none;">Hide Response</a>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" style="border-top: none">
+                    <div id="response-content-{{ loop.index }}" style="display:none;">
+                        <hr style="border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);">
+                        {% if line.decoded is defined %}
+                            {{ dump(line.decoded) }}
+                        {% else %}
+                            {{ line.response }}
+                        {% endif %}
                     </div>
                 </td>
             </tr>

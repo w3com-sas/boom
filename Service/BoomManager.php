@@ -121,6 +121,11 @@ class BoomManager
         if ($stop instanceof StopwatchEvent) {
             $data['duration'] = $stop->getDuration();
         }
+        $decoded = json_decode($response);
+        if (is_object($decoded)) {
+            $data['decoded'] = $decoded;
+            dump($data);
+        }
         $this->collectedData[] = $data;
     }
 
