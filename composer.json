@@ -18,7 +18,8 @@
   ],
   "require": {
     "php": ">=7.1.0",
-    "guzzlehttp/guzzle": "^6.2"
+    "guzzlehttp/guzzle": "^6.2",
+    "symfony/stopwatch": "^3.4|^4.0"
   },
   "require-dev": {
     "symfony/phpunit-bridge": "~3.0"
