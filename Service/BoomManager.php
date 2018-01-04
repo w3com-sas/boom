@@ -124,7 +124,6 @@ class BoomManager
         $decoded = json_decode($response);
         if (is_object($decoded)) {
             $data['decoded'] = $decoded;
-            dump($data);
         }
         $this->collectedData[] = $data;
     }
