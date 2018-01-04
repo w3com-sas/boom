@@ -85,6 +85,10 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function find($id, Parameters $params = null)
     {
+        @trigger_error(
+            'find() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
+            E_USER_DEPRECATED
+        );
         if ($this->read == BoomConstants::SL) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasSL."($quotes".$id."$quotes)";
@@ -133,7 +137,10 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function findBy(array $criteria)
     {
-
+        @trigger_error(
+            'findBy() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
+            E_USER_DEPRECATED
+        );
     }
 
     /**
@@ -141,6 +148,10 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function findByEquals(Parameters $params = null)
     {
+        @trigger_error(
+            'findByEquals() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
+            E_USER_DEPRECATED
+        );
         if ($this->read == BoomConstants::SL) {
             $uri = $this->aliasSL;
             $uri .= ($params == null) ? '' : $params->getParameters();
