@@ -80,24 +80,16 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->columns = $columns;
     }
 
-    /**
-     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
-     */
-    public function find($id, Parameters $params = null)
+    public function find($id)
     {
-        @trigger_error(
-            'find() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
-            E_USER_DEPRECATED
-        );
         if ($this->read == BoomConstants::SL) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasSL."($quotes".$id."$quotes)";
-            $uri .= ($params == null) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif ($this->read == BoomConstants::ODS) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasODS."($quotes".$id."$quotes)";
-            $uri .= $params->setFormat('json')->getParameters();
+            $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
             throw new \Exception("Unknown entity READ method");
