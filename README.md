@@ -134,6 +134,8 @@ For each table you want to use, you need to write an entity.
 ❗️ You must use annotations to map class fields to table columns, doctrine-like.  
 ❗️ Setters should use the `set($field, $value)` method from parent class.
 
+Note that the required namespace depends on the Symfony version you're using. Use `AppBundle\HanaEntity` for Symfony 3.* and `App\HanaEntity` for Symfony 4.*.
+
 Entities should look like this :
 
 ````php
@@ -196,6 +198,8 @@ If you need to write some methods that you want to use here and there in your ap
 
 ❗️ Repos should be placed in `AppBundle\HanaRepository` and extend the `W3com\BoomBundle\HanaRepository\AbstractRepository` class.  
 ❗️ If you placed your entities in subfolders (see above), you must respect the exact same organization for your repos.
+
+Again, Use `AppBundle\HanaEntity` for Symfony 3.* and `App\HanaEntity` for Symfony 4.*.
  
 ````php
 namespace AppBundle\HanaRepository;
@@ -234,14 +238,14 @@ class DefaultController extends Controller
 #### Get the repo
 
 Now that you have retreived the manager, use it to get the repo for your entity.  
-You must type the namespace to your entity, minus the `AppBundle\HanaRepository` part :
+You must type the namespace to your entity, minus the `App[Bundle]\HanaRepository` part :
 
 ````php
 $repo = $manager->getRepository('MyTable');
 $repo2 = $manager->getRepository('Namespace\Entity');
 ````
 
-If you wrote a custom repo, it will be instanciated, and if you didn't, you will get a `AppBundle\HanaRepository\DefaultRepository` object.
+If you wrote a custom repo, it will be instanciated, and if you didn't, you will get a `W3com\BoomBundle\HanaRepository\DefaultRepository` object.
 
 #### Finding objects
 
@@ -249,16 +253,43 @@ You now have access to a few methods to help you find objects.
 
 To find a specific object :
 ````php
-// Boom will know on which column to test key. 
+// Boom will know which column he should test the key against. 
 // This will return an AbstractEntity object, or null if not exactly one result was returned.
 $object = $repo->find($key);
 ````
 
 To create a more complex request, use the `Parameters` class.
 
-`````
-TODO écrire doc Parameters
-`````
+````php
+use W3com\BoomBundle\Parameters\Clause;
+use W3com\BoomBundle\Parameters\Parameters;
+
+$repo = $manager->getRepository('MyTable');
+$params = $repo->createParameters()
+    ->addFilter('columnName', 'value') // filters on columnName = value
+    ->addFilter('columnName', 'value', Clause::GREATER_THAN)
+    ->addSelect('columnName') // will only hydrate the requested column, others will be set as null.
+    ->addSelect(array('columnName1', 'columnName2))
+    ->addOrder('columnName') // will order results on columnName ASC by default
+    ->addOrder('columnName', Parameters::ORDER_DESC)
+    ->setTop(10);
+    
+$results = $repo->findAll($params);
+````
+
+You can use one of these clauses with the `addFilter` method :
+* `Clause::EQUALS` (which is the default)
+* `Clause::NOT_EQUALS`
+* `Clause::STARTS_WITH`
+* `Clause::ENDS_WITH`
+* `Clause::CONTAINS`
+* `Clause::SUBSTRINGOF`
+* `Clause::GREATER_THAN`
+* `Clause::GREATER_OR_EQUAL`
+* `Clause::LOWER_THAN`
+* `Clause::LOWER_OR_EQUAL`
+
+❗️ You should be careful with the `addSelect` method, as you won't be able to distinguish real `null` values from SAP, and `null values from non-requested columns !
 
 #### Creating or updating
 
