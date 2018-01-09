@@ -289,7 +289,7 @@ You can use one of these clauses with the `addFilter` method :
 * `Clause::LOWER_THAN`
 * `Clause::LOWER_OR_EQUAL`
 
-❗️ You should be careful with the `addSelect` method, as you won't be able to distinguish real `null` values from SAP, and `null values from non-requested columns !
+❗️ You should be careful with the `addSelect` method, as you won't be able to distinguish real `null` values from SAP, and `null` values from non-requested columns !
 
 #### Creating or updating
 
