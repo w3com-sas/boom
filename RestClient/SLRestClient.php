@@ -185,7 +185,9 @@ class SLRestClient implements RestClientInterface
                 $response = $res->getBody()->getContents();
                 $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
 
-                return $this->getValuesFromResponse($response);
+                $ret = ($response == '') ? true : $this->getValuesFromResponse($response);
+
+                return $ret;
             } catch (ClientException $e) {
                 if ($e->getCode() == 401) {
                     $this->login();
@@ -215,7 +217,7 @@ class SLRestClient implements RestClientInterface
     {
         $ar = json_decode($response, true);
         if (json_last_error() != 0) {
-            $this->manager->logger->error(substr($response, 0, 255));
+            $this->manager->logger->error("Error while parsing response in SL : ".substr($response, 0, 255));
             throw new \Exception("Error while parsing response");
         }
         if (is_int($ar)) {
