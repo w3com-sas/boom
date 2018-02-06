@@ -293,6 +293,18 @@ You can use one of these clauses with the `addFilter` method :
 
 #### Creating or updating
 
+````php
+$object = new MyTable();
+$code = $repo->getNextCode();
+$object->setField('myValue')->setOtherField('someValue');
+$repo = $manager->getRepository('MyTable');
+$repo->add($object);
+````
+❗️ For now, the `getNextCode()` method is just for entities which has their key called `code`.
+
+````php
+$object->setField('myValue')->setOtherField('someValue');
+$repo = $manager->getRepository('MyTable');
+$repo->update($object, $object->getCode());
 `````
-TODO écrire doc add/update
-`````
+❗️ The second argument of the `update()` method is the key property (usually `code`).
