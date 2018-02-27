@@ -100,10 +100,11 @@ class Parameters
      * @param string $column
      * @param int|string|array $value
      * @param string $operator
+     * @param string $logicalOperator
      * @return $this
      * @throws \Exception
      */
-    public function addFilter($column, $value, $operator = Clause::EQUALS)
+    public function addFilter($column, $value, $operator = Clause::EQUALS, $logicalOperator = Clause:: AND)
     {
         // on traduit la column vers un nommage Hana
         if (!array_key_exists($column, $this->columns)) {
@@ -111,7 +112,7 @@ class Parameters
         }
         $columnHana = $this->columns[$column]['column'];
         $usingQuote = $this->columns[$column]['quotes'];
-        $this->filter[] = new Clause($columnHana,$value,$operator,$usingQuote);
+        $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator);
 
         return $this;
     }
@@ -161,15 +162,18 @@ class Parameters
         if (count($this->filter) > 0 || $this->rawFilter != '') {
             $filterAr = array();
             if(count($this->filter) > 0){
+                $i = 0;
                 foreach ($this->filter as $clause) {
-                    $filterAr[] = $clause->render();
+                    $logicalOperator = ($i > 0) ? $clause->getLogicalOperator() : '';
+                    $filterAr[] = $logicalOperator.$clause->render();
+                    $i++;
                 }
             }
             if($this->rawFilter != ''){
                 $filterAr[] = $this->rawFilter;
             }
 
-            $params[] = '$filter='.implode(' and ', $filterAr);
+            $params[] = '$filter='.implode('', $filterAr);
         }
 
         // gestion du orderBy

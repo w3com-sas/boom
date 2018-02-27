@@ -277,6 +277,10 @@ $params = $repo->createParameters()
 $results = $repo->findAll($params);
 ````
 
+❗️ You should be careful with the `addSelect` method, as you won't be able to distinguish real `null` values from SAP, and `null` values from non-requested columns !
+
+##### Creating filters
+
 You can use one of these clauses with the `addFilter` method :
 * `Clause::EQUALS` (which is the default)
 * `Clause::NOT_EQUALS`
@@ -289,9 +293,31 @@ You can use one of these clauses with the `addFilter` method :
 * `Clause::LOWER_THAN`
 * `Clause::LOWER_OR_EQUAL`
 
-❗️ You should be careful with the `addSelect` method, as you won't be able to distinguish real `null` values from SAP, and `null` values from non-requested columns !
+You can also use `Clause::OR` and `Clause::AND` in the last argument when adding a filter, so that this filter is prefixed with a logical operator :
 
-#### Creating or updating
+````php
+$params
+    ->addFilter('columnName','value', Clause::CONTAINS)
+    ->addFilter('otherColumn, 'otherValue', Clause::EQUALS, Clause::OR);
+// columnName contains value OR otherColumn equals otherValue
+````
+
+If you just want to find multiple values in the same column, pass an array as second argument :
+
+````php
+$params
+    ->addFilter('columnName',['value1', 'value2', 'value3']);
+// columnName equals value1 OR value2 OR value3
+````
+
+Want to write a custom filter with "and" and "or" mixed, with parenthesis groups ? Use `addRawFilter()`, but you're on your own on this one :  
+(note that in this case the filter will be passed *as is*, so you must use the real column names as they are in SAP B1)
+````php
+$params
+    ->addRawFilter('(U_W3C_FIELD eq "value1" or U_W3C_COL eq "value2") and (U_W3C_ONE eq "value1" and U_W3C_TWO eq "value2")');
+````
+
+#### Creating, updating or deleting
 
 ````php
 $object = new MyTable();
@@ -308,3 +334,9 @@ $repo = $manager->getRepository('MyTable');
 $repo->update($object, $object->getCode());
 `````
 ❗️ The second argument of the `update()` method is the key property (usually `code`).
+
+````php
+$key = $object->getCode() // or any method that gets the object key property
+$repo = $manager->getRepository('MyTable');
+$repo->delete($key);
+````

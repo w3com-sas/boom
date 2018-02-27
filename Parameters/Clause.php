@@ -15,18 +15,30 @@ class Clause
     const GREATER_OR_EQUAL = "%s ge %s";
     const LOWER_THAN       = "%s lt %s";
     const LOWER_OR_EQUAL   = "%s le %s";
+    const AND = " and ";
+    const OR = " or ";
 
     private $column;
     private $value;
     private $operator;
     private $quote;
+    private $logicalOperator;
 
-    public function __construct($column, $value, $operator, $quote)
+    public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND)
     {
         $this->column = $column;
         $this->value  = $value;
         $this->operator = $operator;
         $this->quote = $quote ? "'" : "";
+        $this->logicalOperator = ($logicalOperator == self:: OR) ? self:: OR : self:: AND;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLogicalOperator(): string
+    {
+        return $this->logicalOperator;
     }
 
     public function render(){
