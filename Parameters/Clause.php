@@ -26,6 +26,11 @@ class Clause
 
     public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND)
     {
+        // gestion du null dans les calculation views
+        if ($value === null) {
+            $quote = '';
+            $value = 'null';
+        }
         $this->column = $column;
         $this->value  = $value;
         $this->operator = $operator;

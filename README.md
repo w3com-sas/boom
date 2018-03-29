@@ -310,6 +310,14 @@ $params
 // columnName equals value1 OR value2 OR value3
 ````
 
+You can also search for `null` values if your Calculation View supports it :
+
+````php
+$params
+    ->addFilter('columnName', null);
+// columnName is null (note: this is NOT an empty string !)
+````
+
 Want to write a custom filter with "and" and "or" mixed, with parenthesis groups ? Use `addRawFilter()`, but you're on your own on this one :  
 (note that in this case the filter will be passed *as is*, so you must use the real column names as they are in SAP B1)
 ````php
