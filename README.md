@@ -199,7 +199,7 @@ If you need to write some methods that you want to use here and there in your ap
 ❗️ Repos should be placed in `AppBundle\HanaRepository` and extend the `W3com\BoomBundle\HanaRepository\AbstractRepository` class.  
 ❗️ If you placed your entities in subfolders (see above), you must respect the exact same organization for your repos.
 
-Again, Use `AppBundle\HanaEntity` for Symfony 3.* and `App\HanaEntity` for Symfony 4.*.
+Again, Use `AppBundle\HanaRepository` for Symfony 3.* and `App\HanaRepository` for Symfony 4.*.
  
 ````php
 namespace AppBundle\HanaRepository;
