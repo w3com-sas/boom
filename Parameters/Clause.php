@@ -26,11 +26,6 @@ class Clause
 
     public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND)
     {
-        // gestion du null dans les calculation views
-        if ($value === null) {
-            $quote = '';
-            $value = 'null';
-        }
         $this->column = $column;
         $this->value  = $value;
         $this->operator = $operator;
@@ -50,7 +45,10 @@ class Clause
         if(is_array($this->value)){
             $tmp = array();
             foreach($this->value as $value){
-                $tmp[] = sprintf($this->operator,$this->column,$this->quote.$value.$this->quote);
+                // gestion du null dans les calculation views
+                $quote = ($value === null) ? '' : $this->quote;
+                $value = ($value === null) ? 'null' : $value;
+                $tmp[] = sprintf($this->operator, $this->column, $quote.$value.$quote);
             }
             $retour = "(".implode(' or ',$tmp).")";
         } else {
