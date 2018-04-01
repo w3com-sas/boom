@@ -52,7 +52,10 @@ class Clause
             }
             $retour = "(".implode(' or ',$tmp).")";
         } else {
-            $retour = sprintf($this->operator,$this->column,$this->quote.$this->value.$this->quote);
+            // gestion du null dans les calculation views
+            $quote = ($this->value === null) ? '' : $this->quote;
+            $value = ($this->value === null) ? 'null' : $this->value;
+            $retour = sprintf($this->operator, $this->column, $quote.$value.$quote);
         }
         return $retour;
     }
