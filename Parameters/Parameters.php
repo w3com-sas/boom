@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\Parameters;
-
 
 class Parameters
 {
@@ -12,19 +10,17 @@ class Parameters
     /**
      * @var array
      */
-    private $select = array();
+    private $select = [];
 
     /**
      * @var array
      */
-    private $orderBy = array();
+    private $orderBy = [];
 
     /**
      * @var array
      */
-
-    private $filter = array();
-
+    private $filter = [];
 
     /**
      * @var string
@@ -39,13 +35,15 @@ class Parameters
     private $top = 0;
 
     /**
-     * Column names of the targeted entity
+     * Column names of the targeted entity.
+     *
      * @var array
      */
     private $columns;
 
     /**
      * Parameters constructor.
+     *
      * @param $columns array Column names of the targeted entity
      */
     public function __construct($columns)
@@ -55,7 +53,9 @@ class Parameters
 
     /**
      * @param array|string $select
+     *
      * @return $this
+     *
      * @throws \Exception
      */
     public function addSelect($select)
@@ -80,7 +80,9 @@ class Parameters
     /**
      * @param string $column
      * @param string $order
+     *
      * @return $this
+     *
      * @throws \Exception
      */
     public function addOrder($column, $order = Parameters::ORDER_ASC)
@@ -88,7 +90,7 @@ class Parameters
         if (!array_key_exists($column, $this->columns)) {
             throw new \Exception('Cannot order on unknown column '.$order);
         }
-        if ($order != Parameters::ORDER_ASC && $order != Parameters::ORDER_DESC) {
+        if (Parameters::ORDER_ASC != $order && Parameters::ORDER_DESC != $order) {
             throw new \Exception("Unknown order $order");
         }
         $this->orderBy[$column] = $order;
@@ -97,11 +99,13 @@ class Parameters
     }
 
     /**
-     * @param string $column
+     * @param string           $column
      * @param int|string|array $value
-     * @param string $operator
-     * @param string $logicalOperator
+     * @param string           $operator
+     * @param string           $logicalOperator
+     *
      * @return $this
+     *
      * @throws \Exception
      */
     public function addFilter($column, $value, $operator = Clause::EQUALS, $logicalOperator = Clause:: AND)
@@ -126,6 +130,7 @@ class Parameters
 
     /**
      * @param string $format
+     *
      * @return $this
      */
     public function setFormat($format)
@@ -143,15 +148,16 @@ class Parameters
     }
 
     /**
-     * Returns the URL parameters string
+     * Returns the URL parameters string.
+     *
      * @return string
      */
     public function getParameters()
     {
-        $params = array();
+        $params = [];
         // gestion du select
         if (count($this->select) > 0) {
-            $select = array();
+            $select = [];
             foreach ($this->select as $item) {
                 $select[] = $this->columns[$item]['column'];
             }
@@ -159,17 +165,17 @@ class Parameters
         }
 
         // gestion du filter
-        if (count($this->filter) > 0 || $this->rawFilter != '') {
-            $filterAr = array();
-            if(count($this->filter) > 0){
+        if (count($this->filter) > 0 || '' != $this->rawFilter) {
+            $filterAr = [];
+            if (count($this->filter) > 0) {
                 $i = 0;
                 foreach ($this->filter as $clause) {
                     $logicalOperator = ($i > 0) ? $clause->getLogicalOperator() : '';
                     $filterAr[] = $logicalOperator.$clause->render();
-                    $i++;
+                    ++$i;
                 }
             }
-            if($this->rawFilter != ''){
+            if ('' != $this->rawFilter) {
                 $filterAr[] = $this->rawFilter;
             }
 
@@ -178,14 +184,14 @@ class Parameters
 
         // gestion du orderBy
         if (count($this->orderBy) > 0) {
-            $orderBy = array();
+            $orderBy = [];
             foreach ($this->orderBy as $col => $order) {
                 $orderBy[] = $this->columns[$col]['column'].' '.$order;
             }
             $params[] = '$orderby='.implode(',', $orderBy);
         }
         //gestion du format
-        if ($this->format != '') {
+        if ('' != $this->format) {
             $params[] = '$format='.$this->format;
         }
         // gestion du top
@@ -194,7 +200,7 @@ class Parameters
         }
 
         // génération de l'url
-        if (count($params) == 0) {
+        if (0 == count($params)) {
             return '';
         } else {
             return str_replace(' ', '%20', '?'.implode('&', $params));

@@ -6,7 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 
 class AbstractEntity
 {
-    protected $changedFields = array();
+    protected $changedFields = [];
 
     public function set($field, $value)
     {
@@ -35,7 +35,7 @@ class AbstractEntity
     {
         $refl = new \ReflectionClass(get_class($this));
         $reader = new AnnotationReader();
-        $ar = array();
+        $ar = [];
         foreach ($refl->getProperties() as $property) {
             if ($annotation = $reader->getPropertyAnnotation(
                 $property,

@@ -57,66 +57,59 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * AbstractRepository constructor.
      *
-     * @param string $entityName
-     * @param $className
-     * @param BoomManager $manager
-     * @param string $read
-     * @param string $write
-     * @param string $aliasSL
-     * @param string $aliasODS
-     * @param string $key
-     * @param array $columns
+     * @param RepoMetadata $metadata
      */
-    public function __construct($entityName, $className, $manager, $read, $write, $aliasSL, $aliasODS, $key, $columns)
+    public function __construct(RepoMetadata $metadata)
     {
-        $this->entityName = $entityName;
-        $this->className = $className;
-        $this->manager = $manager;
-        $this->read = $read;
-        $this->write = $write;
-        $this->aliasSL = $aliasSL;
-        $this->aliasODS = $aliasODS;
-        $this->key = $key;
-        $this->columns = $columns;
+        $this->entityName = $metadata->getEntityName();
+        $this->className = $metadata->getEntityClassName();
+        $this->manager = $metadata->getManager();
+        $this->read = $metadata->getRead();
+        $this->write = $metadata->getWrite();
+        $this->aliasSL = $metadata->getAliasSl();
+        $this->aliasODS = $metadata->getAliasOds();
+        $this->key = $metadata->getKey();
+        $this->columns = $metadata->getColumns();
     }
 
     public function find($id)
     {
-        if ($this->read == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasSL."($quotes".$id."$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
-        } elseif ($this->read == BoomConstants::ODS) {
+        } elseif (BoomConstants::ODS == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasODS."($quotes".$id."$quotes)";
             $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception("Unknown entity READ method");
+            throw new \Exception('Unknown entity READ method');
         }
-        if ($res == null) {
+        if (null == $res) {
             return null;
         }
+
         return $this->hydrate($res);
     }
 
     public function findAll(Parameters $params = null)
     {
-        if ($this->read == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->read) {
             $uri = $this->aliasSL;
-            $uri .= ($params == null) ? '' : $params->getParameters();
+            $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
-        } elseif ($this->read == BoomConstants::ODS) {
+        } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasODS;
-            if ($params === null) {
+            if (null === $params) {
                 $params = $this->createParams();
             }
             $uri .= $params->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception("Unknown entity READ method");
+            throw new \Exception('Unknown entity READ method');
         }
-        $ret = array();
+        $ret = [];
         foreach ($res as $array) {
             $ret[] = $this->hydrate($array);
         }
@@ -144,21 +137,21 @@ abstract class AbstractRepository implements RepositoryInterface
             'findByEquals() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
             E_USER_DEPRECATED
         );
-        if ($this->read == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->read) {
             $uri = $this->aliasSL;
-            $uri .= ($params == null) ? '' : $params->getParameters();
+            $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
-        } elseif ($this->read == BoomConstants::ODS) {
+        } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasODS;
-            if ($params === null) {
+            if (null === $params) {
                 $params = $this->createParams();
             }
             $uri .= $params->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception("Unknown entity READ method");
+            throw new \Exception('Unknown entity READ method');
         }
-        $ret = array();
+        $ret = [];
         foreach ($res as $array) {
             $ret[] = $this->hydrate($array);
         }
@@ -168,42 +161,42 @@ abstract class AbstractRepository implements RepositoryInterface
 
     public function delete($id)
     {
-        if ($this->read == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $res = $this->manager->restClients['sl']->delete($this->aliasSL."($quotes".$id."$quotes)");
-        } elseif ($this->read == BoomConstants::ODS) {
-
+        } elseif (BoomConstants::ODS == $this->read) {
         } else {
-            throw new \Exception("Unknown entity READ method");
+            throw new \Exception('Unknown entity READ method');
         }
     }
 
     public function count(Parameters $params = null)
     {
-        if ($this->read == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->read) {
             $uri = $this->aliasSL.'/$count';
-            $uri .= ($params == null) ? '' : $params->getParameters();
+            $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
-        } elseif ($this->read == BoomConstants::ODS) {
+        } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasODS.'/$count';
-            if ($params === null) {
+            if (null === $params) {
                 $params = $this->createParams();
             }
-            $uri .= ($params == null) ? '' : $params->getParameters();
+            $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception("Unknown entity READ method");
+            throw new \Exception('Unknown entity READ method');
         }
+
         return $res;
     }
 
     public function update(AbstractEntity $entity, $id)
     {
-        if ($this->write == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->write) {
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasSL."($quotes".$id."$quotes)";
-            $data = array();
+            $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
                 if ($this->columns[$field]['readOnly'] === false) {
@@ -212,31 +205,29 @@ abstract class AbstractRepository implements RepositoryInterface
                 }
             }
             $res = $this->manager->restClients['sl']->patch($uri, $data);
-            $entity->hydrate('changedFields', array());
+            $entity->hydrate('changedFields', []);
 
             return $entity;
-        } elseif ($this->write == BoomConstants::ODS) {
-
+        } elseif (BoomConstants::ODS == $this->write) {
         } else {
-            throw new \Exception("Unknown entity WRITE method");
+            throw new \Exception('Unknown entity WRITE method');
         }
     }
 
     public function add(AbstractEntity $entity)
     {
-        if ($this->write == BoomConstants::SL) {
+        if (BoomConstants::SL == $this->write) {
             $uri = $this->aliasSL;
-            $data = array();
+            $data = [];
             foreach ($entity->getChangedFields() as $field => $value) {
                 $data[$this->columns[$field]['column']] = $entity->get($field);
             }
             $res = $this->manager->restClients['sl']->post($uri, $data);
 
             return $this->hydrate($res);
-        } elseif ($this->write == BoomConstants::ODS) {
-
+        } elseif (BoomConstants::ODS == $this->write) {
         } else {
-            throw new \Exception("Unknown entity WRITE method");
+            throw new \Exception('Unknown entity WRITE method');
         }
     }
 
@@ -281,16 +272,17 @@ abstract class AbstractRepository implements RepositoryInterface
 
     /**
      * @return int
+     *
      * @throws \Exception
      */
     public function getNextCode()
     {
-        if ($this->key == 'code') {
+        if ('code' == $this->key) {
             $params = $this->createParams();
             $params->setTop(1)->addOrder('code', Parameters::ORDER_DESC);
             $res = $this->findAll($params);
             switch (count($res)) {
-                case 0 :
+                case 0:
                     return 1000000000000;
                     break;
                 default:

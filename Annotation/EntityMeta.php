@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\Annotation;
-
 
 use Doctrine\Common\Annotations\Annotation;
 

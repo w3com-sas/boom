@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\RestClient;
-
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -28,7 +26,7 @@ class SLRestClient implements RestClientInterface
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
-                $attempts++;
+                ++$attempts;
                 $this->manager->stopwatch->start('SL-get');
                 $res = $client->request('GET', $uri);
                 $stop = $this->manager->stopwatch->stop('SL-get');
@@ -37,7 +35,7 @@ class SLRestClient implements RestClientInterface
 
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
-                if ($e->getCode() == 401) {
+                if (401 == $e->getCode()) {
                     $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-get');
@@ -50,23 +48,21 @@ class SLRestClient implements RestClientInterface
                         $response,
                         $stop
                     );
-                    if ($e->getCode() == 404) {
+                    if (404 == $e->getCode()) {
                         $this->manager->logger->info($response);
 
                         return null;
                     } else {
                         $this->manager->logger->error($response);
-                        throw new \Exception("Unknown error while launching GET request");
+                        throw new \Exception('Unknown error while launching GET request');
                     }
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-get');
                 $this->manager->logger->error($e->getMessage());
-                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
-
-
     }
 
     public function post(string $uri, $data)
@@ -76,14 +72,14 @@ class SLRestClient implements RestClientInterface
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
-                $attempts++;
+                ++$attempts;
                 $this->manager->stopwatch->start('SL-post');
                 $res = $client->request(
                     'POST',
                     $uri,
-                    array(
+                    [
                         'json' => $data,
-                    )
+                    ]
                 );
                 $stop = $this->manager->stopwatch->stop('SL-post');
                 $response = $res->getBody()->getContents();
@@ -91,7 +87,7 @@ class SLRestClient implements RestClientInterface
 
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
-                if ($e->getCode() == 401) {
+                if (401 == $e->getCode()) {
                     $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-post');
@@ -105,12 +101,12 @@ class SLRestClient implements RestClientInterface
                         $stop
                     );
                     $this->manager->logger->error($response);
-                    throw new \Exception("Unknown error while launching POST request");
+                    throw new \Exception('Unknown error while launching POST request');
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-post');
                 $this->manager->logger->error($e->getMessage());
-                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
     }
@@ -122,14 +118,14 @@ class SLRestClient implements RestClientInterface
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
-                $attempts++;
+                ++$attempts;
                 $this->manager->stopwatch->start('SL-patch');
                 $res = $client->request(
                     'PATCH',
                     $uri,
-                    array(
+                    [
                         'json' => $data,
-                    )
+                    ]
                 );
                 $stop = $this->manager->stopwatch->stop('SL-patch');
                 $this->manager->addToCollectedData(
@@ -140,9 +136,10 @@ class SLRestClient implements RestClientInterface
                     $res->getBody()->getContents(),
                     $stop
                 );
+
                 return true;
             } catch (ClientException $e) {
-                if ($e->getCode() == 401) {
+                if (401 == $e->getCode()) {
                     $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-patch');
@@ -156,12 +153,12 @@ class SLRestClient implements RestClientInterface
                         $stop
                     );
                     $this->manager->logger->error($response);
-                    throw new \Exception("Unknown error while launching PATCH request");
+                    throw new \Exception('Unknown error while launching PATCH request');
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-patch');
                 $this->manager->logger->error($e->getMessage());
-                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
     }
@@ -178,18 +175,18 @@ class SLRestClient implements RestClientInterface
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
-                $attempts++;
+                ++$attempts;
                 $this->manager->stopwatch->start('SL-delete');
                 $res = $client->request('DELETE', $uri);
                 $stop = $this->manager->stopwatch->stop('SL-delete');
                 $response = $res->getBody()->getContents();
                 $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
 
-                $ret = ($response == '') ? true : $this->getValuesFromResponse($response);
+                $ret = ('' == $response) ? true : $this->getValuesFromResponse($response);
 
                 return $ret;
             } catch (ClientException $e) {
-                if ($e->getCode() == 401) {
+                if (401 == $e->getCode()) {
                     $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-delete');
@@ -203,12 +200,12 @@ class SLRestClient implements RestClientInterface
                         $stop
                     );
                     $this->manager->logger->error($response);
-                    throw new \Exception("Unknown error while launching DELETE request");
+                    throw new \Exception('Unknown error while launching DELETE request');
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-delete');
                 $this->manager->logger->error($e->getMessage());
-                throw new \Exception("Connection error, check if config is OK, or maybe some needed VPN in on.");
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
     }
@@ -216,9 +213,9 @@ class SLRestClient implements RestClientInterface
     public function getValuesFromResponse($response)
     {
         $ar = json_decode($response, true);
-        if (json_last_error() != 0) {
-            $this->manager->logger->error("Error while parsing response in SL : ".substr($response, 0, 255));
-            throw new \Exception("Error while parsing response");
+        if (0 != json_last_error()) {
+            $this->manager->logger->error('Error while parsing response in SL : '.substr($response, 0, 255));
+            throw new \Exception('Error while parsing response');
         }
         if (is_int($ar)) {
             return $ar;
@@ -236,17 +233,16 @@ class SLRestClient implements RestClientInterface
         $collectedData = $loginData;
         unset($collectedData['password']);
         try {
-
             $this->manager->stopwatch->start('SL-login');
             $res = $this->manager->getCurrentClient()->post(
                 'Login',
-                array(
-                    'json' => array(
+                [
+                    'json' => [
                         'UserName' => $loginData['username'],
                         'Password' => $loginData['password'],
                         'CompanyDB' => $loginData['database'],
-                    ),
-                )
+                    ],
+                ]
             );
             $stop = $this->manager->stopwatch->stop('SL-login');
             $this->manager->addToCollectedData(
@@ -257,7 +253,7 @@ class SLRestClient implements RestClientInterface
                 $res->getBody()->getContents(),
                 $stop
             );
-            if ($res->getStatusCode() == 200) {
+            if (200 == $res->getStatusCode()) {
                 // on est loggués
                 $this->manager->logger->info('Successfully loggued as '.$loginData['username'].'.');
             } else {
@@ -276,7 +272,7 @@ class SLRestClient implements RestClientInterface
                 $stop
             );
             $this->manager->logger->error($response);
-            throw new \Exception("Unknown error while loging in");
+            throw new \Exception('Unknown error while loging in');
         }
     }
 }

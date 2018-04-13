@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\RestClient;
-
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
@@ -23,37 +21,38 @@ class OdataRestClient implements RestClientInterface
     {
         $this->manager = $manager;
         $this->client = $manager->getOdsClient();
-        $this->auth = array(
-            $this->manager->config['odata_service']['login']['username'],// login
-            $this->manager->config['odata_service']['login']['password']// password
-        );
+        $this->auth = [
+            $this->manager->config['odata_service']['login']['username'], // login
+            $this->manager->config['odata_service']['login']['password'], // password
+        ];
     }
 
     public function get(string $uri)
     {
         try {
             $this->manager->stopwatch->start('ODS-get');
-            $res = $this->client->request('GET', $uri, array('auth' => $this->auth));
+            $res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
             $response = $res->getBody()->getContents();
             $stop = $this->manager->stopwatch->stop('ODS-get');
             $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, null, $response, $stop);
+
             return $this->getValuesFromResponse($response);
         } catch (ClientException $e) {
             $stop = $this->manager->stopwatch->stop('ODS-get');
             $response = $e->getResponse()->getBody()->getContents();
             $this->manager->addToCollectedData('ods', $e->getResponse()->getStatusCode(), $uri, null, $response, $stop);
-            if ($e->getCode() == 404) {
+            if (404 == $e->getCode()) {
                 $this->manager->logger->info($e->getResponse()->getBody()->getContents());
 
                 return null;
             } else {
                 $this->manager->logger->error($e->getResponse()->getBody()->getContents());
-                throw new \Exception("Unknown error while launching GET request");
+                throw new \Exception('Unknown error while launching GET request');
             }
         } catch (ConnectException $e) {
             $this->manager->stopwatch->stop('ODS-get');
             $this->manager->logger->error($e->getMessage());
-            throw new \Exception("Connection error, check if config is OK, or if some needed VPN is on.");
+            throw new \Exception('Connection error, check if config is OK, or if some needed VPN is on.');
         }
     }
 
@@ -80,9 +79,9 @@ class OdataRestClient implements RestClientInterface
     public function getValuesFromResponse($response)
     {
         $ar = json_decode($response, true);
-        if (json_last_error() != 0) {
+        if (0 != json_last_error()) {
             $this->manager->logger->error(substr(0, 255, $response));
-            throw new \Exception("Error while parsing response");
+            throw new \Exception('Error while parsing response');
         }
         if (is_int($ar)) {
             return $ar;
