@@ -65,7 +65,11 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
             ->scalarNode('app_namespace')
-            ->defaultValue('AppBundle')
+            ->defaultValue('App')
+            ->end()
+            ->enumNode('metadata_format')
+            ->values(['annotations', 'yaml'])
+            ->defaultValue('annotations')
             ->end()
             ->end();
 

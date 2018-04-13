@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\RestClient;
-
 
 use W3com\BoomBundle\Service\BoomManager;
 

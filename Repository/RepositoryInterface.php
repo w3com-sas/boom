@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\Repository;
-
 
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 

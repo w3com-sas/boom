@@ -1,8 +1,6 @@
 <?php
 
-
 namespace W3com\BoomBundle\DataCollector;
-
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +16,7 @@ class HanaDataCollector extends DataCollector
 
     /**
      * HanaDataCollector constructor.
+     *
      * @param BoomManager $manager
      */
     public function __construct(BoomManager $manager)
@@ -45,7 +44,6 @@ class HanaDataCollector extends DataCollector
     {
         return $this->data;
     }
-
 
     public function reset()
     {
