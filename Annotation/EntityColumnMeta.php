@@ -17,6 +17,11 @@ class EntityColumnMeta extends Annotation
      */
     public $column;
 
+    /**
+     * @var string
+     */
+    public $readColumn;
+
     /** @var bool */
     public $isKey = false;
 

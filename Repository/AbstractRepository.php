@@ -235,13 +235,7 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         /** @var AbstractEntity $obj */
         $obj = new $this->className();
-        foreach ($this->columns as $attribute => $column) {
-            if (array_key_exists($column['column'], $array)) {
-                $obj->hydrate($attribute, $array[$column['column']]);
-            }
-        }
-
-        return $obj;
+        return $this->rehydrate($obj, $array);
     }
 
     public function rehydrate(AbstractEntity $obj, $array)
@@ -249,6 +243,8 @@ abstract class AbstractRepository implements RepositoryInterface
         foreach ($this->columns as $attribute => $column) {
             if (array_key_exists($column['column'], $array)) {
                 $obj->set($attribute, $array[$column['column']]);
+            } elseif (array_key_exists($column['readColumn'], $array)) {
+                $obj->set($attribute, $array[$column['readColumn']]);
             }
         }
 
