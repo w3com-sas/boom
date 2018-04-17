@@ -146,7 +146,7 @@ use W3com\BoomBundle\Annotation\EntityMeta;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 
 /**
- * @EntityMeta(read="sl", write="sl", aliasSl="U_W3C_TABLE", aliasOds="U_W3C_TABLE")
+ * @EntityMeta(read="ods", write="sl", aliasSl="U_W3C_TABLE", aliasOds="U_W3C_TABLE")
  */
 class MyTable extends AbstractEntity
 {
@@ -164,9 +164,18 @@ class MyTable extends AbstractEntity
 
     /**
      * @var string
-     * @EntityColumnMeta(column="U_W3C_FIELD")
+     * @EntityColumnMeta(column="U_W3C_FIELD", readOnly=true)
+     * This column is read-only, Boom will never try to update its value in SAP
      */
     protected $field;
+    
+    /**
+     * @var string
+     * @EntityColumnMeta(column="U_W3C_FIELD2", readColumn="Field2")
+     * This column will be read with Field2 but updated with U_W3C_FIELD2,
+     * it's useful when you read with ODS but write with SL
+     */
+    protected $field2;
 
     /**
      * @return int
