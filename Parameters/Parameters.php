@@ -114,7 +114,7 @@ class Parameters
         if (!array_key_exists($column, $this->columns)) {
             throw new \Exception('Cannot filter on unknown column '.$column);
         }
-        $columnHana = $this->columns[$column]['column'];
+        $columnHana = (array_key_exists('readColumn', $this->columns[$column])) ? $this->columns[$column]['readColumn'] : $this->columns[$column]['column'];
         $usingQuote = $this->columns[$column]['quotes'];
         $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator);
 
@@ -159,7 +159,7 @@ class Parameters
         if (count($this->select) > 0) {
             $select = [];
             foreach ($this->select as $item) {
-                $select[] = $this->columns[$item]['column'];
+                $select[] = (array_key_exists('readColumn', $this->columns[$item])) ? $this->columns[$item]['readColumn'] : $this->columns[$item]['column'];
             }
             $params[] = '$select='.implode(',', $select);
         }
@@ -186,7 +186,8 @@ class Parameters
         if (count($this->orderBy) > 0) {
             $orderBy = [];
             foreach ($this->orderBy as $col => $order) {
-                $orderBy[] = $this->columns[$col]['column'].' '.$order;
+                $colName = (array_key_exists('readColumn', $this->columns[$col])) ? $this->columns[$col]['readColumn'] : $this->columns[$col]['column'];
+                $orderBy[] = $colName.' '.$order;
             }
             $params[] = '$orderby='.implode(',', $orderBy);
         }
