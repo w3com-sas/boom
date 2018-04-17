@@ -235,21 +235,17 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         /** @var AbstractEntity $obj */
         $obj = new $this->className();
-        return $this->rehydrate($obj, $array);
-    }
-
-    public function rehydrate(AbstractEntity $obj, $array)
-    {
         foreach ($this->columns as $attribute => $column) {
             if (array_key_exists($column['column'], $array)) {
-                $obj->set($attribute, $array[$column['column']]);
+                $obj->set($attribute, $array[$column['column']], false);
             } elseif (array_key_exists($column['readColumn'], $array)) {
-                $obj->set($attribute, $array[$column['readColumn']]);
+                $obj->set($attribute, $array[$column['readColumn']], false);
             }
         }
 
         return $obj;
     }
+
 
     public function getEntityName()
     {

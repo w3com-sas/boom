@@ -8,10 +8,10 @@ class AbstractEntity
 {
     protected $changedFields = [];
 
-    public function set($field, $value)
+    public function set($field, $value, $registerAsChanged = true)
     {
         $this->$field = $value;
-        $this->changedFields[$field] = true;
+        $this->changedFields[$field] = $registerAsChanged;
 
         return $this;
     }
