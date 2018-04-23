@@ -339,7 +339,7 @@ $params
 ````php
 $object = new MyTable();
 $code = $repo->getNextCode();
-$object->setField('myValue')->setOtherField('someValue');
+$object->setCode($code)->setField('myValue')->setOtherField('someValue');
 $repo = $manager->getRepository('MyTable');
 $repo->add($object);
 ````
