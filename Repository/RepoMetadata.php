@@ -34,10 +34,22 @@ class RepoMetadata
     /**
      * @var string
      */
+    private $aliasRead;
+
+    /**
+     * @var string
+     */
+    private $aliasWrite;
+
+    /**
+     * @var string
+     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
+     */
     private $aliasSl;
 
     /**
      * @var string
+     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
      */
     private $aliasOds;
 
@@ -54,15 +66,17 @@ class RepoMetadata
     /**
      * RepoMetadata constructor.
      *
-     * @param string      $entityName
-     * @param string      $entityClassName
+     * @param string $entityName
+     * @param string $entityClassName
      * @param BoomManager $manager
-     * @param string      $read
-     * @param string      $write
-     * @param string      $aliasSl
-     * @param string      $aliasOds
-     * @param string      $key
-     * @param array       $columns
+     * @param string $read
+     * @param string $write
+     * @param string $aliasSl
+     * @param string $aliasOds
+     * @param string $key
+     * @param string $aliasRead
+     * @param string $aliasWrite
+     * @param array $columns
      */
     public function __construct(
         string $entityName,
@@ -70,9 +84,11 @@ class RepoMetadata
         BoomManager $manager,
         string $read,
         string $write,
-        string $aliasSl,
-        string $aliasOds,
+        string $aliasSl=null,
+        string $aliasOds=null,
         string $key,
+        string $aliasRead=null,
+        string $aliasWrite=null,
         array $columns
     ) {
         $this->entityName = $entityName;
@@ -80,6 +96,8 @@ class RepoMetadata
         $this->manager = $manager;
         $this->read = $read;
         $this->write = $write;
+        $this->aliasRead = $aliasRead;
+        $this->aliasWrite = $aliasWrite;
         $this->aliasSl = $aliasSl;
         $this->aliasOds = $aliasOds;
         $this->key = $key;
@@ -128,17 +146,27 @@ class RepoMetadata
 
     /**
      * @return string
+     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
      */
-    public function getAliasSl(): string
+    public function getAliasSl(): ?string
     {
+        @trigger_error(
+            'getAliasSL() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
+            E_USER_DEPRECATED
+        );
         return $this->aliasSl;
     }
 
     /**
      * @return string
+     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
      */
-    public function getAliasOds(): string
+    public function getAliasOds(): ?string
     {
+        @trigger_error(
+            'getAliasOds() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
+            E_USER_DEPRECATED
+        );
         return $this->aliasOds;
     }
 
@@ -156,5 +184,21 @@ class RepoMetadata
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAliasRead(): ?string
+    {
+        return $this->aliasRead;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAliasWrite(): ?string
+    {
+        return $this->aliasWrite;
     }
 }

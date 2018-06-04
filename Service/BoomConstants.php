@@ -6,4 +6,5 @@ class BoomConstants
 {
     const SL = 'sl';
     const ODS = 'ods';
+    const ODSL = 'odsl';
 }

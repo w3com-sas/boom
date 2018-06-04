@@ -273,6 +273,8 @@ class BoomManager
         $write = $annotation->write;
         $aliasSl = $annotation->aliasSl;
         $aliasOds = $annotation->aliasOds;
+        $aliasRead = $annotation->aliasRead;
+        $aliasWrite = $annotation->aliasWrite;
 
         $this->logger->info("Successfully read $entityName entity class");
 
@@ -285,6 +287,8 @@ class BoomManager
             $aliasSl,
             $aliasOds,
             $key,
+            $aliasRead,
+            $aliasWrite,
             $columns
         );
     }
