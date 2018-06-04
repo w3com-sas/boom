@@ -150,10 +150,13 @@ class RepoMetadata
      */
     public function getAliasSl(): ?string
     {
-        @trigger_error(
-            'getAliasSL() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
-            E_USER_DEPRECATED
-        );
+        if($this->aliasSl != null){
+            @trigger_error(
+                'getAliasSL() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
+                E_USER_DEPRECATED
+            );
+        }
+
         return $this->aliasSl;
     }
 
@@ -163,10 +166,13 @@ class RepoMetadata
      */
     public function getAliasOds(): ?string
     {
-        @trigger_error(
-            'getAliasOds() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
-            E_USER_DEPRECATED
-        );
+        if($this->aliasOds != null){
+            @trigger_error(
+                'getAliasOds() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
+                E_USER_DEPRECATED
+            );
+        }
+
         return $this->aliasOds;
     }
 
