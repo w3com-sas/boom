@@ -234,7 +234,7 @@ abstract class AbstractRepository implements RepositoryInterface
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = ($this->aliasWrite != null) ? $this->aliasWrite : $this->aliasSL;
-            $uri .= $uri."($quotes".$id."$quotes)";
+            $uri = $uri . "($quotes" . $id . "$quotes)";
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
