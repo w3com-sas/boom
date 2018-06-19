@@ -1,7 +1,7 @@
 # W3COM BOOM : Business One Object Manager
 
 This bundle provides a bridge between an SAP HANA database, via its Service Layer and OData Service connections.  
-Compatible with Symfony 3.3.* and 4.0.*.
+Compatible with Symfony 3.3.\*, 4.0.\* and 4.1.\*.
 
 ## Installation
 
@@ -32,7 +32,7 @@ Also add the dependency :
 
 #### Configure the bundle
 
-**❗️ Warning ❗️ ** the config is not the same if you use Symfony Flex. There is no automated Flex recipe since this is a private package.
+**❗️ Warning ❗️** the config is not the same if you use Symfony Flex. There is no automated Flex recipe since this is a private package.
 
 Not using Flex ? Add the following snippet to the `app/config/config.yml` file  
 Using Flex ? Add it to a new `config/packages/boom.yaml` file.
