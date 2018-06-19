@@ -43,18 +43,6 @@ class RepoMetadata
 
     /**
      * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    private $aliasSl;
-
-    /**
-     * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    private $aliasOds;
-
-    /**
-     * @var string
      */
     private $key;
 
@@ -71,8 +59,6 @@ class RepoMetadata
      * @param BoomManager $manager
      * @param string $read
      * @param string $write
-     * @param string $aliasSl
-     * @param string $aliasOds
      * @param string $key
      * @param string $aliasRead
      * @param string $aliasWrite
@@ -84,11 +70,9 @@ class RepoMetadata
         BoomManager $manager,
         string $read,
         string $write,
-        string $aliasSl=null,
-        string $aliasOds=null,
         string $key,
-        string $aliasRead=null,
-        string $aliasWrite=null,
+        string $aliasRead = null,
+        string $aliasWrite = null,
         array $columns
     ) {
         $this->entityName = $entityName;
@@ -98,8 +82,6 @@ class RepoMetadata
         $this->write = $write;
         $this->aliasRead = $aliasRead;
         $this->aliasWrite = $aliasWrite;
-        $this->aliasSl = $aliasSl;
-        $this->aliasOds = $aliasOds;
         $this->key = $key;
         $this->columns = $columns;
     }
@@ -142,38 +124,6 @@ class RepoMetadata
     public function getWrite(): string
     {
         return $this->write;
-    }
-
-    /**
-     * @return string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    public function getAliasSl(): ?string
-    {
-        if($this->aliasSl != null){
-            @trigger_error(
-                'getAliasSL() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
-                E_USER_DEPRECATED
-            );
-        }
-
-        return $this->aliasSl;
-    }
-
-    /**
-     * @return string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    public function getAliasOds(): ?string
-    {
-        if($this->aliasOds != null){
-            @trigger_error(
-                'getAliasOds() is deprecated since BOOM version 0.4 and will be removed in 1.0. Use getAliasRead and getAliasWrite().',
-                E_USER_DEPRECATED
-            );
-        }
-
-        return $this->aliasOds;
     }
 
     /**

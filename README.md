@@ -25,14 +25,14 @@ Also add the dependency :
 ```json
 {
 "require": {
-        "w3com-sas/boom": "^0.3"
+        "w3com-sas/boom": "^1.0"
     }
 }
 ```
 
 #### Configure the bundle
 
-**Warning :** the config is not the same if you use Symfony Flex. There is no automated Flex recipe since this is a private package.
+**❗️ Warning ❗️ ** the config is not the same if you use Symfony Flex. There is no automated Flex recipe since this is a private package.
 
 Not using Flex ? Add the following snippet to the `app/config/config.yml` file  
 Using Flex ? Add it to a new `config/packages/boom.yaml` file.
@@ -146,7 +146,7 @@ use W3com\BoomBundle\Annotation\EntityMeta;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 
 /**
- * @EntityMeta(read="ods", write="sl", aliasSl="U_W3C_TABLE", aliasOds="U_W3C_TABLE")
+ * @EntityMeta(read="ods", write="sl", aliasRead="U_W3C_TABLE", aliasWrite="U_W3C_TABLE")
  */
 class MyTable extends AbstractEntity
 {
@@ -230,7 +230,7 @@ class MyTableRepository extends AbstractRepository
 
 #### Get the manager
 
-Use Symfony autowiring to retreive the manager :
+Use Symfony autowiring to retrieve the manager :
 
 ````php
 use W3com\BoomBundle\Service\BoomManager;
@@ -246,7 +246,7 @@ class DefaultController extends Controller
 
 #### Get the repo
 
-Now that you have retreived the manager, use it to get the repo for your entity.  
+Now that you have retrieved the manager, use it to get the repo for your entity.  
 You must type the namespace to your entity, minus the `App[Bundle]\HanaRepository` part :
 
 ````php
@@ -348,9 +348,8 @@ $repo->add($object);
 ````php
 $object->setField('myValue')->setOtherField('someValue');
 $repo = $manager->getRepository('MyTable');
-$repo->update($object, $object->getCode());
+$repo->update($object);
 `````
-❗️ The second argument of the `update()` method is the key property (usually `code`).
 
 ````php
 $key = $object->getCode() // or any method that gets the object key property

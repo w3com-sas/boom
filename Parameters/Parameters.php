@@ -99,10 +99,10 @@ class Parameters
     }
 
     /**
-     * @param string           $column
+     * @param string $column
      * @param int|string|array $value
-     * @param string           $operator
-     * @param string           $logicalOperator
+     * @param string $operator
+     * @param string $logicalOperator
      *
      * @return $this
      *

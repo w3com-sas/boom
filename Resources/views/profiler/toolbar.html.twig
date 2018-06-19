@@ -49,7 +49,12 @@
 
     {# the 'link' value set to 'false' means that this panel doesn't
        show a section in the web profiler #}
-    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
+    {% if collector.hasErrors %}
+        {% set status = 'red' %}
+    {% else %}
+        {% set status = 'normal' %}
+    {% endif %}
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true, status: status }) }}
 {% endblock %}
 
 {% block head %}
@@ -64,7 +69,7 @@
 
 {% block menu %}
     {# This left-hand menu appears when using the full-screen profiler. #}
-    <span class="label">
+    <span class="label {% if collector.hasErrors %} label-status-error{% endif %}">
         <span class="icon">
             <svg version="1.1" id="Calque_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
                  viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
@@ -87,6 +92,9 @@
             </svg>
         </span>
         <strong>BOOM</strong>
+        {% if collector.hasErrors %}
+            <span class="count"><span>{{ collector.countErrors }}</span></span>
+        {% endif %}
     </span>
 {% endblock %}
 
@@ -117,7 +125,7 @@
             {% set sommeDuration = 0 %}
             {% for line in collector.data %}
             {% set sommeDuration = sommeDuration+ line.duration %}
-            <tr>
+            <tr {% if line.code != 200 %}class="status-error"{% endif %}>
                 <td style="border-bottom: none">{{ loop.index }}</td>
                 <td class="font-normal no-word-break" style="border-bottom: none">
 
@@ -129,7 +137,8 @@
                         <small>
                             <ul>
                                 {% for param,value in line.parameters %}
-                                    <li style="margin-bottom: 0">{{ param }} : {% if value is iterable %}{{ dump(value) }}{% else %}{{ value }}{% endif %}</li>
+                                    <li style="margin-bottom: 0">{{ param }}
+                                        : {% if value is iterable %}{{ dump(value) }}{% else %}{{ value }}{% endif %}</li>
                                 {% endfor %}
                             </ul>
                         </small>
@@ -137,13 +146,13 @@
                 </td>
 
                 <td style="border-bottom: none">
-                    <a id="btn-in-{{ loop.index }}" class="btn btn-primary btn-sm" style="display: block;"
-                       onclick="showResponse({{ loop.index }})">Show response</a></li>
-                    <a id="btn-out-{{ loop.index }}" class="btn btn-secondary btn-sm"
+                    <a id="btn-in-{{ loop.index }}" class="btn btn-sm" style="display: block;"
+                       onclick="showResponse({{ loop.index }})">Show response</a>
+                    <a id="btn-out-{{ loop.index }}" class="btn btn-sm"
                        onclick="hideResponse({{ loop.index }})" style="display: none;">Hide Response</a>
                 </td>
             </tr>
-            <tr>
+            <tr {% if line.code != 200 %}class="status-error"{% endif %}>
                 <td colspan="3" style="border-top: none">
                     <div id="response-content-{{ loop.index }}" style="display:none;">
                         <hr style="border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);">

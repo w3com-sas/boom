@@ -66,8 +66,8 @@ class BoomManager
     /**
      * BoomManager constructor.
      *
-     * @param array          $config
-     * @param Logger         $logger
+     * @param array $config
+     * @param Logger $logger
      * @param Stopwatch|null $stopwatch
      *
      * @throws \Exception
@@ -84,7 +84,7 @@ class BoomManager
         $fs->mkdir($config['service_layer']['cookies_storage_path']);
 
         // creating the ODS client
-        $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'].'/odata');
+        $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'].'/odata', true);
         $client = new Client(
             [
                 'cookies' => $jar,
@@ -171,7 +171,7 @@ class BoomManager
 
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.$connection);
+            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.$connection, true);
             $client = new Client(
                 [
                     'cookies' => $jar,
@@ -271,8 +271,6 @@ class BoomManager
         }
         $read = $annotation->read;
         $write = $annotation->write;
-        $aliasSl = $annotation->aliasSl;
-        $aliasOds = $annotation->aliasOds;
         $aliasRead = $annotation->aliasRead;
         $aliasWrite = $annotation->aliasWrite;
 
@@ -284,8 +282,6 @@ class BoomManager
             $this,
             $read,
             $write,
-            $aliasSl,
-            $aliasOds,
             $key,
             $aliasRead,
             $aliasWrite,

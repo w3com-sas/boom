@@ -49,4 +49,25 @@ class HanaDataCollector extends DataCollector
     {
         $this->data = null;
     }
+
+    /**
+     * @return int
+     */
+    public function countErrors()
+    {
+        $errors = 0;
+        foreach ($this->data as $element)
+        {
+            if (array_key_exists('code', $element) && $element['code'] != 200) $errors++;
+        }
+        return $errors;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasErrors()
+    {
+        return $this->countErrors() > 0;
+    }
 }

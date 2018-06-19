@@ -22,24 +22,12 @@ class EntityMeta extends Annotation
 
     /**
      * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
      */
-    public $aliasSl=null;
-
-    /**
-     * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    public $aliasOds=null;
+    public $aliasRead = null;
 
     /**
      * @var string
      */
-    public $aliasRead=null;
-
-    /**
-     * @var string
-     */
-    public $aliasWrite=null;
+    public $aliasWrite = null;
 
 }

@@ -31,18 +31,6 @@ abstract class AbstractRepository implements RepositoryInterface
 
     /**
      * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    private $aliasSL;
-
-    /**
-     * @var string
-     * @deprecated since version 0.4, to be removed in 1.0. Use aliasRead and aliasWrite instead.
-     */
-    private $aliasODS;
-
-    /**
-     * @var string
      */
     private $aliasRead;
 
@@ -78,19 +66,24 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->manager = $metadata->getManager();
         $this->read = $metadata->getRead();
         $this->write = $metadata->getWrite();
-        $this->aliasSL = $metadata->getAliasSl();
-        $this->aliasODS = $metadata->getAliasOds();
         $this->aliasRead = $metadata->getAliasRead();
         $this->aliasWrite = $metadata->getAliasWrite();
         $this->key = $metadata->getKey();
         $this->columns = $metadata->getColumns();
     }
 
+    /**
+     * Finds one object in SAP
+     *
+     * @param $id
+     * @return null|AbstractEntity
+     * @throws \Exception
+     */
     public function find($id)
     {
         if (BoomConstants::SL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasSL;
+            $uri = $this->aliasRead;
             $uri .= "($quotes".$id."$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
@@ -100,7 +93,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasODS;
+            $uri = $this->aliasRead;
             $uri .= "($quotes".$id."$quotes)";
             $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
@@ -114,10 +107,17 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->hydrate($res);
     }
 
+    /**
+     * Search for objects in SAP
+     *
+     * @param Parameters|null $params
+     * @return array
+     * @throws \Exception
+     */
     public function findAll(Parameters $params = null)
     {
         if (BoomConstants::SL == $this->read) {
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasSL;
+            $uri = $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
@@ -125,7 +125,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasODS;
+            $uri = $this->aliasRead;
             if (null === $params) {
                 $params = $this->createParams();
             }
@@ -143,56 +143,16 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
+     * Deletes an object from SAP
+     *
+     * @param $id
+     * @throws \Exception
      */
-    /*
-    public function findBy(array $criteria)
-    {
-        @trigger_error(
-            'findBy() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
-            E_USER_DEPRECATED
-        );
-    }
-    */
-
-    /**
-     * @deprecated since version 0.2.3, to be removed in 0.3. Use findAll() and parameters instead.
-     */
-    public function findByEquals(Parameters $params = null)
-    {
-        @trigger_error(
-            'findByEquals() is deprecated since BOOM version 0.2.3 and will be removed in 0.3. Use findAll() and parameters instead.',
-            E_USER_DEPRECATED
-        );
-        /*
-        if (BoomConstants::SL == $this->read) {
-            $uri = $this->aliasSL;
-            $uri .= (null == $params) ? '' : $params->getParameters();
-            $res = $this->manager->restClients['sl']->get($uri);
-        } elseif (BoomConstants::ODS == $this->read) {
-            $uri = $this->aliasODS;
-            if (null === $params) {
-                $params = $this->createParams();
-            }
-            $uri .= $params->setFormat('json')->getParameters();
-            $res = $this->manager->restClients['odata']->get($uri);
-        } else {
-            throw new \Exception('Unknown entity READ method');
-        }
-        $ret = [];
-        foreach ($res as $array) {
-            $ret[] = $this->hydrate($array);
-        }
-
-        return $ret;
-        */
-    }
-
     public function delete($id)
     {
         if (BoomConstants::SL == $this->write) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = ($this->aliasWrite != null) ? $this->aliasWrite : $this->aliasSL;
+            $uri = $this->aliasWrite;
 
             $res = $this->manager->restClients['sl']->delete($uri."($quotes".$id."$quotes)");
         } elseif (BoomConstants::ODS == $this->read) {
@@ -201,10 +161,16 @@ abstract class AbstractRepository implements RepositoryInterface
         }
     }
 
+    /**
+     * Counts objects in SAP
+     * @param Parameters|null $params
+     * @return mixed
+     * @throws \Exception
+     */
     public function count(Parameters $params = null)
     {
         if (BoomConstants::SL == $this->read) {
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasSL;
+            $uri = $this->aliasRead;
             $uri .= '/$count';
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
@@ -214,7 +180,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
-            $uri = ($this->aliasRead != null) ? $this->aliasRead : $this->aliasODS;
+            $uri = $this->aliasRead;
             $uri = $uri.'/$count';
             if (null === $params) {
                 $params = $this->createParams();
@@ -228,23 +194,42 @@ abstract class AbstractRepository implements RepositoryInterface
         return $res;
     }
 
-    public function update(AbstractEntity $entity, $id)
+    /**
+     * Updates an object
+     *
+     * @param AbstractEntity $entity
+     * @param mixed|null $id DEPRECATED
+     * @return AbstractEntity
+     * @throws \Exception
+     */
+    public function update(AbstractEntity $entity, $id = null)
     {
+        if ($id === null) {
+            $id = $entity->get($this->key);
+        } else {
+            @trigger_error(
+                'When updating an object with Boom, specifying the entity ID is useless since 1.0 and will be removed in 2.0. Remove the second argument.',
+                E_USER_DEPRECATED
+            );
+        }
         if (BoomConstants::SL == $this->write) {
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = ($this->aliasWrite != null) ? $this->aliasWrite : $this->aliasSL;
-            $uri = $uri . "($quotes" . $id . "$quotes)";
+            $uri = $this->aliasWrite;
+            $uri = $uri."($quotes".$id."$quotes)";
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
-                if ($this->columns[$field]['readOnly'] === false) {
+                if ($this->columns[$field]['readOnly'] === false && $value) {
                     // on exclut les column en readonly
                     $data[$this->columns[$field]['column']] = $entity->get($field);
                 }
             }
-            $res = $this->manager->restClients['sl']->patch($uri, $data);
-            $entity->hydrate('changedFields', []);
+            if (count($data) > 1) {
+                // il n'y a pas que l'ID dans $data, donc on update
+                $res = $this->manager->restClients['sl']->patch($uri, $data);
+                $entity->hydrate('changedFields', []);
+            }
 
             return $entity;
         } elseif (BoomConstants::ODS == $this->write) {
@@ -253,11 +238,17 @@ abstract class AbstractRepository implements RepositoryInterface
         }
     }
 
+    /**
+     * Adds a new object in SAP
+     *
+     * @param AbstractEntity $entity
+     * @return AbstractEntity
+     * @throws \Exception
+     */
     public function add(AbstractEntity $entity)
     {
         if (BoomConstants::SL == $this->write) {
-            $uri = ($this->aliasWrite != null) ? $this->aliasWrite : $this->aliasSL;
-            //$uri = $this->aliasSL;
+            $uri = $this->aliasWrite;
             $data = [];
             foreach ($entity->getChangedFields() as $field => $value) {
                 $data[$this->columns[$field]['column']] = $entity->get($field);
@@ -271,6 +262,10 @@ abstract class AbstractRepository implements RepositoryInterface
         }
     }
 
+    /**
+     * @param $array
+     * @return AbstractEntity
+     */
     public function hydrate($array)
     {
         /** @var AbstractEntity $obj */
@@ -286,17 +281,25 @@ abstract class AbstractRepository implements RepositoryInterface
         return $obj;
     }
 
-
+    /**
+     * @return string
+     */
     public function getEntityName()
     {
         return $this->entityName;
     }
 
+    /**
+     * @return string
+     */
     public function getClassName()
     {
         return $this->className;
     }
 
+    /**
+     * @return Parameters
+     */
     public function createParams()
     {
         return new Parameters($this->columns);
