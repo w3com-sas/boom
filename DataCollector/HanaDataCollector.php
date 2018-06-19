@@ -56,9 +56,11 @@ class HanaDataCollector extends DataCollector
     public function countErrors()
     {
         $errors = 0;
-        foreach ($this->data as $element)
-        {
-            if (array_key_exists('code', $element) && $element['code'] != 200) $errors++;
+        if (is_array($this->data) && count($this->data) > 0) {
+            foreach ($this->data as $element)
+            {
+                if (array_key_exists('code', $element) && $element['code'] != 200) $errors++;
+            }
         }
         return $errors;
     }
