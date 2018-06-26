@@ -59,7 +59,7 @@ class HanaDataCollector extends DataCollector
         if (is_array($this->data) && count($this->data) > 0) {
             foreach ($this->data as $element)
             {
-                if (array_key_exists('code', $element) && $element['code'] != 200) $errors++;
+                if (array_key_exists('code', $element) && in_array(substr($element['code'], 0, 1), ['4', '5'])) $errors++;
             }
         }
         return $errors;
