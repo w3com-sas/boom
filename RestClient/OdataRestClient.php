@@ -31,7 +31,19 @@ class OdataRestClient implements RestClientInterface
     {
         try {
             $this->manager->stopwatch->start('ODS-get');
-            $res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
+
+            // For the Hosted by SAP the parameters PageSize in b1s.conf is not accessible
+            // so we deactivate the pagination by pass the Prefer param in the header
+            $param = [
+                'auth' => $this->auth,
+                'headers' => [
+                    'Prefer' => 'odata.maxpagesize=0'
+                ]
+            ];
+
+            //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
+            $res = $this->client->request('GET', $uri, $param);
+
             $response = $res->getBody()->getContents();
             $stop = $this->manager->stopwatch->stop('ODS-get');
             $this->manager->addToCollectedData('ods', $res->getStatusCode(), $uri, null, $response, $stop);

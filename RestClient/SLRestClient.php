@@ -28,7 +28,16 @@ class SLRestClient implements RestClientInterface
             try {
                 ++$attempts;
                 $this->manager->stopwatch->start('SL-get');
-                $res = $client->request('GET', $uri);
+
+                // For the Hosted by SAP the parameters PageSize in b1s.conf is not accessible
+                // so we deactivate the pagination by pass the Prefer param in the header
+                $param = [
+                    'headers' => [
+                        'Prefer' => 'odata.maxpagesize=0'
+                    ]
+                ];
+
+                $res = $client->request('GET', $uri, $param);
                 $stop = $this->manager->stopwatch->stop('SL-get');
                 $response = $res->getBody()->getContents();
                 $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
