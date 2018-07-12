@@ -33,7 +33,7 @@ class SLRestClient implements RestClientInterface
                 // so we deactivate the pagination by pass the Prefer param in the header
                 $param = [
                     'headers' => [
-                        'Prefer' => 'odata.maxpagesize=0'
+                        'Prefer' => 'odata.maxpagesize=1000'
                     ]
                 ];
 
