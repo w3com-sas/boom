@@ -225,35 +225,41 @@ abstract class AbstractRepository implements RepositoryInterface
                     // on exclut les column en readonly
                     $data[$this->columns[$field]['column']] = $entity->get($field);
                 }   elseif ($this->columns[$field]['complexEntity'] !== null){
-                    // TODO get entity to get fields name
+
+
                     $complexEntity = $entity->get($field);
                     $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
 
+                    // Si l'objet à plusieurs complexType
 
-                    // If one to one or one to many
                     if (is_array($complexEntity)){
-                        foreach ($complexEntity as $complexEntiti){
 
+                        $complexEntities = $complexEntity;
+                        foreach ($complexEntities as $complexEntity){
+
+                            // Les complex type sont des objets JSON contenus dans un ARRAY
                             $complexData = [];
 
-                            foreach ($complexEntiti->getChangedFields() as $complexField => $val){
+                            foreach ($complexEntity->getChangedFields() as $complexField => $val){
                                 if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
                                     $complexClass->columns[$complexField]['complexEntity'] === null) {
-                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntiti->get($complexField);
+                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
                                 }
                             }
-                            // Si il y a des data on peut préparer l'envoie
+                            // Si il y a des data on peut préparer l'envoi, important car si on envoie
+                            // un array vide sap plante
                             if (count($complexData) > 0){
                                 $data[$this->columns[$field]['complexColumn']][] = $complexData;
                             }
                         }
 
                     } else {
+                        /**
+                         * @var AbstractEntity $complexEntity
+                         */
                         foreach ($complexEntity->getChangedFields() as $complexField => $val){
                             if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
                                 $complexClass->columns[$complexField]['complexEntity'] === null) {
-
-                                // on exclut les column en readonly
                                 $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
                             }
                         }
