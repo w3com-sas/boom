@@ -276,7 +276,7 @@ abstract class AbstractRepository implements RepositoryInterface
                 $obj->set($attribute, $array[$column['column']], false);
             } elseif (array_key_exists($column['readColumn'], $array)) {
                 $obj->set($attribute, $array[$column['readColumn']], false);
-            } elseif ($column['complexEntity'] != null) {
+            } elseif (array_key_exists($column['complexColumn'], $array)) {
                 $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
                 $obj->set($attribute, $complexEntity, false);
             }
