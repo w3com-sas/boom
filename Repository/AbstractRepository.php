@@ -84,17 +84,17 @@ abstract class AbstractRepository implements RepositoryInterface
         if (BoomConstants::SL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri .= "($quotes" . $id . "$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
+            $uri .= "($quotes" . $id . "$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri .= "($quotes" . $id . "$quotes)";
             $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
@@ -121,7 +121,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
@@ -154,7 +154,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasWrite;
 
-            $res = $this->manager->restClients['sl']->delete($uri."($quotes".$id."$quotes)");
+            $res = $this->manager->restClients['sl']->delete($uri . "($quotes" . $id . "$quotes)");
         } elseif (BoomConstants::ODS == $this->read) {
         } else {
             throw new \Exception('Unknown entity delete method');
@@ -175,13 +175,13 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= '/$count';
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasRead;
-            $uri = $uri.'/$count';
+            $uri = $uri . '/$count';
             if (null === $params) {
                 $params = $this->createParams();
             }
@@ -216,7 +216,7 @@ abstract class AbstractRepository implements RepositoryInterface
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasWrite;
-            $uri = $uri."($quotes".$id."$quotes)";
+            $uri = $uri . "($quotes" . $id . "$quotes)";
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
@@ -265,6 +265,7 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @param $array
      * @return AbstractEntity
+     * @throws \Exception
      */
     public function hydrate($array)
     {
@@ -275,10 +276,41 @@ abstract class AbstractRepository implements RepositoryInterface
                 $obj->set($attribute, $array[$column['column']], false);
             } elseif (array_key_exists($column['readColumn'], $array)) {
                 $obj->set($attribute, $array[$column['readColumn']], false);
+            } elseif ($column['complexEntity'] != null) {
+                $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
+                $obj->set($attribute, $complexEntity, false);
+            }
+        }
+        return $obj;
+    }
+
+    /**
+     * @param $array
+     * @param $complexEntity
+     * @return array
+     * @throws \Exception
+     */
+    public function hydrateComplexEntity($array, $complexEntity)
+    {
+        $complexObjs = [];
+        /** @var AbstractEntity $complexObj */
+        $complexClass = $this->manager->getRepository($complexEntity);
+        $obj = new $complexClass->className();
+
+        if (count($array) > 0){
+            foreach ($complexClass->columns as $attribute => $column) {
+                foreach ($array as $data){
+                    if (array_key_exists($column['column'], $data)) {
+                        $obj->set($attribute, $data[$column['column']], false);
+                    } elseif (array_key_exists($column['readColumn'], $data)) {
+                        $obj->set($attribute, $data[$column['readColumn']], false);
+                    }
+                }
             }
         }
 
-        return $obj;
+        $complexObjs[] = $obj;
+        return $complexObjs;
     }
 
     /**

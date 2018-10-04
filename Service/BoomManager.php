@@ -249,6 +249,8 @@ class BoomManager
                 $columns[$attribute->getName()] = [
                     'column' => $annotation->column,
                     'readColumn' => $annotation->readColumn,
+                    'complexColumn' => $annotation->complexColumn,
+                    'complexEntity' => $annotation->complexEntity,
                     'quotes' => $annotation->quotes,
                     'readOnly' => $annotation->readOnly,
                 ];

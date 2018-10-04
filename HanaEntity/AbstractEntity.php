@@ -31,6 +31,11 @@ class AbstractEntity
         return $this->changedFields;
     }
 
+    /**
+     * @return string
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws \ReflectionException
+     */
     public function getEntityJson()
     {
         $refl = new \ReflectionClass(get_class($this));
