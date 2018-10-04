@@ -34,6 +34,8 @@ class Parameters
 
     private $top = 0;
 
+    private $skip = 0;
+
     /**
      * Column names of the targeted entity.
      *
@@ -147,6 +149,13 @@ class Parameters
         return $this;
     }
 
+    public function setSkip($skip)
+    {
+        $this->skip = $skip;
+
+        return $this;
+    }
+
     /**
      * Returns the URL parameters string.
      *
@@ -198,6 +207,11 @@ class Parameters
         // gestion du top
         if ($this->top > 0) {
             $params[] = '$top='.$this->top;
+        }
+
+        // gestion du skip
+        if ($this->skip > 0) {
+            $params[] = '$skip='.$this->skip;
         }
 
         // génération de l'url
