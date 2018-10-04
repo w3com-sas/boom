@@ -168,7 +168,14 @@ class Parameters
         if (count($this->select) > 0) {
             $select = [];
             foreach ($this->select as $item) {
-                $select[] = (null !== $this->columns[$item]['readColumn']) ? $this->columns[$item]['readColumn'] : $this->columns[$item]['column'];
+                //$select[] = (null !== $this->columns[$item]['readColumn']) ? $this->columns[$item]['readColumn'] : $this->columns[$item]['column'];
+                if ($this->columns[$item]['readColumn'] !== null){
+                    $select[] = $this->columns[$item]['readColumn'];
+                } elseif ($this->columns[$item]['column'] !== null){
+                    $select[] = $this->columns[$item]['column'];
+                } elseif ($this->columns[$item]['complexColumn'] !== null){
+                    $select[] = $this->columns[$item]['complexColumn'];
+                }
             }
             $params[] = '$select='.implode(',', $select);
         }

@@ -220,9 +220,44 @@ abstract class AbstractRepository implements RepositoryInterface
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
-                if ($this->columns[$field]['readOnly'] === false && $value) {
+                if ($this->columns[$field]['readOnly'] === false && $value &&
+                    $this->columns[$field]['complexEntity'] === null) {
                     // on exclut les column en readonly
                     $data[$this->columns[$field]['column']] = $entity->get($field);
+                }   elseif ($this->columns[$field]['complexEntity'] !== null){
+                    // TODO get entity to get fields name
+                    $complexEntity = $entity->get($field);
+                    $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+
+
+                    // If one to one or one to many
+                    if (is_array($complexEntity)){
+                        foreach ($complexEntity as $complexEntiti){
+
+                            $complexData = [];
+
+                            foreach ($complexEntiti->getChangedFields() as $complexField => $val){
+                                if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                    $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntiti->get($complexField);
+                                }
+                            }
+                            // Si il y a des data on peut préparer l'envoie
+                            if (count($complexData) > 0){
+                                $data[$this->columns[$field]['complexColumn']][] = $complexData;
+                            }
+                        }
+
+                    } else {
+                        foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                            if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                $complexClass->columns[$complexField]['complexEntity'] === null) {
+
+                                // on exclut les column en readonly
+                                $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                            }
+                        }
+                    }
                 }
             }
             if (count($data) > 1) {
