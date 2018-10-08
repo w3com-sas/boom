@@ -253,6 +253,7 @@ class BoomManager
                     'complexEntity' => $annotation->complexEntity,
                     'quotes' => $annotation->quotes,
                     'readOnly' => $annotation->readOnly,
+                    'ipName' => $annotation->ipName,
                 ];
                 if ($annotation->isKey) {
                     $key = $attribute->getName();
@@ -275,6 +276,7 @@ class BoomManager
         $write = $annotation->write;
         $aliasRead = $annotation->aliasRead;
         $aliasWrite = $annotation->aliasWrite;
+        $aliasSearch = $annotation->aliasSearch;
 
         $this->logger->info("Successfully read $entityName entity class");
 
@@ -287,6 +289,7 @@ class BoomManager
             $key,
             $aliasRead,
             $aliasWrite,
+            $aliasSearch,
             $columns
         );
     }

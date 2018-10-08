@@ -22,6 +22,8 @@ class Parameters
      */
     private $filter = [];
 
+    private $ipFilter = [];
+
     /**
      * @var string
      */
@@ -120,6 +122,11 @@ class Parameters
         $usingQuote = $this->columns[$column]['quotes'];
         $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator);
 
+        // managment of ip filter
+        if($this->columns[$column]['ipName'] != null){
+            $this->ipFilter[$columnHana] = $value;
+        }
+
         return $this;
     }
 
@@ -154,6 +161,23 @@ class Parameters
         $this->skip = $skip;
 
         return $this;
+    }
+
+    public function getIPFilter()
+    {
+        $arr = [];
+        if (count($this->columns) > 0){
+            foreach($this->columns as $column){
+                if($column['ipName'] != null){
+                    if(array_key_exists($column['column'],$this->ipFilter)){
+                        $arr[] = $column['ipName']."='".$this->ipFilter[$column['column']]."'";
+                    } else {
+                        $arr[] = $column['ipName']."='*'";
+                    }
+                }
+            }
+        }
+        return "(".implode($arr,',').")";
     }
 
     /**
