@@ -207,7 +207,8 @@ abstract class AbstractRepository implements RepositoryInterface
         $uri .= $this->createParams()->setFormat('json')->getParameters();
 
         $res = $this->manager->restClients['odata']->get($uri);
-        dump($res);
+
+        return $res;
     }
 
     /**
