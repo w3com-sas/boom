@@ -170,7 +170,8 @@ class Parameters
             foreach($this->columns as $column){
                 if($column['ipName'] != null){
                     if(array_key_exists($column['column'],$this->ipFilter)){
-                        $arr[] = $column['ipName']."='".$this->ipFilter[$column['column']]."'";
+                        $quotes = $column['quotes'] ? "'" : "";
+                        $arr[] = $column['ipName']."=".$quotes.$this->ipFilter[$column['column']].$quotes;
                     } else {
                         $arr[] = $column['ipName']."='*'";
                     }
