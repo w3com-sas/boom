@@ -208,7 +208,13 @@ abstract class AbstractRepository implements RepositoryInterface
 
         $res = $this->manager->restClients['odata']->get($uri);
 
-        return $res;
+        $ret = [];
+
+        foreach ($res as $array) {
+            $ret[] = $this->hydrate($array);
+        }
+
+        return $ret;
     }
 
     /**
