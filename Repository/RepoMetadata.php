@@ -44,6 +44,11 @@ class RepoMetadata
     /**
      * @var string
      */
+    private $aliasSearch;
+
+    /**
+     * @var string
+     */
     private $key;
 
     /**
@@ -62,6 +67,7 @@ class RepoMetadata
      * @param string $key
      * @param string $aliasRead
      * @param string $aliasWrite
+     * @param string $aliasSearch
      * @param array $columns
      */
     public function __construct(
@@ -73,6 +79,7 @@ class RepoMetadata
         string $key,
         string $aliasRead = null,
         string $aliasWrite = null,
+        string $aliasSearch = null,
         array $columns
     ) {
         $this->entityName = $entityName;
@@ -82,6 +89,7 @@ class RepoMetadata
         $this->write = $write;
         $this->aliasRead = $aliasRead;
         $this->aliasWrite = $aliasWrite;
+        $this->aliasSearch = $aliasSearch;
         $this->key = $key;
         $this->columns = $columns;
     }
@@ -156,5 +164,13 @@ class RepoMetadata
     public function getAliasWrite(): ?string
     {
         return $this->aliasWrite;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAliasSearch(): ?string
+    {
+        return $this->aliasSearch;
     }
 }

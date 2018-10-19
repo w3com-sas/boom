@@ -40,4 +40,7 @@ class EntityColumnMeta extends Annotation
 
     /** @var bool */
     public $readOnly = false;
+
+    /** @var string */
+    public $ipName;
 }

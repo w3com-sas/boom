@@ -42,6 +42,11 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @var string
      */
+    private $aliasSearch;
+
+    /**
+     * @var string
+     */
     private $className;
 
     /**
@@ -68,6 +73,7 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->write = $metadata->getWrite();
         $this->aliasRead = $metadata->getAliasRead();
         $this->aliasWrite = $metadata->getAliasWrite();
+        $this->aliasSearch = $metadata->getAliasSearch();
         $this->key = $metadata->getKey();
         $this->columns = $metadata->getColumns();
     }
@@ -135,6 +141,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw new \Exception('Unknown entity READ method');
         }
         $ret = [];
+
         foreach ($res as $array) {
             $ret[] = $this->hydrate($array);
         }
@@ -192,6 +199,22 @@ abstract class AbstractRepository implements RepositoryInterface
         }
 
         return $res;
+    }
+
+    public function search(Parameters $params = null)
+    {
+        $uri = $this->aliasSearch.$params->getIPFilter().'/Results';
+        $uri .= $this->createParams()->setFormat('json')->getParameters();
+
+        $res = $this->manager->restClients['odata']->get($uri);
+
+        $ret = [];
+
+        foreach ($res as $array) {
+            $ret[] = $this->hydrate($array);
+        }
+
+        return $ret;
     }
 
     /**

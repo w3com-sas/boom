@@ -30,4 +30,9 @@ class EntityMeta extends Annotation
      */
     public $aliasWrite = null;
 
+    /**
+     * @var string
+     */
+    public $aliasSearch = null;
+
 }

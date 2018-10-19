@@ -37,7 +37,7 @@ class OdataRestClient implements RestClientInterface
             $param = [
                 'auth' => $this->auth,
                 'headers' => [
-                    'Prefer' => 'odata.maxpagesize=1000'
+                    'Prefer' => 'odata.maxpagesize=100000'
                 ]
             ];
 
