@@ -292,10 +292,53 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $this->aliasWrite;
             $data = [];
             foreach ($entity->getChangedFields() as $field => $value) {
-                $data[$this->columns[$field]['column']] = $entity->get($field);
+                if ($this->columns[$field]['readOnly'] === false && $value &&
+                    $this->columns[$field]['complexEntity'] === null) {
+                    // on exclut les column en readonly
+                    $data[$this->columns[$field]['column']] = $entity->get($field);
+                }   elseif ($this->columns[$field]['complexEntity'] !== null){
+
+
+                    $complexEntity = $entity->get($field);
+                    $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+
+                    // Si l'objet à plusieurs complexType
+
+                    if (is_array($complexEntity)){
+
+                        $complexEntities = $complexEntity;
+                        foreach ($complexEntities as $complexEntity){
+
+                            // Les complex type sont des objets JSON contenus dans un ARRAY
+                            $complexData = [];
+
+                            foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                                if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                    $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                                }
+                            }
+                            // Si il y a des data on peut préparer l'envoi, important car si on envoie
+                            // un array vide sap plante
+                            if (count($complexData) > 0){
+                                $data[$this->columns[$field]['complexColumn']][] = $complexData;
+                            }
+                        }
+
+                    } else {
+                        /**
+                         * @var AbstractEntity $complexEntity
+                         */
+                        foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                            if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                            }
+                        }
+                    }
+                }
             }
             $res = $this->manager->restClients['sl']->post($uri, $data);
-
             return $this->hydrate($res);
         } elseif (BoomConstants::ODS == $this->write) {
         } else {
