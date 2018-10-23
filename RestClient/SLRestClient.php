@@ -5,6 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use Psr\Log\LoggerInterface;
 use W3com\BoomBundle\Service\BoomManager;
 
 class SLRestClient implements RestClientInterface
@@ -13,6 +14,7 @@ class SLRestClient implements RestClientInterface
      * @var BoomManager
      */
     private $manager;
+
 
     public function __construct(BoomManager $manager)
     {
@@ -109,12 +111,12 @@ class SLRestClient implements RestClientInterface
                         $response,
                         $stop
                     );
-                    $this->manager->logger->error($response);
+                    $this->manager->logger->error($response, [$data, $uri]);
                     throw new \Exception('Unknown error while launching POST request');
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-post');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
@@ -166,7 +168,7 @@ class SLRestClient implements RestClientInterface
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-patch');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
@@ -213,7 +215,7 @@ class SLRestClient implements RestClientInterface
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-delete');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
