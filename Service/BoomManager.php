@@ -171,7 +171,10 @@ class BoomManager
 
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.$connection, true);
+            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.
+                $connection.'_'.$this->config['service_layer']['connections'][$connection]['database'].'_'.
+                str_replace('\\','_',$this->config['service_layer']['connections'][$connection]['username']),
+                true);
             $client = new Client(
                 [
                     'cookies' => $jar,

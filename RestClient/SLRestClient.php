@@ -66,7 +66,7 @@ class SLRestClient implements RestClientInterface
                         return null;
                     } else {
                         $this->manager->logger->error($response);
-                        throw new \Exception('Unknown error while launching GET request');
+                        throw new \Exception('Unknown error while launching GET request : '.$e->getMessage().'('.$e->getCode().')');
                     }
                 }
             } catch (ConnectException $e) {
