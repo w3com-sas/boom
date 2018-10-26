@@ -109,6 +109,34 @@ class BoomManager
         return $this->collectedData;
     }
 
+    public function reloginToSL(){
+        $loginData = $this->config['service_layer']['connections'][$this->getCurrentConnection()];
+
+        try {
+            $res = $this->getCurrentClient()->post(
+                'Login',
+                [
+                    'json' => [
+                        'UserName' => $loginData['username'],
+                        'Password' => $loginData['password'],
+                        'CompanyDB' => $loginData['database'],
+                    ],
+                ]
+            );
+
+            return [
+                'valid' => true,
+                'data' => $res
+            ];
+        } catch (ClientException $e){
+            return [
+                'valid' => false,
+                'data' => $e
+            ];
+        }
+
+    }
+
     public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
     {
         $data = [
