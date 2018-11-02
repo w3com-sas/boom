@@ -49,6 +49,9 @@ class SLRestClient implements RestClientInterface
             } catch (ClientException $e) {
                 if (401 == $e->getCode()) {
                     $this->login();
+                } elseif(400 == $e->getCode()){
+                    $this->manager->logger->info($e->getCode().' - '.$e->getMessage().' : '.$uri);
+                    $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-get');
                     $response = $e->getResponse()->getBody()->getContents();
