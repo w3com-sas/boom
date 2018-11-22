@@ -184,9 +184,10 @@ class Parameters
     /**
      * Returns the URL parameters string.
      *
+     * @param bool $withFilter
      * @return string
      */
-    public function getParameters()
+    public function getParameters($withFilter = true)
     {
         $params = [];
         // gestion du select
@@ -206,7 +207,7 @@ class Parameters
         }
 
         // gestion du filter
-        if (count($this->filter) > 0 || '' != $this->rawFilter) {
+        if ($withFilter && (count($this->filter) > 0 || '' != $this->rawFilter)) {
             $filterAr = [];
             if (count($this->filter) > 0) {
                 $i = 0;

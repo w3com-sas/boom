@@ -92,7 +92,7 @@ class OdataRestClient implements RestClientInterface
     {
         $ar = json_decode($response, true);
         if (0 != json_last_error()) {
-            $this->manager->logger->error(substr(0, 255, $response));
+            $this->manager->logger->error(substr($response,0, 255));
             throw new \Exception('Error while parsing response');
         }
         if (is_int($ar)) {

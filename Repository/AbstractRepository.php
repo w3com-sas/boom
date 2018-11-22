@@ -204,7 +204,7 @@ abstract class AbstractRepository implements RepositoryInterface
     public function search(Parameters $params = null)
     {
         $uri = $this->aliasSearch.$params->getIPFilter().'/Results';
-        $uri .= $this->createParams()->setFormat('json')->getParameters();
+        $uri .= $params->setFormat('json')->getParameters(false);
 
         $res = $this->manager->restClients['odata']->get($uri);
 
