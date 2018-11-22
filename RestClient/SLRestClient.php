@@ -84,7 +84,6 @@ class SLRestClient implements RestClientInterface
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
-        file_put_contents($this->manager->config['service_layer']['cookies_storage_path'].'logPost.txt', $data);
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
