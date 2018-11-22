@@ -5,6 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use Psr\Log\LoggerInterface;
 use W3com\BoomBundle\Service\BoomManager;
 
 class SLRestClient implements RestClientInterface
@@ -13,6 +14,7 @@ class SLRestClient implements RestClientInterface
      * @var BoomManager
      */
     private $manager;
+
 
     public function __construct(BoomManager $manager)
     {
@@ -33,7 +35,8 @@ class SLRestClient implements RestClientInterface
                 // so we deactivate the pagination by pass the Prefer param in the header
                 $param = [
                     'headers' => [
-                        'Prefer' => 'odata.maxpagesize=1000'
+                        'Prefer' => 'odata.maxpagesize=10000',
+                        'cache-control' =>  'no-cache'
                     ]
                 ];
 
@@ -45,6 +48,9 @@ class SLRestClient implements RestClientInterface
                 return $this->getValuesFromResponse($response);
             } catch (ClientException $e) {
                 if (401 == $e->getCode()) {
+                    $this->login();
+                } elseif(400 == $e->getCode()){
+                    $this->manager->logger->info($e->getCode().' - '.$e->getMessage().' : '.$uri);
                     $this->login();
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-get');
@@ -63,7 +69,7 @@ class SLRestClient implements RestClientInterface
                         return null;
                     } else {
                         $this->manager->logger->error($response);
-                        throw new \Exception('Unknown error while launching GET request');
+                        throw new \Exception('Unknown error while launching GET request : '.$e->getMessage().'('.$e->getCode().')');
                     }
                 }
             } catch (ConnectException $e) {
@@ -78,7 +84,7 @@ class SLRestClient implements RestClientInterface
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
-
+        file_put_contents($this->manager->config['service_layer']['cookies_storage_path'].'logPost.txt', $data);
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -110,12 +116,12 @@ class SLRestClient implements RestClientInterface
                         $response,
                         $stop
                     );
-                    $this->manager->logger->error($response);
+                    $this->manager->logger->error($response, [$data, $uri]);
                     throw new \Exception('Unknown error while launching POST request');
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-post');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
@@ -167,7 +173,7 @@ class SLRestClient implements RestClientInterface
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-patch');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
@@ -214,7 +220,7 @@ class SLRestClient implements RestClientInterface
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-delete');
-                $this->manager->logger->error($e->getMessage());
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }

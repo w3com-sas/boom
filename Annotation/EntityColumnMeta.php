@@ -22,6 +22,16 @@ class EntityColumnMeta extends Annotation
      */
     public $readColumn;
 
+    /**
+     * @var string
+     */
+    public $complexColumn;
+
+    /**
+     * @var string
+     */
+    public $complexEntity;
+
     /** @var bool */
     public $isKey = false;
 
@@ -30,4 +40,7 @@ class EntityColumnMeta extends Annotation
 
     /** @var bool */
     public $readOnly = false;
+
+    /** @var string */
+    public $ipName;
 }

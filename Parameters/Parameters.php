@@ -22,6 +22,8 @@ class Parameters
      */
     private $filter = [];
 
+    private $ipFilter = [];
+
     /**
      * @var string
      */
@@ -33,6 +35,8 @@ class Parameters
     private $format = '';
 
     private $top = 0;
+
+    private $skip = 0;
 
     /**
      * Column names of the targeted entity.
@@ -118,6 +122,11 @@ class Parameters
         $usingQuote = $this->columns[$column]['quotes'];
         $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator);
 
+        // managment of ip filter
+        if($this->columns[$column]['ipName'] != null){
+            $this->ipFilter[$columnHana] = $value;
+        }
+
         return $this;
     }
 
@@ -147,6 +156,31 @@ class Parameters
         return $this;
     }
 
+    public function setSkip($skip)
+    {
+        $this->skip = $skip;
+
+        return $this;
+    }
+
+    public function getIPFilter()
+    {
+        $arr = [];
+        if (count($this->columns) > 0){
+            foreach($this->columns as $column){
+                if($column['ipName'] != null){
+                    if(array_key_exists($column['column'],$this->ipFilter)){
+                        $quotes = $column['quotes'] ? "'" : "";
+                        $arr[] = $column['ipName']."=".$quotes.$this->ipFilter[$column['column']].$quotes;
+                    } else {
+                        $arr[] = $column['ipName']."='*'";
+                    }
+                }
+            }
+        }
+        return "(".implode($arr,',').")";
+    }
+
     /**
      * Returns the URL parameters string.
      *
@@ -159,7 +193,14 @@ class Parameters
         if (count($this->select) > 0) {
             $select = [];
             foreach ($this->select as $item) {
-                $select[] = (null !== $this->columns[$item]['readColumn']) ? $this->columns[$item]['readColumn'] : $this->columns[$item]['column'];
+                //$select[] = (null !== $this->columns[$item]['readColumn']) ? $this->columns[$item]['readColumn'] : $this->columns[$item]['column'];
+                if ($this->columns[$item]['readColumn'] !== null){
+                    $select[] = $this->columns[$item]['readColumn'];
+                } elseif ($this->columns[$item]['column'] !== null){
+                    $select[] = $this->columns[$item]['column'];
+                } elseif ($this->columns[$item]['complexColumn'] !== null){
+                    $select[] = $this->columns[$item]['complexColumn'];
+                }
             }
             $params[] = '$select='.implode(',', $select);
         }
@@ -198,6 +239,11 @@ class Parameters
         // gestion du top
         if ($this->top > 0) {
             $params[] = '$top='.$this->top;
+        }
+
+        // gestion du skip
+        if ($this->skip > 0) {
+            $params[] = '$skip='.$this->skip;
         }
 
         // génération de l'url

@@ -42,6 +42,11 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @var string
      */
+    private $aliasSearch;
+
+    /**
+     * @var string
+     */
     private $className;
 
     /**
@@ -68,6 +73,7 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->write = $metadata->getWrite();
         $this->aliasRead = $metadata->getAliasRead();
         $this->aliasWrite = $metadata->getAliasWrite();
+        $this->aliasSearch = $metadata->getAliasSearch();
         $this->key = $metadata->getKey();
         $this->columns = $metadata->getColumns();
     }
@@ -84,17 +90,17 @@ abstract class AbstractRepository implements RepositoryInterface
         if (BoomConstants::SL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri .= "($quotes" . $id . "$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
+            $uri .= "($quotes" . $id . "$quotes)";
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasRead;
-            $uri .= "($quotes".$id."$quotes)";
+            $uri .= "($quotes" . $id . "$quotes)";
             $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
@@ -121,7 +127,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
@@ -135,6 +141,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw new \Exception('Unknown entity READ method');
         }
         $ret = [];
+
         foreach ($res as $array) {
             $ret[] = $this->hydrate($array);
         }
@@ -154,7 +161,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasWrite;
 
-            $res = $this->manager->restClients['sl']->delete($uri."($quotes".$id."$quotes)");
+            $res = $this->manager->restClients['sl']->delete($uri . "($quotes" . $id . "$quotes)");
         } elseif (BoomConstants::ODS == $this->read) {
         } else {
             throw new \Exception('Unknown entity delete method');
@@ -175,13 +182,13 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODSL == $this->read) {
-            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'].$this->aliasRead;
+            $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= '/$count';
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['sl']->get($uri);
         } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasRead;
-            $uri = $uri.'/$count';
+            $uri = $uri . '/$count';
             if (null === $params) {
                 $params = $this->createParams();
             }
@@ -192,6 +199,22 @@ abstract class AbstractRepository implements RepositoryInterface
         }
 
         return $res;
+    }
+
+    public function search(Parameters $params = null)
+    {
+        $uri = $this->aliasSearch.$params->getIPFilter().'/Results';
+        $uri .= $this->createParams()->setFormat('json')->getParameters();
+
+        $res = $this->manager->restClients['odata']->get($uri);
+
+        $ret = [];
+
+        foreach ($res as $array) {
+            $ret[] = $this->hydrate($array);
+        }
+
+        return $ret;
     }
 
     /**
@@ -216,13 +239,54 @@ abstract class AbstractRepository implements RepositoryInterface
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
             $uri = $this->aliasWrite;
-            $uri = $uri."($quotes".$id."$quotes)";
+            $uri = $uri . "($quotes" . $id . "$quotes)";
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
             foreach ($entity->getChangedFields() as $field => $value) {
-                if ($this->columns[$field]['readOnly'] === false && $value) {
+                if ($this->columns[$field]['readOnly'] === false && $value &&
+                    $this->columns[$field]['complexEntity'] === null) {
                     // on exclut les column en readonly
                     $data[$this->columns[$field]['column']] = $entity->get($field);
+                }   elseif ($this->columns[$field]['complexEntity'] !== null){
+
+
+                    $complexEntity = $entity->get($field);
+                    $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+
+                    // Si l'objet à plusieurs complexType
+
+                    if (is_array($complexEntity)){
+
+                        $complexEntities = $complexEntity;
+                        foreach ($complexEntities as $complexEntity){
+
+                            // Les complex type sont des objets JSON contenus dans un ARRAY
+                            $complexData = [];
+
+                            foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                                if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                    $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                                }
+                            }
+                            // Si il y a des data on peut préparer l'envoi, important car si on envoie
+                            // un array vide sap plante
+                            if (count($complexData) > 0){
+                                $data[$this->columns[$field]['complexColumn']][] = $complexData;
+                            }
+                        }
+
+                    } else {
+                        /**
+                         * @var AbstractEntity $complexEntity
+                         */
+                        foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                            if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                            }
+                        }
+                    }
                 }
             }
             if (count($data) > 1) {
@@ -251,10 +315,53 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $this->aliasWrite;
             $data = [];
             foreach ($entity->getChangedFields() as $field => $value) {
-                $data[$this->columns[$field]['column']] = $entity->get($field);
+                if ($this->columns[$field]['readOnly'] === false && $value &&
+                    $this->columns[$field]['complexEntity'] === null) {
+                    // on exclut les column en readonly
+                    $data[$this->columns[$field]['column']] = $entity->get($field);
+                }   elseif ($this->columns[$field]['complexEntity'] !== null){
+
+
+                    $complexEntity = $entity->get($field);
+                    $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+
+                    // Si l'objet à plusieurs complexType
+
+                    if (is_array($complexEntity)){
+
+                        $complexEntities = $complexEntity;
+                        foreach ($complexEntities as $complexEntity){
+
+                            // Les complex type sont des objets JSON contenus dans un ARRAY
+                            $complexData = [];
+
+                            foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                                if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                    $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                    $complexData[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                                }
+                            }
+                            // Si il y a des data on peut préparer l'envoi, important car si on envoie
+                            // un array vide sap plante
+                            if (count($complexData) > 0){
+                                $data[$this->columns[$field]['complexColumn']][] = $complexData;
+                            }
+                        }
+
+                    } else {
+                        /**
+                         * @var AbstractEntity $complexEntity
+                         */
+                        foreach ($complexEntity->getChangedFields() as $complexField => $val){
+                            if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
+                                $complexClass->columns[$complexField]['complexEntity'] === null) {
+                                $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                            }
+                        }
+                    }
+                }
             }
             $res = $this->manager->restClients['sl']->post($uri, $data);
-
             return $this->hydrate($res);
         } elseif (BoomConstants::ODS == $this->write) {
         } else {
@@ -265,6 +372,7 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @param $array
      * @return AbstractEntity
+     * @throws \Exception
      */
     public function hydrate($array)
     {
@@ -275,10 +383,41 @@ abstract class AbstractRepository implements RepositoryInterface
                 $obj->set($attribute, $array[$column['column']], false);
             } elseif (array_key_exists($column['readColumn'], $array)) {
                 $obj->set($attribute, $array[$column['readColumn']], false);
+            } elseif (array_key_exists($column['complexColumn'], $array)) {
+                $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
+                $obj->set($attribute, $complexEntity, false);
+            }
+        }
+        return $obj;
+    }
+
+    /**
+     * @param $array
+     * @param $complexEntity
+     * @return array
+     * @throws \Exception
+     */
+    public function hydrateComplexEntity($array, $complexEntity)
+    {
+        $complexObjs = [];
+        /** @var AbstractEntity $complexObj */
+        $complexClass = $this->manager->getRepository($complexEntity);
+        $obj = new $complexClass->className();
+
+        if (count($array) > 0){
+            foreach ($complexClass->columns as $attribute => $column) {
+                foreach ($array as $data){
+                    if (array_key_exists($column['column'], $data)) {
+                        $obj->set($attribute, $data[$column['column']], false);
+                    } elseif (array_key_exists($column['readColumn'], $data)) {
+                        $obj->set($attribute, $data[$column['readColumn']], false);
+                    }
+                }
             }
         }
 
-        return $obj;
+        $complexObjs[] = $obj;
+        return $complexObjs;
     }
 
     /**

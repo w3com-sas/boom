@@ -109,6 +109,34 @@ class BoomManager
         return $this->collectedData;
     }
 
+    public function reloginToSL(){
+        $loginData = $this->config['service_layer']['connections'][$this->getCurrentConnection()];
+
+        try {
+            $res = $this->getCurrentClient()->post(
+                'Login',
+                [
+                    'json' => [
+                        'UserName' => $loginData['username'],
+                        'Password' => $loginData['password'],
+                        'CompanyDB' => $loginData['database'],
+                    ],
+                ]
+            );
+
+            return [
+                'valid' => true,
+                'data' => $res
+            ];
+        } catch (ClientException $e){
+            return [
+                'valid' => false,
+                'data' => $e
+            ];
+        }
+
+    }
+
     public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
     {
         $data = [
@@ -171,7 +199,10 @@ class BoomManager
 
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.$connection, true);
+            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.
+                $connection.'_'.$this->config['service_layer']['connections'][$connection]['database'].'_'.
+                str_replace('\\','_',$this->config['service_layer']['connections'][$connection]['username']),
+                true);
             $client = new Client(
                 [
                     'cookies' => $jar,
@@ -249,8 +280,11 @@ class BoomManager
                 $columns[$attribute->getName()] = [
                     'column' => $annotation->column,
                     'readColumn' => $annotation->readColumn,
+                    'complexColumn' => $annotation->complexColumn,
+                    'complexEntity' => $annotation->complexEntity,
                     'quotes' => $annotation->quotes,
                     'readOnly' => $annotation->readOnly,
+                    'ipName' => $annotation->ipName,
                 ];
                 if ($annotation->isKey) {
                     $key = $attribute->getName();
@@ -273,6 +307,7 @@ class BoomManager
         $write = $annotation->write;
         $aliasRead = $annotation->aliasRead;
         $aliasWrite = $annotation->aliasWrite;
+        $aliasSearch = $annotation->aliasSearch;
 
         $this->logger->info("Successfully read $entityName entity class");
 
@@ -285,6 +320,7 @@ class BoomManager
             $key,
             $aliasRead,
             $aliasWrite,
+            $aliasSearch,
             $columns
         );
     }
