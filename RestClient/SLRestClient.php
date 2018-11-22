@@ -78,6 +78,7 @@ class SLRestClient implements RestClientInterface
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
+
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
