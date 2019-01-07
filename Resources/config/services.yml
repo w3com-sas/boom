@@ -2,23 +2,23 @@ services:
 
   W3com\BoomBundle\Service\BoomManager:
     arguments:
-      - '%boom.config%'
-      - '@logger'
-      - '@debug.stopwatch'
+       - '%boom.config%'
+       - '@logger'
+       - '@debug.stopwatch'
     tags:
       - { name: monolog.logger.generator, channel: hana }
     public: true
 
-    W3com\BoomBundle\DataCollector\HanaDataCollector:
-      arguments:
-        - '@W3com\BoomBundle\Service\BoomManager'
-      tags:
-        - { name: data_collector, template: '@W3comBoom/profiler/toolbar.html.twig', id: 'boom.hana_collector'}
-      public: true
+  W3com\BoomBundle\DataCollector\HanaDataCollector:
+    arguments:
+      - '@W3com\BoomBundle\Service\BoomManager'
+    tags:
+      - { name: data_collector, template: '@W3comBoom/profiler/toolbar.html.twig', id: 'boom.hana_collector'}
+    public: true
 
-    W3com\BoomBundle\Command\TextCommand:
-      tags:
-        - { name: 'console.command', command: 'boom:text-command'}
+  W3com\BoomBundle\Command\TextCommand:
+    tags:
+       - { name: 'console.command', command: 'boom:text-command'}
     #W3com\BoomBundle\Command\UpdateViewCommand:
      # arguments:
       #  - '@W3com\BoomBundle\Service\BoomManager'
