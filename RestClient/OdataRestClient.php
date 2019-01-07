@@ -4,10 +4,13 @@ namespace W3com\BoomBundle\RestClient;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
 class OdataRestClient implements RestClientInterface
 {
+
+    const ODS_METADATA_URI = '$metadata';
     /**
      * @var BoomManager
      */
@@ -17,6 +20,8 @@ class OdataRestClient implements RestClientInterface
 
     private $auth;
 
+    private $xmlEncoder;
+
     public function __construct(BoomManager $manager)
     {
         $this->manager = $manager;
@@ -25,6 +30,7 @@ class OdataRestClient implements RestClientInterface
             $this->manager->config['odata_service']['login']['username'], // login
             $this->manager->config['odata_service']['login']['password'], // password
         ];
+        $this->xmlEncoder = new XmlEncoder();
     }
 
     public function get(string $uri)
@@ -68,6 +74,28 @@ class OdataRestClient implements RestClientInterface
         }
     }
 
+    public function getOdsViewMetadata()
+    {
+        $param = [
+            'auth' => $this->auth,
+            'headers' => [
+                'Prefer' => 'odata.maxpagesize=100000'
+            ]
+        ];
+
+        $this->manager->stopwatch->start('ODS-get');
+
+        //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
+        $res = $this->client->request('GET', $this::ODS_METADATA_URI, $param);
+
+        $response = $res->getBody()->getContents();
+        $stop = $this->manager->stopwatch->stop('ODS-get');
+        $this->manager->addToCollectedData('ods', $res->getStatusCode(), $this::ODS_METADATA_URI,
+            null, $response, $stop);
+
+        return $this->getValuesFromXmlResponse($response);
+    }
+
     public function post(string $uri, $data)
     {
         // TODO: Implement post() method.
@@ -92,7 +120,7 @@ class OdataRestClient implements RestClientInterface
     {
         $ar = json_decode($response, true);
         if (0 != json_last_error()) {
-            $this->manager->logger->error(substr($response,0, 255));
+            $this->manager->logger->error(substr($response, 0, 255));
             throw new \Exception('Error while parsing response');
         }
         if (is_int($ar)) {
@@ -107,5 +135,10 @@ class OdataRestClient implements RestClientInterface
         }
 
         return $ar;
+    }
+
+    public function getValuesFromXmlResponse($response)
+    {
+        return $this->xmlEncoder->decode($response, 'array');
     }
 }

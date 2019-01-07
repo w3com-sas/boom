@@ -19,10 +19,10 @@ services:
   W3com\BoomBundle\Command\TextCommand:
     tags:
       - { name: 'console.command', command: 'boom:text-command'}
-      #W3com\BoomBundle\Command\UpdateViewCommand:
-      # arguments:
-      #  - '@W3com\BoomBundle\Service\BoomManager'
-      #tags:
-      # - [ name: 'console.command', command: 'boom:update-view' ]
-      #public: true
+
+  W3com\BoomBundle\Command\UpdateViewCommand:
+    arguments:
+      - '@W3com\BoomBundle\Service\BoomManager'
+    tags:
+      - [ name: 'console.command', command: 'boom:update-view' ]
 

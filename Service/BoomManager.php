@@ -10,6 +10,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
+use W3com\BoomBundle\Generator\BoomGenerator;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\Repository\RepoMetadata;
@@ -49,6 +50,11 @@ class BoomManager
     private $reader;
 
     /**
+     * @var BoomGenerator
+     */
+    private $generator;
+
+    /**
      * @var Logger linked to 'hana' channel
      */
     public $logger;
@@ -69,8 +75,8 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
-     *
-     * @throws \Exception
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws \ReflectionException
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch)
     {
@@ -102,6 +108,7 @@ class BoomManager
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this);
         $this->restClients['odata'] = $odataRestClient;
+        $this->generator = new BoomGenerator($this);
     }
 
     public function getCollectedData()
@@ -336,5 +343,13 @@ class BoomManager
     private function getYamlMetadata($entityClassName, $entityName)
     {
         return $this->getAnnotationMetadata($entityClassName, $entityName);
+    }
+
+    /**
+     * @return BoomGenerator
+     */
+    public function getGenerator()
+    {
+        return $this->generator;
     }
 }
