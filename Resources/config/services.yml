@@ -2,9 +2,9 @@ services:
 
   W3com\BoomBundle\Service\BoomManager:
     arguments:
-       - '%boom.config%'
-       - '@logger'
-       - '@debug.stopwatch'
+      - '%boom.config%'
+      - '@logger'
+      - '@debug.stopwatch'
     tags:
       - { name: monolog.logger.generator, channel: hana }
     public: true
@@ -18,11 +18,11 @@ services:
 
   W3com\BoomBundle\Command\TextCommand:
     tags:
-       - { name: 'console.command', command: 'boom:text-command'}
-    #W3com\BoomBundle\Command\UpdateViewCommand:
-     # arguments:
+      - { name: 'console.command', command: 'boom:text-command'}
+      #W3com\BoomBundle\Command\UpdateViewCommand:
+      # arguments:
       #  - '@W3com\BoomBundle\Service\BoomManager'
       #tags:
-       # - [ name: 'console.command', command: 'boom:update-view' ]
+      # - [ name: 'console.command', command: 'boom:update-view' ]
       #public: true
 
