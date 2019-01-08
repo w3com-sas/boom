@@ -90,7 +90,7 @@ class OdsInspector
 
             switch ($metadatum) {
                 case $this::NAME_ENTITY_PROPERTY:
-                    $entity->setName($value);
+                    $entity->setName(Entity::formatTableName($value));
                     $entity->setTable(str_replace('Type', '', $value));
                     break;
                 case $this::NAME_PROPERTY:

@@ -12,7 +12,9 @@ class EntityComparator
 
     private $odsEntities;
 
-    private $toUpdateEntity;
+    private $toUpdateEntities;
+
+    private $toCreateEntity;
 
     private $missingFieldsAmount = 0;
 
@@ -42,7 +44,7 @@ class EntityComparator
 
     public function getToUpdateEntities()
     {
-        return $this->toUpdateEntity;
+        return $this->toUpdateEntities;
     }
 
     private function findCommonToUpdate()
@@ -60,7 +62,7 @@ class EntityComparator
                 $this->missingFieldsAmount += count($entity->getProperties()) - count(
                         $arAppEntities[$table]->getProperties()
                     );
-                $this->toUpdateEntity[] = $entity;
+                $this->toUpdateEntities[] = $entity;
             }
         }
     }

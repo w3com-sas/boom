@@ -52,6 +52,7 @@ class UpdateViewCommand extends Command
 
             try {
                 $this->generator->createViewSchema();
+                $this->generator->updateViewSchema();
             } catch (\Exception $e) {
                 $output->write('<error>' . $e->getMessage() . '</error>', $e->getTraceAsString());
                 die();

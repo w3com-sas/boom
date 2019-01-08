@@ -18,6 +18,25 @@ class Entity
 
     private $key;
 
+    public static function formatTableName($name)
+    {
+        if (substr($name, -4) === 'Type') {
+
+            $name = substr($name, 0, strlen($name) - 4);
+
+            if (substr($name, -5) === 'Query') {
+
+
+                return substr($name, 0, strlen($name) -5);
+            }
+        } elseif (substr($name, -5) == 'Query') {
+
+            return substr($name, 0, strlen($name) -5);
+        }
+
+        return $name;
+    }
+
     /**
      * @return mixed
      */
@@ -47,7 +66,7 @@ class Entity
      */
     public function setProperty(Property $property)
     {
-        if ($property->getType() == Property::TYPE_ODS){
+        if ($property->getType() == Property::TYPE_ODS) {
             if ($property->getField() == $this->getKey()) {
                 $property->setIsKey(true);
             } else {
@@ -71,7 +90,7 @@ class Entity
      */
     public function setKey($propertyRef)
     {
-        if (is_array($propertyRef)){
+        if (is_array($propertyRef)) {
             foreach ($propertyRef as $property => $value) {
                 if ($property == OdsInspector::NAME_ENTITY_PROPERTY) {
                     $this->key = $value;
