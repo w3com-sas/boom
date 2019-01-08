@@ -57,6 +57,17 @@ class BoomGenerator
 
     }
 
+    /**
+     * @param $calcViewName
+     * @T
+     */
+    public function createViewEntity($calcViewName)
+    {
+        $entity = $this->odsInspector->getOdsEntity($calcViewName);
+        $phpClass = $this->classCreator->generateClass($entity);
+        file_put_contents($this->manager->config['entity_directory'].'/'
+        .$entity->getName().'.php', $phpClass);
+    }
 
     public function createViewSchema()
     {
@@ -98,6 +109,14 @@ class BoomGenerator
         }
 
         return $this->messages;
+    }
+
+    /**
+     * @return OdsInspector
+     */
+    public function getOdsInspector(): OdsInspector
+    {
+        return $this->odsInspector;
     }
 
 

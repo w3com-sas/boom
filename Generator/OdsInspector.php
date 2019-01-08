@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Generator;
 
+use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
@@ -41,10 +42,12 @@ class OdsInspector
     {
         /** @var Entity $entity */
         foreach ($this->entities as $entity) {
-            if ($entity->getName() === $name) {
+            if ($entity->getTable() === $name) {
                 return $entity;
             }
         }
+        throw new NotFoundResourceException('Unable to find "'.$name.
+        '" calculation view in services.xsodata ');
     }
 
     public function getOdsEntities()

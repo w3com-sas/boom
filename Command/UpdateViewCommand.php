@@ -3,14 +3,20 @@
 namespace W3com\BoomBundle\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Translation\Exception\NotFoundResourceException;
+use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Service\BoomManager;
 
 class UpdateViewCommand extends Command
 {
+    private $createdEntities = [];
+
+    private $odsEntities = [];
+
     private $generator;
 
     public function __construct(BoomManager $manager)
@@ -24,41 +30,58 @@ class UpdateViewCommand extends Command
 
         $this
             ->setName('boom:update-view')
-            ->setDescription('Update schema with calculation view metadata.')
-            ->setHelp('In first time the command check and return difference between 
-            current project schema and ODS metadata. When the argument "--force" is 
-            added, the generator update current schema, same as Doctrine.')
-            ->addOption(
-                'force',
-                null,
+            ->setDescription('Update schema, user select calculation that he wants.')
+            ->setHelp('If no arguments are provided, the command return list of 
+            calculation views in services.xsodata, else, command create views provided
+            in argument, the separator is an escape.')
+            ->addArgument(
+                'entity',
                 InputOption::VALUE_OPTIONAL,
-                'Force the current schema to update with "--force" argument.',
-                false);
+                'Add the name of the CalculationView.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        if ($input->getOption('force') === false) {
+        $io = new SymfonyStyle($input, $output);
 
-            $messages = $this->generator->inspectCurrentSchema();
+        if (empty($input->getArgument('entity'))) {
 
-            foreach ($messages as $message) {
-                $output->writeln('<info>' . $message . '</info>', true);
+            $entities = $this->generator->getOdsInspector()->getOdsEntities();
+
+            $io->title('Calculation view list : ');
+
+            /** @var Entity $entity */
+            foreach ($entities as $entity) {
+                $this->odsEntities[] = $entity->getTable().' - '.count($entity->getProperties()).' field(s)';
             }
-            $output->writeln('<info>Run boom:update-view --force to update your schema</info>');
+            $io->listing($this->odsEntities);
+            $io->title('Run "boom:update-view $entityName $secondEntityIfYouWant .." to update your schema');
 
         } else {
 
-            try {
-                $this->generator->createViewSchema();
-                $this->generator->updateViewSchema();
-            } catch (\Exception $e) {
-                $output->write('<error>' . $e->getMessage() . '</error>', $e->getTraceAsString());
-                die();
-            }
-            $output->writeLn('<info>Schema updated</info>');
+            $entities = $input->getArgument('entity');
 
+            foreach ($entities as $entity){
+
+                try {
+                    $this->createdEntities[$entity] = $entity;
+                    $this->generator->createViewEntity($entity);
+                } catch (NotFoundResourceException $e) {
+                    $io->error($e->getMessage());
+                    unset($this->createdEntities[$entity]);
+                    die();
+                } catch (\Exception $e){
+                    $io->error($e->getMessage().$e->getTraceAsString());
+                    unset($this->createdEntities[$entity]);
+                    die();
+                }
+
+            }
+
+            $io->success('Entity created');
+            $io->listing($entities);
         }
     }
+
 }
