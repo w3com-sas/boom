@@ -10,6 +10,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
+use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\BoomGenerator;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
@@ -239,7 +240,7 @@ class BoomManager
         // checks if entity exists
         $entityClassName = $this->config['app_namespace'].'\\HanaEntity\\'.$entityName;
         if (!class_exists($entityClassName)) {
-            throw new \Exception("Missing $entityName entity.");
+            throw new EntityNotFoundException($entityClassName);
         }
 
         if ('yaml' === $this->config['metadata_format']) {
