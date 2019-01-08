@@ -3,6 +3,7 @@
 namespace W3com\BoomBundle\Generator;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Finder\Finder;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
@@ -10,6 +11,7 @@ use W3com\BoomBundle\Generator\Model\Property;
 
 class AppInspector
 {
+
     const ANNOTATION_COLUMN = 'column';
 
     const ANNOTATION_KEY = 'isKey';
@@ -25,11 +27,12 @@ class AppInspector
     /**
      * AppInspector constructor.
      * @param BoomManager $manager
-     * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws \ReflectionException
+     * @throws \Doctrine\Common\Annotations\AnnotationException
      */
     public function __construct(BoomManager $manager)
     {
+
         $this->finder = new Finder();
         $this->reader = new AnnotationReader();
         $this->manager = $manager;
@@ -39,8 +42,8 @@ class AppInspector
     public function getProjectEntity($name)
     {
         /** @var Entity $entity */
-        foreach ($this->entities as $entity){
-            if ($entity->getName() === $name){
+        foreach ($this->entities as $entity) {
+            if ($entity->getName() === $name) {
                 return $entity;
             }
         }
@@ -63,6 +66,7 @@ class AppInspector
             $this->finder->files()->in($this->manager->config['entity_directory']);
 
             foreach ($this->finder as $fileInfo) {
+
                 $className = str_replace('.php', '', $fileInfo->getFilename());
                 $class = new \ReflectionClass($this->manager->config['app_namespace'] .
                     '\HanaEntity\\' . $className);
@@ -82,7 +86,9 @@ class AppInspector
         $entity = new Entity();
         $entity->setName($className);
 
+        AnnotationRegistry::registerLoader('class_exists');
         foreach ($this->reader->getClassAnnotations($class) as $annotations) {
+
             foreach ($annotations as $annotation => $value) {
                 // Alias Read
                 if ($annotation === 'aliasRead') {
@@ -121,7 +127,7 @@ class AppInspector
                     if ($annotation === $this::ANNOTATION_KEY) {
                         $modelProperty->setIsKey($value);
 
-                        if ($value){
+                        if ($value) {
                             $entity->setKey($modelProperty->getField());
                         }
                     }

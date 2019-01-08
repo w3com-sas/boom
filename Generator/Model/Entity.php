@@ -67,7 +67,7 @@ class Entity
     }
 
     /**
-     * @param array $propertyRef
+     * @param mixed $propertyRef
      */
     public function setKey($propertyRef)
     {

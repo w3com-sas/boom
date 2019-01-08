@@ -16,9 +16,9 @@ services:
       - { name: data_collector, template: '@W3comBoom/profiler/toolbar.html.twig', id: 'boom.hana_collector'}
     public: true
 
-  W3com\BoomBundle\Command\UpdateViewCommand:
-    arguments:
-      - '@W3com\BoomBundle\Service\BoomManager'
-    tags:
-      - { name: 'console.command', command: 'boom:update-view' }
+  #W3com\BoomBundle\Command\UpdateViewCommand:
+   # arguments:
+    #  - '@W3com\BoomBundle\Service\BoomManager'
+    #tags:
+     # - { name: 'console.command', command: 'boom:update-view' }
 

@@ -2,10 +2,10 @@
 
 namespace W3com\BoomBundle\Command;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -28,35 +28,36 @@ class UpdateViewCommand extends Command
             ->setHelp('In first time the command check and return difference between 
             current project schema and ODS metadata. When the argument "--force" is 
             added, the generator update current schema, same as Doctrine.')
-            ->addArgument('force', InputArgument::OPTIONAL,
-                'Force the current schema to update with "--force" argument.');
+            ->addOption(
+                'force',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Force the current schema to update with "--force" argument.',
+                false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        AnnotationRegistry::registerLoader('class_exists');
 
-        if ($input->getArgument('force') === null) {
+        if ($input->getOption('force') === false) {
 
             $messages = $this->generator->inspectCurrentSchema();
 
             foreach ($messages as $message) {
-                $output->write('<info>' . $message . '</info>', true);
+                $output->writeln('<info>' . $message . '</info>', true);
             }
             $output->writeln('<info>Run boom:update-view --force to update your schema</info>');
 
-        } elseif ($input->getArgument('force') == '--force') {
+        } else {
 
             try {
-                $this->generator->updateViewSchema();
-            } catch (\Exception $e){
-                $output->write('<error>'.$e->getMessage().'</error>', $e->getTraceAsString());
+                $this->generator->createViewSchema();
+            } catch (\Exception $e) {
+                $output->write('<error>' . $e->getMessage() . '</error>', $e->getTraceAsString());
                 die();
             }
-            $output->write('<success>Schema updated</success>');
+            $output->writeLn('<info>Schema updated</info>');
 
-        } else {
-            $output->write('Unknow action ' . $input->getArgument('force'));
         }
     }
 }
