@@ -91,12 +91,14 @@ class AppInspector
 
             foreach ($annotations as $annotation => $value) {
                 // Alias Read
-                if ($annotation === 'aliasRead') {
+                if ($annotation === 'aliasRead' && $value !== null) {
                     $entity->setTable($value);
                     $this->hydratePropertyModel($class, $entity);
                 }
             }
-            $this->entities[] = $entity;
+            if ($entity->getTable() !== null){
+                $this->entities[] = $entity;
+            }
         }
     }
 
