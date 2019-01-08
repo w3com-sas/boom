@@ -22,6 +22,7 @@
     "symfony/stopwatch": "^3.4|^4.0",
     "nette/php-generator": "^3.2",
     "symfony/console": "4.2.*",
+    "symfony/serializer": "4.2.*",
     "doctrine/annotations": "1.6.0"
   },
   "require-dev": {
