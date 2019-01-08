@@ -40,8 +40,8 @@ class OdsInspector
     public function getOdsEntity($name)
     {
         /** @var Entity $entity */
-        foreach ($this->entities as $entity){
-            if ($entity->getName() === $name){
+        foreach ($this->entities as $entity) {
+            if ($entity->getName() === $name) {
                 return $entity;
             }
         }
@@ -56,18 +56,26 @@ class OdsInspector
     private function initOdsEntities()
     {
 
-        if (empty($this->entities)){
+        if (empty($this->entities)) {
 
             $odsViewMetadata = $this->oDataRestClient->getOdsViewMetadata();
             $schema = array_column($odsViewMetadata, $this::NODE_SCHEMA);
             $entitiesType = array_column($schema, $this::NODE_ENTITY, 'Property');
 
-            foreach ($entitiesType as $entitiesMetadata){
-                foreach ($entitiesMetadata as $entityMetadata){
-                    $this->hydrateEntityModel($entityMetadata);
+            // If 1 entity the array contain 1 "couche", so one foreach
+            if (count($entitiesType) === 1) {
+                foreach ($entitiesType as $entitiesMetadata) {
+                    $this->hydrateEntityModel($entitiesMetadata);
                 }
+            } else {
+                foreach ($entitiesType as $entitiesMetadata) {
+                    foreach ($entitiesMetadata as $entityMetadata) {
+                        $this->hydrateEntityModel($entityMetadata);
+                    }
 
+                }
             }
+
         }
 
         return $this->entities;
@@ -78,9 +86,9 @@ class OdsInspector
         // 1 entity per $metadatum
         $entity = new Entity();
 
-        foreach ($entityMetadata as $metadatum => $value){
+        foreach ($entityMetadata as $metadatum => $value) {
 
-            switch ($metadatum){
+            switch ($metadatum) {
                 case $this::NAME_ENTITY_PROPERTY:
                     $entity->setName($value);
                     $entity->setTable(str_replace('Type', '', $value));
@@ -98,14 +106,14 @@ class OdsInspector
 
     private function hydratePropertyModel($propertyMetadata, Entity $entity)
     {
-        foreach ($propertyMetadata as $propertiesMetadata){
+        foreach ($propertyMetadata as $propertiesMetadata) {
 
             $property = new Property();
             $property->setType(Property::TYPE_ODS);
 
-            foreach ($propertiesMetadata as $propertyMetadatum => $value){
+            foreach ($propertiesMetadata as $propertyMetadatum => $value) {
 
-                switch ($propertyMetadatum){
+                switch ($propertyMetadatum) {
 
                     case $this::NAME_ENTITY_PROPERTY:
                         $property->setField($value);

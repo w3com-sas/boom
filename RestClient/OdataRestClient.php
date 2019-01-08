@@ -78,15 +78,13 @@ class OdataRestClient implements RestClientInterface
     {
         $param = [
             'auth' => $this->auth,
-            'headers' => [
-                'Prefer' => 'odata.maxpagesize=100000'
-            ]
         ];
 
         $this->manager->stopwatch->start('ODS-get');
 
         //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
         $res = $this->client->request('GET', $this::ODS_METADATA_URI, $param);
+
 
         $response = $res->getBody()->getContents();
         $stop = $this->manager->stopwatch->stop('ODS-get');
