@@ -63,7 +63,7 @@ class OdsInspector
             $entitiesType = array_column($schema, $this::NODE_ENTITY, 'Property');
 
             // If 1 entity the array contain 1 "couche", so one foreach
-            if (count($entitiesType) === 1) {
+            if (array_key_exists('Key', $entitiesType[0])) {
                 foreach ($entitiesType as $entitiesMetadata) {
                     $this->hydrateEntityModel($entitiesMetadata);
                 }
