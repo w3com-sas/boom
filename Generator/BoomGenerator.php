@@ -83,7 +83,9 @@ class BoomGenerator
             $phpClass = $this->classCreator->generateClass($entity);
             file_put_contents($this->manager->config['entity_directory'].'/'.$entity->getName().'.php',
                 $phpClass);
+            $this->messenger->addCreatedEntities($entity);
         }
+        return $this->messenger->getCreatedEntities();
     }
 
     public function updateViewSchema()
