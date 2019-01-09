@@ -34,7 +34,13 @@ class BoomGenerator
     private $classCreator;
 
     /**
+     * @var Messenger
+     */
+    private $messenger;
+
+    /**
      * @var array
+     * TODO : remove this property to use the Messenger
      */
     private $messages = [];
 
@@ -54,6 +60,7 @@ class BoomGenerator
             $this->odsInspector
         );
         $this->classCreator = new ClassCreator($manager);
+        $this->messenger = new Messenger();
 
     }
 
@@ -85,7 +92,9 @@ class BoomGenerator
             $phpClass = $this->classCreator->generateClass($entity);
             file_put_contents($this->manager->config['entity_directory'].'/'.$entity->getName().'.php',
                 $phpClass);
+            $this->messenger->buildUpdateEntityMessage($entity);
         }
+        return $this->messenger->getMessages();
     }
 
     public function inspectCurrentSchema()
