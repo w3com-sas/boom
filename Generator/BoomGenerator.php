@@ -119,5 +119,13 @@ class BoomGenerator
         return $this->odsInspector;
     }
 
+    /**
+     * @return AppInspector
+     */
+    public function getAppInspector(): AppInspector
+    {
+        return $this->appInspector;
+    }
+
 
 }
