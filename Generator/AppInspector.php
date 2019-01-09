@@ -39,26 +39,10 @@ class AppInspector
         $this->initProjectEntities();
     }
 
-    public function getProjectEntity($name)
-    {
-        /** @var Entity $entity */
-        foreach ($this->entities as $entity) {
-            if ($entity->getName() === $name) {
-                return $entity;
-            }
-        }
-
-    }
-
-    public function getProjectEntities()
-    {
-        return $this->entities;
-    }
-
     /**
      * @throws \ReflectionException
      */
-    public function initProjectEntities()
+    private function initProjectEntities()
     {
 
         if (empty($this->entities)) {
@@ -139,5 +123,23 @@ class AppInspector
             }
         }
     }
+
+    public function getProjectEntity($name)
+    {
+        /** @var Entity $entity */
+        foreach ($this->entities as $entity) {
+            if ($entity->getName() === $name) {
+                return $entity;
+            }
+        }
+
+    }
+
+    public function getProjectEntities()
+    {
+        return $this->entities;
+    }
+
+
 
 }

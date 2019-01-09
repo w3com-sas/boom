@@ -12,9 +12,9 @@ class EntityComparator
 
     private $odsEntities;
 
-    private $toUpdateEntities;
+    private $toUpdateEntities = [];
 
-    private $toCreateEntity;
+    private $toCreateEntity = [];
 
     private $missingFieldsAmount = 0;
 
