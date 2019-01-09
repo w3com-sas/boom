@@ -3,25 +3,42 @@
 namespace W3com\BoomBundle\Generator;
 
 use W3com\BoomBundle\Generator\Model\Entity;
-use W3com\BoomBundle\Generator\Model\Property;
 
 class Messenger
 {
 
-    private $messages = [];
+    private $updatedEntities = [];
 
-    public function buildUpdateEntityMessage(Entity $entity)
+    private $createdEntities = [];
+
+
+    public function addUpdatedEntity(Entity $entity)
     {
-        $this->messages[$entity->getTable()] = [];
-
-        /** @var Property $property */
-        foreach ($entity->getProperties() as $property){
-            $this->messages[$entity->getTable()][] = $property->getField();
-        }
+        $this->updatedEntities[] = $entity;
     }
 
-    public function getMessages()
+    /**
+     * @return array
+     */
+    public function getUpdatedEntities(): array
     {
-        return $this->messages;
+        return $this->updatedEntities;
     }
+
+    /**
+     * @return array
+     */
+    public function getCreatedEntities(): array
+    {
+        return $this->createdEntities;
+    }
+
+    /**
+     * @param $createdEntity
+     */
+    public function addCreatedEntities($createdEntity)
+    {
+        $this->createdEntities[] = $createdEntity;
+    }
+
 }

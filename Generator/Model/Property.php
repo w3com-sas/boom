@@ -23,8 +23,6 @@ class Property
 
     private $isKey;
 
-    private $isMissing;
-
     /**
      * @return mixed
      */
@@ -105,19 +103,4 @@ class Property
         $this->type = $type;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getisMissing()
-    {
-        return $this->isMissing;
-    }
-
-    /**
-     * @param mixed $isMissing
-     */
-    public function setIsMissing($isMissing)
-    {
-        $this->isMissing = $isMissing;
-    }
 }

@@ -18,6 +18,10 @@ class Entity
 
     private $key;
 
+    //private $isUpdated;
+
+    //private $isCreated;
+
     public static function formatTableName($name)
     {
         if (substr($name, -4) === 'Type') {
@@ -27,11 +31,11 @@ class Entity
             if (substr($name, -5) === 'Query') {
 
 
-                return substr($name, 0, strlen($name) -5);
+                return substr($name, 0, strlen($name) - 5);
             }
         } elseif (substr($name, -5) == 'Query') {
 
-            return substr($name, 0, strlen($name) -5);
+            return substr($name, 0, strlen($name) - 5);
         }
 
         return $name;
@@ -117,6 +121,5 @@ class Entity
     {
         $this->table = $table;
     }
-
 
 }
