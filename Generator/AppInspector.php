@@ -128,7 +128,7 @@ class AppInspector
     {
         /** @var Entity $entity */
         foreach ($this->entities as $entity) {
-            if ($entity->getName() === $name) {
+            if ($entity->getName() === $name||$entity->getTable() === $name) {
                 return $entity;
             }
         }
