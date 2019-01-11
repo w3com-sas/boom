@@ -133,6 +133,8 @@ class AppInspector
             }
         }
 
+
+
     }
 
     public function getProjectEntities()

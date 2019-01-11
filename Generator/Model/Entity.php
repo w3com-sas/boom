@@ -122,4 +122,18 @@ class Entity
         $this->table = $table;
     }
 
+
+    public function getProperty($name)
+    {
+        /** @var Property $property */
+        foreach ($this->properties as $property){
+            if ($property->getName() === $name){
+                return $property;
+            } elseif ($property->getField() === $name){
+                return $property;
+            }
+        }
+        return null;
+    }
+
 }
