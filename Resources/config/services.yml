@@ -1,5 +1,4 @@
 services:
-
   W3com\BoomBundle\Service\BoomManager:
     arguments:
       - '%boom.config%'

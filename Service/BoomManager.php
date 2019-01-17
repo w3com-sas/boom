@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Service;
 
+use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
@@ -51,11 +52,6 @@ class BoomManager
     private $reader;
 
     /**
-     * @var BoomGenerator
-     */
-    private $generator;
-
-    /**
      * @var Logger linked to 'hana' channel
      */
     public $logger;
@@ -91,11 +87,11 @@ class BoomManager
         $fs->mkdir($config['service_layer']['cookies_storage_path']);
 
         // creating the ODS client
-        $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'].'/odata', true);
+        $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'] . '/odata', true);
         $client = new Client(
             [
                 'cookies' => $jar,
-                'base_uri' => $config['odata_service']['base_uri'].'/'.$config['odata_service']['path'],
+                'base_uri' => $config['odata_service']['base_uri'] . '/' . $config['odata_service']['path'],
                 'verify' => $config['odata_service']['verify_https'],
             ]
         );
@@ -109,7 +105,6 @@ class BoomManager
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this);
         $this->restClients['odata'] = $odataRestClient;
-        $this->generator = new BoomGenerator($this);
     }
 
     public function getCollectedData()
@@ -117,7 +112,8 @@ class BoomManager
         return $this->collectedData;
     }
 
-    public function reloginToSL(){
+    public function reloginToSL()
+    {
         $loginData = $this->config['service_layer']['connections'][$this->getCurrentConnection()];
 
         try {
@@ -136,7 +132,7 @@ class BoomManager
                 'valid' => true,
                 'data' => $res
             ];
-        } catch (ClientException $e){
+        } catch (ClientException $e) {
             return [
                 'valid' => false,
                 'data' => $e
@@ -207,14 +203,14 @@ class BoomManager
 
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'].'/'.
-                $connection.'_'.$this->config['service_layer']['connections'][$connection]['database'].'_'.
-                str_replace('\\','_',$this->config['service_layer']['connections'][$connection]['username']),
+            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'] . '/' .
+                $connection . '_' . $this->config['service_layer']['connections'][$connection]['database'] . '_' .
+                str_replace('\\', '_', $this->config['service_layer']['connections'][$connection]['username']),
                 true);
             $client = new Client(
                 [
                     'cookies' => $jar,
-                    'base_uri' => $this->config['service_layer']['base_uri'].$this->config['service_layer']['path'],
+                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
@@ -238,7 +234,7 @@ class BoomManager
         }
 
         // checks if entity exists
-        $entityClassName = $this->config['app_namespace'].'\\HanaEntity\\'.$entityName;
+        $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityName;
         if (!class_exists($entityClassName)) {
             throw new EntityNotFoundException($entityClassName);
         }
@@ -250,7 +246,7 @@ class BoomManager
         }
 
         // checks if custom repo exists
-        $repoClassName = $this->config['app_namespace'].'\\HanaRepository\\'.$entityName.'Repository';
+        $repoClassName = $this->config['app_namespace'] . '\\HanaRepository\\' . $entityName . 'Repository';
         if (!class_exists($repoClassName)) {
             $repo = new DefaultRepository($metadata);
         } else {
@@ -347,10 +343,11 @@ class BoomManager
     }
 
     /**
-     * @return BoomGenerator
+     * @throws AnnotationException
+     * @throws \ReflectionException
      */
     public function getGenerator()
     {
-        return $this->generator;
+        return new BoomGenerator($this);
     }
 }
