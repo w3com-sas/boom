@@ -402,21 +402,24 @@ abstract class AbstractRepository implements RepositoryInterface
         $complexObjs = [];
         /** @var AbstractEntity $complexObj */
         $complexClass = $this->manager->getRepository($complexEntity);
-        $obj = new $complexClass->className();
+
+        //create an empty entity array
+        for ($i = 0 ; $i < count($array) ; $i++) {
+            $complexObjs[] = new $complexClass->className();
+        }
 
         if (count($array) > 0){
             foreach ($complexClass->columns as $attribute => $column) {
-                foreach ($array as $data){
+                foreach ($array as $iterator => $data){
                     if (array_key_exists($column['column'], $data)) {
-                        $obj->set($attribute, $data[$column['column']], false);
+                        $complexObjs[$iterator]->set($attribute, $data[$column['column']], false);
                     } elseif (array_key_exists($column['readColumn'], $data)) {
-                        $obj->set($attribute, $data[$column['readColumn']], false);
+                        $complexObjs[$iterator]->set($attribute, $data[$column['readColumn']], false);
                     }
                 }
             }
         }
 
-        $complexObjs[] = $obj;
         return $complexObjs;
     }
 
