@@ -44,7 +44,7 @@ class AbstractEntity
     /**
      * @param string $collabPackField
      */
-    public function setCollabPackField(string $collabPackField): void
+    public function setCollabPackField($collabPackField): void
     {
         $this->collabPackField = $collabPackField;
     }
