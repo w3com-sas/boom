@@ -245,15 +245,17 @@ abstract class AbstractRepository implements RepositoryInterface
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
 
-            if($entity->getCollabPackField() !== ''){
+            if($entity->getCollabPackField() != ''){
                 // creation of a changedField like array with the collabPack fields ('field1;field2;field3')
                 $fields = array_map(function(){return true;},array_flip(explode(';',$entity->getCollabPackField())));
             } else {
                 $fields = $entity->getChangedFields();
             }
 
-
             foreach ($fields as $field => $value) {
+                if (!isset($this->columns[$fields])) {
+                    continue;
+                }
                 if ($this->columns[$field]['readOnly'] === false && $value &&
                     $this->columns[$field]['complexEntity'] === null) {
                     // on exclut les column en readonly
@@ -329,16 +331,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $this->aliasWrite;
             $data = [];
 
-
-            if($entity->getCollabPackField() !== ''){
-                // creation of a changedField like array with the collabPack fields ('field1;field2;field3')
-                $fields = array_map(function(){return true;},array_flip(explode(';',$entity->getCollabPackField())));
-            } else {
-                $fields = $entity->getChangedFields();
-            }
-
-
-            foreach ($fields as $field => $value) {
+            foreach ($entity->getChangedFields() as $field => $value) {
                 if ($this->columns[$field]['readOnly'] === false && $value &&
                     $this->columns[$field]['complexEntity'] === null) {
                     // on exclut les column en readonly
