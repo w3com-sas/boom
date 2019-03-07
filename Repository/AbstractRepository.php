@@ -253,7 +253,7 @@ abstract class AbstractRepository implements RepositoryInterface
             }
 
             foreach ($fields as $field => $value) {
-                if (!isset($this->columns[$fields])) {
+                if (!isset($this->columns[$field])) {
                     continue;
                 }
                 if ($this->columns[$field]['readOnly'] === false && $value &&
