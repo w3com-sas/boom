@@ -132,16 +132,10 @@ class AppInspector
                 return $entity;
             }
         }
-
-
-
     }
 
     public function getProjectEntities()
     {
         return $this->entities;
     }
-
-
-
 }

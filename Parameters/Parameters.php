@@ -22,6 +22,9 @@ class Parameters
      */
     private $filter = [];
 
+    /**
+     * @var array
+     */
     private $ipFilter = [];
 
     /**
@@ -34,9 +37,20 @@ class Parameters
      */
     private $format = '';
 
+    /**
+     * @var int
+     */
     private $top = 0;
 
+    /**
+     * @var int
+     */
     private $skip = 0;
+
+    /**
+     * @var string
+     */
+    private $apply = '';
 
     /**
      * Column names of the targeted entity.
@@ -137,11 +151,6 @@ class Parameters
         return $this;
     }
 
-    /**
-     * @param string $format
-     *
-     * @return $this
-     */
     public function setFormat($format)
     {
         $this->format = $format;
@@ -159,6 +168,13 @@ class Parameters
     public function setSkip($skip)
     {
         $this->skip = $skip;
+
+        return $this;
+    }
+
+    public function setApply(string $apply): Parameters
+    {
+        $this->apply = $apply;
 
         return $this;
     }
@@ -245,6 +261,11 @@ class Parameters
         // gestion du skip
         if ($this->skip > 0) {
             $params[] = '$skip='.$this->skip;
+        }
+
+        // gestion du apply
+        if ($this->apply != ''){
+            $params[] = '$apply='.$this->apply;
         }
 
         // génération de l'url

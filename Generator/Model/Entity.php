@@ -18,9 +18,6 @@ class Entity
 
     private $key;
 
-    //private $isUpdated;
-
-    //private $isCreated;
 
     public static function formatTableName($name)
     {

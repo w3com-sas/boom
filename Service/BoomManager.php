@@ -73,7 +73,6 @@ class BoomManager
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
      * @throws \Doctrine\Common\Annotations\AnnotationException
-     * @throws \ReflectionException
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch)
     {
@@ -332,9 +331,7 @@ class BoomManager
     /**
      * @param $entityClassName
      * @param $entityName
-     *
      * @return RepoMetadata
-     *
      * @throws \ReflectionException
      */
     private function getYamlMetadata($entityClassName, $entityName)
