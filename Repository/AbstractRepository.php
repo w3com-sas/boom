@@ -222,6 +222,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param AbstractEntity $entity
      * @param mixed|null $id DEPRECATED
+     * @param bool $batch
      * @return AbstractEntity
      * @throws \Exception
      */
@@ -235,6 +236,7 @@ abstract class AbstractRepository implements RepositoryInterface
                 E_USER_DEPRECATED
             );
         }
+
         if (BoomConstants::SL == $this->write) {
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
@@ -242,7 +244,18 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $uri . "($quotes" . $id . "$quotes)";
             $data = [];
             $data[$this->columns[$this->key]['column']] = $entity->get($this->key);
-            foreach ($entity->getChangedFields() as $field => $value) {
+
+            if($entity->getCollabPackField() != ''){
+                // creation of a changedField like array with the collabPack fields ('field1;field2;field3')
+                $fields = array_map(function(){return true;},array_flip(explode(';',$entity->getCollabPackField())));
+            } else {
+                $fields = $entity->getChangedFields();
+            }
+
+            foreach ($fields as $field => $value) {
+                if (!isset($this->columns[$field])) {
+                    continue;
+                }
                 if ($this->columns[$field]['readOnly'] === false && $value &&
                     $this->columns[$field]['complexEntity'] === null) {
                     // on exclut les column en readonly
@@ -290,8 +303,10 @@ abstract class AbstractRepository implements RepositoryInterface
                 }
             }
             if (count($data) > 1) {
+
                 // il n'y a pas que l'ID dans $data, donc on update
-                $res = $this->manager->restClients['sl']->patch($uri, $data);
+                $this->manager->restClients['sl']->patch($uri, $data);
+
                 $entity->hydrate('changedFields', []);
             }
 
@@ -306,6 +321,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * Adds a new object in SAP
      *
      * @param AbstractEntity $entity
+     * @param bool $batch
      * @return AbstractEntity
      * @throws \Exception
      */
@@ -314,6 +330,7 @@ abstract class AbstractRepository implements RepositoryInterface
         if (BoomConstants::SL == $this->write) {
             $uri = $this->aliasWrite;
             $data = [];
+
             foreach ($entity->getChangedFields() as $field => $value) {
                 if ($this->columns[$field]['readOnly'] === false && $value &&
                     $this->columns[$field]['complexEntity'] === null) {
@@ -361,8 +378,10 @@ abstract class AbstractRepository implements RepositoryInterface
                     }
                 }
             }
+
             $res = $this->manager->restClients['sl']->post($uri, $data);
             return $this->hydrate($res);
+
         } elseif (BoomConstants::ODS == $this->write) {
         } else {
             throw new \Exception('Unknown entity WRITE method');
@@ -402,21 +421,24 @@ abstract class AbstractRepository implements RepositoryInterface
         $complexObjs = [];
         /** @var AbstractEntity $complexObj */
         $complexClass = $this->manager->getRepository($complexEntity);
-        $obj = new $complexClass->className();
+
+        //create an empty entity array
+        for ($i = 0 ; $i < count($array) ; $i++) {
+            $complexObjs[] = new $complexClass->className();
+        }
 
         if (count($array) > 0){
             foreach ($complexClass->columns as $attribute => $column) {
-                foreach ($array as $data){
+                foreach ($array as $iterator => $data){
                     if (array_key_exists($column['column'], $data)) {
-                        $obj->set($attribute, $data[$column['column']], false);
+                        $complexObjs[$iterator]->set($attribute, $data[$column['column']], false);
                     } elseif (array_key_exists($column['readColumn'], $data)) {
-                        $obj->set($attribute, $data[$column['readColumn']], false);
+                        $complexObjs[$iterator]->set($attribute, $data[$column['readColumn']], false);
                     }
                 }
             }
         }
 
-        $complexObjs[] = $obj;
         return $complexObjs;
     }
 

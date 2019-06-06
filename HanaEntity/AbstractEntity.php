@@ -7,6 +7,8 @@ use Doctrine\Common\Annotations\AnnotationReader;
 class AbstractEntity
 {
     protected $changedFields = [];
+    protected $collabPackField = '';
+
 
     public function set($field, $value, $registerAsChanged = true)
     {
@@ -33,6 +35,22 @@ class AbstractEntity
 
     /**
      * @return string
+     */
+    public function getCollabPackField()
+    {
+        return $this->collabPackField;
+    }
+
+    /**
+     * @param string $collabPackField
+     */
+    public function setCollabPackField($collabPackField): void
+    {
+        $this->collabPackField = $collabPackField;
+    }
+
+    /**
+     * @return string
      * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws \ReflectionException
      */
@@ -52,4 +70,6 @@ class AbstractEntity
 
         return \GuzzleHttp\json_encode($ar);
     }
+
+
 }

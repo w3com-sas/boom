@@ -5,6 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Pool;
 use Psr\Log\LoggerInterface;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -15,6 +16,7 @@ class SLRestClient implements RestClientInterface
      */
     private $manager;
 
+    private $batchRequest = [];
 
     public function __construct(BoomManager $manager)
     {
