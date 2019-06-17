@@ -50,6 +50,31 @@ class AbstractEntity
     }
 
     /**
+     * @param $description
+     * @return string
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws \ReflectionException
+     */
+    public function getFieldByDescription($description): string
+    {
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if($annotation->description == $description){
+                    return $property->getName();
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
      * @return string
      * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws \ReflectionException

@@ -35,4 +35,9 @@ class EntityMeta extends Annotation
      */
     public $aliasSearch = null;
 
+    /**
+     * @var string
+     */
+    public $description = '';
+
 }

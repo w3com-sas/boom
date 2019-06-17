@@ -20,6 +20,11 @@ class EntityColumnMeta extends Annotation
     /**
      * @var string
      */
+    public $description = '';
+
+    /**
+     * @var string
+     */
     public $readColumn;
 
     /**
