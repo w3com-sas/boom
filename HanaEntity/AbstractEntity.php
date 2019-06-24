@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\HanaEntity;
 
+use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 
 class AbstractEntity
@@ -52,7 +53,7 @@ class AbstractEntity
     /**
      * @param $description
      * @return string
-     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws AnnotationException
      * @throws \ReflectionException
      */
     public function getFieldByDescription($description): string
@@ -66,7 +67,7 @@ class AbstractEntity
                 'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
             )) {
 
-                if($annotation->description == $description){
+                if ($annotation->description == $description) {
                     return $property->getName();
                 }
             }
@@ -75,8 +76,34 @@ class AbstractEntity
     }
 
     /**
+     * @param $propertyName
      * @return string
-     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function getDescriptionByProperty($propertyName): string
+    {
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if ($property->getName() == $propertyName) {
+                    return $annotation->description;
+                }
+            }
+        }
+        return '';
+    }
+
+
+    /**
+     * @return string
+     * @throws AnnotationException
      * @throws \ReflectionException
      */
     public function getEntityJson()
