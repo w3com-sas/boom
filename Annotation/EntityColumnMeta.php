@@ -37,6 +37,11 @@ class EntityColumnMeta extends Annotation
      */
     public $complexEntity;
 
+    /**
+     * @var string
+     */
+    public $type;
+
     /** @var bool */
     public $isKey = false;
 
