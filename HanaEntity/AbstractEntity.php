@@ -34,6 +34,13 @@ class AbstractEntity
         return $this->changedFields;
     }
 
+    public function setByColumn($column, $value, $registerAsChanged = true)
+    {
+        $field = $this->getPropertyByColumn($column);
+        $this->$field = $value;
+        $this->changedFields[$field] = $registerAsChanged;
+    }
+
     /**
      * @return string
      */
@@ -100,6 +107,30 @@ class AbstractEntity
         return '';
     }
 
+    /**
+     * @param $column
+     * @return string
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function getPropertyByColumn($column): string
+    {
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if ($annotation->column == $column) {
+                    return $property->getName();
+                }
+            }
+        }
+        return '';
+    }
 
     /**
      * @return string
