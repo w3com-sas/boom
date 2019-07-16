@@ -83,6 +83,31 @@ class AbstractEntity
     }
 
     /**
+     * @param $fieldName
+     * @return string
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function getTypeByField($fieldName)
+    {
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if ($property->getName() == $fieldName) {
+                    return $annotation->type;
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
      * @param $propertyName
      * @return string
      * @throws AnnotationException

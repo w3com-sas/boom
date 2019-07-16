@@ -23,8 +23,9 @@ class EntityComparator
      * @param AppInspector $appInspector
      * @param OdsInspector $odsInspector
      */
-    public function __construct(AppInspector $appInspector, OdsInspector $odsInspector)
+    public function __construct(AppInspector $appInspector, OdsInspector $odsInspector, SapTableInspector $entityInspector)
     {
+        $this->sapTables = $entityInspector->getOdsEntities();
         $this->appEntities = $appInspector->getProjectEntities();
         $this->odsEntities = $odsInspector->getOdsEntities();
         $this->findCommonToUpdate();

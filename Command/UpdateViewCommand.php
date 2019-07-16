@@ -83,5 +83,4 @@ class UpdateViewCommand extends Command
             $io->listing($entities);
         }
     }
-
 }

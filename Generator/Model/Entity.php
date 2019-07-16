@@ -33,6 +33,7 @@ class Entity
         } elseif (substr($name, -5) == 'Query') {
 
             return substr($name, 0, strlen($name) - 5);
+
         }
 
         return $name;
