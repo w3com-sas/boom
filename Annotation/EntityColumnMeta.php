@@ -53,4 +53,7 @@ class EntityColumnMeta extends Annotation
 
     /** @var string */
     public $ipName;
+
+    /** @var string */
+    public $choices = '';
 }
