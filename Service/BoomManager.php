@@ -6,13 +6,16 @@ use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
+use GuzzleHttp\Psr7\MultipartStream;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\BoomGenerator;
+use W3com\BoomBundle\HanaEntity\Attachments2;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\Repository\RepoMetadata;
@@ -233,9 +236,15 @@ class BoomManager
         }
 
         // checks if entity exists
-        $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityName;
-        if (!class_exists($entityClassName)) {
-            throw new EntityNotFoundException($entityClassName);
+        $boomEntityClassName = 'W3com\\BoomBundle\\HanaEntity\\'.$entityName;
+
+        if(class_exists($boomEntityClassName)){
+            $entityClassName = $boomEntityClassName;
+        } else {
+            $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityName;
+            if (!class_exists($entityClassName) && !class_exists($boomEntityClassName)) {
+                throw new EntityNotFoundException($entityClassName);
+            }
         }
 
         if ('yaml' === $this->config['metadata_format']) {
@@ -346,5 +355,65 @@ class BoomManager
     public function getGenerator()
     {
         return new BoomGenerator($this);
+    }
+
+    public function sendAttachment($documents,$absoluteEntry=0)
+    {
+        $isNew = intval($absoluteEntry) == 0;
+        $client = $this->restClients['sl'];
+        $customBoundary = md5(time());
+        $rawBody = "";
+
+
+        foreach($documents as $document){
+
+            if(!array_key_exists('path',$document)) continue;
+            if(!file_exists($document['path'])) continue;
+
+            $fileUtil = new File($document['path']);
+            $systemFilename = $fileUtil->getFilename();
+            $filetype = $fileUtil->getMimeType();
+
+            if(array_key_exists('filename',$document)){
+                $serverFilename = $document['filename'];
+            } else {
+                $serverFilename = $systemFilename;
+            }
+
+            $rawBody .=
+                "--$customBoundary\r\n"
+                ."Content-Disposition: form-data; name=\"files\"; filename=\"".$serverFilename."\"\r\n"
+                ."Content-Type: ".$filetype."\r\n"
+                ."\r\n"
+                .file_get_contents($document['path'])."\r\n";
+        }
+
+        $rawBody .= "--$customBoundary--\r\n\r\n";
+
+        if($isNew){
+            $response = $client->request(
+                'Attachments2',
+                [
+                    'headers' => [
+                        'Content-Type' => 'multipart/form-data;boundary='.$customBoundary,
+                    ],
+                    'body' => $rawBody
+                ]
+            );
+            $absoluteEntry = $response['AbsoluteEntry'];
+        } else {
+            $response = $client->request(
+                'Attachments2('.$absoluteEntry.')',
+                [
+                    'headers' => [
+                        'Content-Type' => 'multipart/form-data;boundary='.$customBoundary,
+                    ],
+                    'body' => $rawBody
+                ]
+            );
+
+        }
+
+        return $absoluteEntry;
     }
 }

@@ -82,6 +82,39 @@ class SLRestClient implements RestClientInterface
         }
     }
 
+    public function request(string $uri, $data)
+    {
+        /** @var Client $client */
+        $client = $this->manager->getCurrentClient();
+
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+
+                $res = $client->request(
+                    'POST',
+                    $uri,
+                    $data
+                );
+
+                $response = $res->getBody()->getContents();
+                return $this->getValuesFromResponse($response);
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->login();
+                } else {
+                    $response = $e->getResponse()->getBody()->getContents();
+                    $this->manager->logger->error($response, [$data, $uri]);
+                    throw new \Exception('Unknown error while launching POST request');
+                }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            }
+        }
+    }
+
     public function post(string $uri, $data)
     {
         /** @var Client $client */
