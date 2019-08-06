@@ -22,7 +22,6 @@
     "symfony/stopwatch": "^3.4|^4.0",
     "nette/php-generator": "^3.2",
     "symfony/console": "*",
-    "symfony/cache":  "^3.3",
     "symfony/serializer-pack": "*",
     "doctrine/annotations": "1.6.0"
   },
