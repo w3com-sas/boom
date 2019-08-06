@@ -75,7 +75,7 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
-     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws AnnotationException
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch)
     {

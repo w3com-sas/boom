@@ -8,6 +8,12 @@ services:
       - { name: monolog.logger.generator, channel: hana }
     public: true
 
+  W3com\BoomBundle\Service\HanaConfigManager:
+    arguments:
+      - '@W3com\BoomBundle\Service\BoomManager'
+      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+    public: true
+
   W3com\BoomBundle\DataCollector\HanaDataCollector:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'
