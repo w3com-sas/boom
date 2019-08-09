@@ -151,7 +151,11 @@ class SLRestClient implements RestClientInterface
                         $stop
                     );
                     $this->manager->logger->error($response, [$data, $uri]);
-                    throw new \Exception('Unknown error while launching POST request');
+                    $json_error = json_decode($response,true);
+                    $errMessage = array_key_exists('error',$json_error) ?
+                        $json_error['error']['message']['value']:
+                        'Unknown error while launching POST request';
+                    throw new \Exception($errMessage);
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-post');
@@ -203,7 +207,13 @@ class SLRestClient implements RestClientInterface
                         $stop
                     );
                     $this->manager->logger->error($response);
-                    throw new \Exception('Unknown error while launching PATCH request');
+
+                    $json_error = json_decode($response,true);
+                    $errMessage = array_key_exists('error',$json_error) ?
+                        $json_error['error']['message']['value']:
+                        'Unknown error while launching POST request';
+
+                    throw new \Exception($errMessage);
                 }
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-patch');
