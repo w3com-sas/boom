@@ -82,7 +82,7 @@ class SLRestClient implements RestClientInterface
         }
     }
 
-    public function request(string $uri, $data)
+    public function request(string $uri, $data, $method='POST')
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
@@ -93,7 +93,7 @@ class SLRestClient implements RestClientInterface
                 ++$attempts;
 
                 $res = $client->request(
-                    'POST',
+                    $method,
                     $uri,
                     $data
                 );
