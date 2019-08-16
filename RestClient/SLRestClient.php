@@ -99,7 +99,11 @@ class SLRestClient implements RestClientInterface
                 );
 
                 $response = $res->getBody()->getContents();
-                return $this->getValuesFromResponse($response);
+                if($method == 'POST'){
+                    return $this->getValuesFromResponse($response);
+                } else {
+                    return [];
+                }
             } catch (ClientException $e) {
                 if (401 == $e->getCode()) {
                     $this->login();
