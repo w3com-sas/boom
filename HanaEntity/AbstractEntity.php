@@ -113,6 +113,30 @@ class AbstractEntity
      * @throws AnnotationException
      * @throws \ReflectionException
      */
+    public function getChoicesByProperty($propertyName){
+        $refl = new \ReflectionClass(get_class($this));
+        $reader = new AnnotationReader();
+
+        foreach ($refl->getProperties() as $property) {
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if ($property->getName() == $propertyName) {
+                    return $annotation->choices;
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
+     * @param $propertyName
+     * @return string
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
     public function getDescriptionByProperty($propertyName): string
     {
         $refl = new \ReflectionClass(get_class($this));
