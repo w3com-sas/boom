@@ -23,7 +23,7 @@ class SLRestClient implements RestClientInterface
         $this->manager = $manager;
     }
 
-    public function get(string $uri)
+    public function get(string $uri, $file = false)
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
@@ -47,7 +47,11 @@ class SLRestClient implements RestClientInterface
                 $response = $res->getBody()->getContents();
                 $this->manager->addToCollectedData('sl', $res->getStatusCode(), $uri, null, $response, $stop);
 
-                return $this->getValuesFromResponse($response);
+                if ($file) {
+                    return $response;
+                } else {
+                    return $this->getValuesFromResponse($response);
+                }
             } catch (ClientException $e) {
                 if (401 == $e->getCode()) {
                     $this->login();

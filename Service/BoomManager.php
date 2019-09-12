@@ -419,9 +419,9 @@ class BoomManager
 
     public function getAttachmentInfos($absEntry)
     {
-        $response = $this->restClients['sl']->get('Attachments2('.$absEntry.')', true);
+        $response = $this->restClients['sl']->get('Attachments2('.$absEntry.')');
 
-        return json_decode($response,true)['Attachments2_Lines'];
+        return $response['Attachments2_Lines'];
     }
 
     public function downloadAttachment($absEntry, $fileName = null)
