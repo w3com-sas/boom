@@ -416,4 +416,20 @@ class BoomManager
 
         return $absoluteEntry;
     }
+
+    public function getAttachmentInfos($absEntry)
+    {
+        $response = $this->restClients['sl']->get('Attachments2('.$absEntry.')', true);
+
+        return json_decode($response,true)['Attachments2_Lines'];
+    }
+
+    public function downloadAttachment($absEntry, $fileName = null)
+    {
+        if ($fileName == null) {
+            return $this->restClients['sl']->get('Attachments2('.$absEntry.')/$value', true);
+        } else {
+            return $this->restClients['sl']->get('Attachments2('.$absEntry.')/$value?filename=\''.$fileName.'\'', true);
+        }
+    }
 }
