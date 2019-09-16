@@ -38,14 +38,21 @@ class AppInspector
         $this->manager = $manager;
     }
 
+    /**
+     * @param $name
+     * @return mixed|Entity|null
+     * @throws \ReflectionException
+     */
     public function getProjectEntity($name)
     {
+        $this->checkToInit();
         /** @var Entity $entity */
         foreach ($this->entities as $entity) {
             if ($entity->getName() === $name || $entity->getTable() === $name) {
                 return $entity;
             }
         }
+        return null;
     }
 
     public function getProjectEntities()
@@ -65,6 +72,7 @@ class AppInspector
                 '\HanaEntity\\' . $className);
             $this->hydrateEntityModel($class, $className);
         }
+
     }
 
     /**
@@ -132,5 +140,13 @@ class AppInspector
         }
     }
 
-
+    /**
+     * @throws \ReflectionException
+     */
+    private function checkToInit()
+    {
+        if (empty($this->entities)) {
+            $this->initProjectEntities();
+        }
+    }
 }
