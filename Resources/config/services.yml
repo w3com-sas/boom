@@ -21,6 +21,11 @@ services:
       - { name: data_collector, template: '@W3comBoom/profiler/toolbar.html.twig', id: 'boom.hana_collector'}
     public: true
 
+  W3com\BoomBundle\Service\BoomGenerator:
+    arguments:
+      - '@W3com\BoomBundle\Service\BoomManager'
+    public: true
+
   W3com\BoomBundle\Command\UpdateViewsCommand:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'

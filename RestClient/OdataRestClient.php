@@ -4,6 +4,7 @@ namespace W3com\BoomBundle\RestClient;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -22,6 +23,8 @@ class OdataRestClient implements RestClientInterface
 
     private $xmlEncoder;
 
+    private $cache;
+
     public function __construct(BoomManager $manager)
     {
         $this->manager = $manager;
@@ -31,6 +34,7 @@ class OdataRestClient implements RestClientInterface
             $this->manager->config['odata_service']['login']['password'], // password
         ];
         $this->xmlEncoder = new XmlEncoder();
+        $this->cache = new ArrayAdapter((60*60)*24, true);
     }
 
     public function get(string $uri)
@@ -76,21 +80,18 @@ class OdataRestClient implements RestClientInterface
 
     public function getOdsViewMetadata()
     {
+        $this->cache->getItem('view_metadata');
+
         $param = [
             'auth' => $this->auth,
         ];
-
         $this->manager->stopwatch->start('ODS-get');
-
         //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
         $res = $this->client->request('GET', $this::ODS_METADATA_URI, $param);
-
-
         $response = $res->getBody()->getContents();
         $stop = $this->manager->stopwatch->stop('ODS-get');
         $this->manager->addToCollectedData('ods', $res->getStatusCode(), $this::ODS_METADATA_URI,
             null, $response, $stop);
-
         return $this->getValuesFromXmlResponse($response);
     }
 

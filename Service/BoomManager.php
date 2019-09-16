@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
-use W3com\BoomBundle\Generator\BoomGenerator;
 use W3com\BoomBundle\HanaEntity\Attachments2;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
@@ -346,15 +345,6 @@ class BoomManager
     private function getYamlMetadata($entityClassName, $entityName)
     {
         return $this->getAnnotationMetadata($entityClassName, $entityName);
-    }
-
-    /**
-     * @throws AnnotationException
-     * @throws \ReflectionException
-     */
-    public function getGenerator()
-    {
-        return new BoomGenerator($this);
     }
 
     public function sendAttachment($documents,$absoluteEntry=0)

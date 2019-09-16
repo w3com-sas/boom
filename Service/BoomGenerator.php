@@ -1,13 +1,17 @@
 <?php
 
-namespace W3com\BoomBundle\Generator;
+namespace W3com\BoomBundle\Service;
 
-use W3com\BoomBundle\Service\BoomManager;
+use Doctrine\Common\Annotations\AnnotationException;
+use W3com\BoomBundle\Generator\AppInspector;
+use W3com\BoomBundle\Generator\ClassCreator;
+use W3com\BoomBundle\Generator\EntityComparator;
+use W3com\BoomBundle\Generator\Messenger;
+use W3com\BoomBundle\Generator\OdsInspector;
 use W3com\BoomBundle\Generator\Model\Entity;
 
 class BoomGenerator
 {
-
     /**
      * @var BoomManager
      */
@@ -40,15 +44,13 @@ class BoomGenerator
 
     /**
      * @var array
-     * TODO : remove this property to use the Messenger
      */
     private $messages = [];
 
     /**
      * BoomGenerator constructor.
      * @param BoomManager $manager
-     * @throws \Doctrine\Common\Annotations\AnnotationException
-     * @throws \ReflectionException
+     * @throws AnnotationException
      */
     public function __construct(BoomManager $manager)
     {
@@ -72,16 +74,16 @@ class BoomGenerator
     {
         $entity = $this->odsInspector->getOdsEntity($calcViewName);
         $phpClass = $this->classCreator->generateClass($entity);
-        file_put_contents($this->manager->config['entity_directory'].'/'
-        .$entity->getName().'.php', $phpClass);
+        file_put_contents($this->manager->config['entity_directory'] . '/'
+            . $entity->getName() . '.php', $phpClass);
     }
 
     public function createViewSchema()
     {
         /** @var Entity $entity */
-        foreach ($this->comparator->getMissingEntities() as $entity){
+        foreach ($this->comparator->getMissingEntities() as $entity) {
             $phpClass = $this->classCreator->generateClass($entity);
-            file_put_contents($this->manager->config['entity_directory'].'/'.$entity->getName().'.php',
+            file_put_contents($this->manager->config['entity_directory'] . '/' . $entity->getName() . '.php',
                 $phpClass);
             $this->messenger->addCreatedEntities($entity);
         }
@@ -90,9 +92,9 @@ class BoomGenerator
 
     public function updateViewSchema()
     {
-        foreach ($this->comparator->getToUpdateEntities() as $entity){
+        foreach ($this->comparator->getToUpdateEntities() as $entity) {
             $phpClass = $this->classCreator->generateClass($entity);
-            file_put_contents($this->manager->config['entity_directory'].'/'.$entity->getName().'.php',
+            file_put_contents($this->manager->config['entity_directory'] . '/' . $entity->getName() . '.php',
                 $phpClass);
             $this->messenger->addUpdatedEntity($entity);
         }
@@ -101,24 +103,8 @@ class BoomGenerator
 
     public function inspectCurrentSchema()
     {
-
-        if (count($this->comparator->getMissingEntities()) === 0){
-            $this->messages[] = '0 entity to create.';
-        } elseif (count($this->comparator->getMissingEntities()) === 1){
-            $this->messages[]  = '1 entity to create.';
-        } else {
-            $this->messages[]  = count($this->comparator->getMissingEntities()).' entities to create.';
-        }
-
-
-        if ($this->comparator->getAmountMissingFields() === 0){
-            $this->messages[]  = 'No field to add in project entities.';
-        } elseif ($this->comparator->getAmountMissingFields() === 1) {
-            $this->messages[]  = '1 field to add in project entities.';
-        } else {
-            $this->messages[]  = $this->comparator->getAmountMissingFields().' fields to add in project entities.';
-        }
-
+        $this->messages[] = count($this->comparator->getMissingEntities()) . ' entities to create.';
+        $this->messages[] = $this->comparator->getAmountMissingFields() . ' fields to add in project entities.';
         return $this->messages;
     }
 

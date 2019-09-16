@@ -25,7 +25,6 @@ class OdsInspector
 
     const TYPE_PROPERTY = '@Type';
 
-
     private $oDataRestClient;
 
     private $entities = [];
@@ -34,7 +33,6 @@ class OdsInspector
     public function __construct(BoomManager $manager)
     {
         $this->oDataRestClient = new OdataRestClient($manager);
-        $this->initOdsEntities();
     }
 
 
@@ -46,8 +44,8 @@ class OdsInspector
                 return $entity;
             }
         }
-        throw new NotFoundResourceException('Unable to find "'.$name.
-        '" calculation view in services.xsodata ');
+        throw new NotFoundResourceException('Unable to find "' . $name .
+            '" calculation view in services.xsodata ');
     }
 
     public function getOdsEntities()
@@ -56,32 +54,25 @@ class OdsInspector
     }
 
 
-    private function initOdsEntities()
+    public function initOdsEntities()
     {
+        $odsViewMetadata = $this->oDataRestClient->getOdsViewMetadata();
+        $schema = array_column($odsViewMetadata, $this::NODE_SCHEMA);
+        $entitiesType = array_column($schema, $this::NODE_ENTITY, 'Property');
 
-        if (empty($this->entities)) {
-
-            $odsViewMetadata = $this->oDataRestClient->getOdsViewMetadata();
-            $schema = array_column($odsViewMetadata, $this::NODE_SCHEMA);
-            $entitiesType = array_column($schema, $this::NODE_ENTITY, 'Property');
-
-            // If 1 entity the array contain 1 "couche", so one foreach
-            if (array_key_exists('Key', $entitiesType[0])) {
-                foreach ($entitiesType as $entitiesMetadata) {
-                    $this->hydrateEntityModel($entitiesMetadata);
-                }
-            } else {
-                foreach ($entitiesType as $entitiesMetadata) {
-                    foreach ($entitiesMetadata as $entityMetadata) {
-                        $this->hydrateEntityModel($entityMetadata);
-                    }
-
-                }
+        // If 1 entity the array contain 1 "couche", so one foreach
+        if (array_key_exists('Key', $entitiesType[0])) {
+            foreach ($entitiesType as $entitiesMetadata) {
+                $this->hydrateEntityModel($entitiesMetadata);
             }
+        } else {
+            foreach ($entitiesType as $entitiesMetadata) {
+                foreach ($entitiesMetadata as $entityMetadata) {
+                    $this->hydrateEntityModel($entityMetadata);
+                }
 
+            }
         }
-
-        return $this->entities;
     }
 
     private function hydrateEntityModel($entityMetadata)

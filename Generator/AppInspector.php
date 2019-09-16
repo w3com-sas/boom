@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Generator;
 
+use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Finder\Finder;
@@ -27,8 +28,7 @@ class AppInspector
     /**
      * AppInspector constructor.
      * @param BoomManager $manager
-     * @throws \ReflectionException
-     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws AnnotationException
      */
     public function __construct(BoomManager $manager)
     {
@@ -36,26 +36,34 @@ class AppInspector
         $this->finder = new Finder();
         $this->reader = new AnnotationReader();
         $this->manager = $manager;
-        $this->initProjectEntities();
+    }
+
+    public function getProjectEntity($name)
+    {
+        /** @var Entity $entity */
+        foreach ($this->entities as $entity) {
+            if ($entity->getName() === $name || $entity->getTable() === $name) {
+                return $entity;
+            }
+        }
+    }
+
+    public function getProjectEntities()
+    {
+        return $this->entities;
     }
 
     /**
      * @throws \ReflectionException
      */
-    private function initProjectEntities()
+    public function initProjectEntities()
     {
-
-        if (empty($this->entities)) {
-
-            $this->finder->files()->in($this->manager->config['entity_directory']);
-
-            foreach ($this->finder as $fileInfo) {
-
-                $className = str_replace('.php', '', $fileInfo->getFilename());
-                $class = new \ReflectionClass($this->manager->config['app_namespace'] .
-                    '\HanaEntity\\' . $className);
-                $this->hydrateEntityModel($class, $className);
-            }
+        $this->finder->files()->in($this->manager->config['entity_directory']);
+        foreach ($this->finder as $fileInfo) {
+            $className = str_replace('.php', '', $fileInfo->getFilename());
+            $class = new \ReflectionClass($this->manager->config['app_namespace'] .
+                '\HanaEntity\\' . $className);
+            $this->hydrateEntityModel($class, $className);
         }
     }
 
@@ -80,7 +88,7 @@ class AppInspector
                     $this->hydratePropertyModel($class, $entity);
                 }
             }
-            if ($entity->getTable() !== null){
+            if ($entity->getTable() !== null) {
                 $this->entities[] = $entity;
             }
         }
@@ -124,18 +132,5 @@ class AppInspector
         }
     }
 
-    public function getProjectEntity($name)
-    {
-        /** @var Entity $entity */
-        foreach ($this->entities as $entity) {
-            if ($entity->getName() === $name||$entity->getTable() === $name) {
-                return $entity;
-            }
-        }
-    }
 
-    public function getProjectEntities()
-    {
-        return $this->entities;
-    }
 }

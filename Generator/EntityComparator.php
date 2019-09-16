@@ -7,10 +7,9 @@ use W3com\BoomBundle\Generator\Model\Property;
 
 class EntityComparator
 {
+    private $appInspector;
 
-    private $appEntities;
-
-    private $odsEntities;
+    private $odsInspector;
 
     private $toUpdateEntities = [];
 
@@ -22,14 +21,11 @@ class EntityComparator
      * EntityComparator constructor.
      * @param AppInspector $appInspector
      * @param OdsInspector $odsInspector
-     * @param SapTableInspector $entityInspector
      */
     public function __construct(AppInspector $appInspector, OdsInspector $odsInspector)
     {
-      //  $this->sapTables = $entityInspector->getOdsEntities();
-        $this->appEntities = $appInspector->getProjectEntities();
-        $this->odsEntities = $odsInspector->getOdsEntities();
-        $this->findCommonToUpdate();
+        $this->appInspector = $appInspector;
+        $this->odsInspector = $odsInspector;
     }
 
     public function getMissingEntities()
@@ -39,6 +35,16 @@ class EntityComparator
         return array_diff_key($arOdsEntities, $arAppEntities);
     }
 
+    /**
+     * @return array of common entities with ODS value
+     */
+    private function getCommonEntities()
+    {
+        $arOdsEntities = $this->formatData(Property::TYPE_ODS);
+        $arAppEntities = $this->formatData(Property::TYPE_APP);
+        return array_intersect_key($arOdsEntities, $arAppEntities);
+    }
+
     public function getAmountMissingFields()
     {
         return $this->missingFieldsAmount;
@@ -46,13 +52,9 @@ class EntityComparator
 
     public function getToUpdateEntities()
     {
-        return $this->toUpdateEntities;
-    }
-
-    private function findCommonToUpdate()
-    {
         $arAppEntities = $this->formatData(Property::TYPE_APP);
         $commonEntities = $this->getCommonEntities();
+        $toUpdateEntities = [];
         /**
          * @var string $table
          * @var Entity $entity
@@ -64,19 +66,23 @@ class EntityComparator
                 $this->missingFieldsAmount += count($entity->getProperties()) - count(
                         $arAppEntities[$table]->getProperties()
                     );
-                $this->toUpdateEntities[] = $entity;
+                $toUpdateEntities[] = $entity;
             }
         }
+        return $toUpdateEntities;
     }
+
 
     private function formatData($type)
     {
         switch ($type) {
             case Property::TYPE_APP:
-                $entities = $this->appEntities;
+                $this->appInspector->initProjectEntities();
+                $entities = $this->appInspector->getProjectEntities();
                 break;
             case Property::TYPE_ODS:
-                $entities = $this->odsEntities;
+                $this->odsInspector->initOdsEntities();
+                $entities = $this->odsInspector->getOdsEntities();
                 break;
         }
 
@@ -91,14 +97,6 @@ class EntityComparator
     }
 
 
-    /**
-     * @return array of common entities with ODS value
-     */
-    private function getCommonEntities()
-    {
-        $arOdsEntities = $this->formatData(Property::TYPE_ODS);
-        $arAppEntities = $this->formatData(Property::TYPE_APP);
-        return array_intersect_key($arOdsEntities, $arAppEntities);
-    }
+
 
 }
