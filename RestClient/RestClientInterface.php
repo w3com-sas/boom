@@ -18,5 +18,5 @@ interface RestClientInterface
 
     public function getValuesFromResponse($response);
 
-    public function __construct(BoomManager $manager);
+   // public function __construct(BoomManager $manager); https://stackoverflow.com/questions/13271068/php-class-constructor-in-interface-or-class
 }

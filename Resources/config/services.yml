@@ -4,6 +4,7 @@ services:
       - '%boom.config%'
       - '@logger'
       - '@debug.stopwatch'
+      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
     tags:
       - { name: monolog.logger.generator, channel: hana }
     public: true
@@ -24,6 +25,7 @@ services:
   W3com\BoomBundle\Service\BoomGenerator:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'
+      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
     public: true
 
   W3com\BoomBundle\Command\UpdateViewsCommand:

@@ -9,6 +9,7 @@ use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Psr7\MultipartStream;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Stopwatch\Stopwatch;
@@ -74,9 +75,10 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
+     * @param AdapterInterface $cache
      * @throws AnnotationException
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache)
     {
         $this->config = $config;
         $this->reader = new AnnotationReader();
@@ -104,7 +106,7 @@ class BoomManager
         // creating rest clients
         $slRestClient = new SLRestClient($this);
         $this->restClients['sl'] = $slRestClient;
-        $odataRestClient = new OdataRestClient($this);
+        $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;
     }
 

@@ -3,6 +3,7 @@
 namespace W3com\BoomBundle\Service;
 
 use Doctrine\Common\Annotations\AnnotationException;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Generator\AppInspector;
 use W3com\BoomBundle\Generator\ClassCreator;
 use W3com\BoomBundle\Generator\EntityComparator;
@@ -50,13 +51,14 @@ class BoomGenerator
     /**
      * BoomGenerator constructor.
      * @param BoomManager $manager
+     * @param AdapterInterface $cache
      * @throws AnnotationException
      */
-    public function __construct(BoomManager $manager)
+    public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->manager = $manager;
         $this->appInspector = new AppInspector($manager);
-        $this->odsInspector = new OdsInspector($manager);
+        $this->odsInspector = new OdsInspector($manager, $cache);
         $this->comparator = new EntityComparator(
             $this->appInspector,
             $this->odsInspector

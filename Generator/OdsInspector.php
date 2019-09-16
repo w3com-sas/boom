@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Generator;
 
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\Service\BoomManager;
@@ -30,11 +31,11 @@ class OdsInspector
     private $entities = [];
 
 
-    public function __construct(BoomManager $manager)
+    public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
-        $this->oDataRestClient = new OdataRestClient($manager);
+        $this->oDataRestClient = new OdataRestClient($manager, $cache);
+        $this->initOdsEntities();
     }
-
 
     public function getOdsEntity($name)
     {
