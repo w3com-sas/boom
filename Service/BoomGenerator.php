@@ -10,6 +10,7 @@ use W3com\BoomBundle\Generator\EntityComparator;
 use W3com\BoomBundle\Generator\Messenger;
 use W3com\BoomBundle\Generator\OdsInspector;
 use W3com\BoomBundle\Generator\Model\Entity;
+use W3com\BoomBundle\Generator\SLInspector;
 
 class BoomGenerator
 {
@@ -22,6 +23,11 @@ class BoomGenerator
      * @var OdsInspector
      */
     private $odsInspector;
+
+    /**
+     * @var SLInspector
+     */
+    private $SLInspector;
 
     /**
      * @var AppInspector
@@ -58,6 +64,7 @@ class BoomGenerator
     {
         $this->manager = $manager;
         $this->appInspector = new AppInspector($manager);
+        $this->SLInspector = new SLInspector($manager);
         $this->odsInspector = new OdsInspector($manager, $cache);
         $this->comparator = new EntityComparator(
             $this->appInspector,
@@ -68,13 +75,21 @@ class BoomGenerator
 
     }
 
+    public function createSapEntity($tableName, $fields = [])
+    {
+        $entity = $this->SLInspector->getEntity($tableName);
+        $phpClass = $this->classCreator->generateClass($entity, 'sl', $fields);
+        file_put_contents($this->manager->config['entity_directory'] . '/'
+            . $entity->getName() . '.php', $phpClass);
+    }
+
     /**
      * @param $calcViewName
-     * @T
+     * @throws \W3com\BoomBundle\Exception\EntityNotFoundException
      */
     public function createViewEntity($calcViewName)
     {
-        $entity = $this->odsInspector->getOdsEntity($calcViewName);
+        $entity = $this->odsInspector->getEntity($calcViewName);
         $phpClass = $this->classCreator->generateClass($entity);
         file_put_contents($this->manager->config['entity_directory'] . '/'
             . $entity->getName() . '.php', $phpClass);
@@ -124,6 +139,22 @@ class BoomGenerator
     public function getAppInspector(): AppInspector
     {
         return $this->appInspector;
+    }
+
+    /**
+     * @return SLInspector
+     */
+    public function getSLInspector(): SLInspector
+    {
+        return $this->SLInspector;
+    }
+
+    /**
+     * @return BoomManager
+     */
+    public function getManager(): BoomManager
+    {
+        return $this->manager;
     }
 
 

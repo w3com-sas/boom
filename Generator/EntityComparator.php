@@ -77,12 +77,12 @@ class EntityComparator
     {
         switch ($type) {
             case Property::TYPE_APP:
-                $this->appInspector->initProjectEntities();
-                $entities = $this->appInspector->getProjectEntities();
+                $this->appInspector->initEntities();
+                $entities = $this->appInspector->getEntities();
                 break;
             case Property::TYPE_ODS:
-                $this->odsInspector->initOdsEntities();
-                $entities = $this->odsInspector->getOdsEntities();
+                $this->odsInspector->initEntities();
+                $entities = $this->odsInspector->getEntities();
                 break;
         }
 

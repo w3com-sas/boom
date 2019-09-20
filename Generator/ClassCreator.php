@@ -23,7 +23,7 @@ class ClassCreator
         $this->manager = $manager;
     }
 
-    public function generateClass(Entity $entity)
+    public function generateClass(Entity $entity, $type = 'ods', $fields = [])
     {
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
@@ -33,8 +33,23 @@ class ClassCreator
             ->addExtend(AbstractEntity::class)
             ->addComment(
                 str_replace('ZZ_ALIAS', $entity->getTable(),
-                    str_replace('ZZ_TYPE', 'ods', Entity::ANNOTATION)
+                    str_replace('ZZ_TYPE_READ', $type,
+                        str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION))
                     ));
+
+        if ($fields !== []) {
+            $properties = $entity->getProperties();
+
+            $classProperties = [];
+
+            foreach ($properties as $property) {
+                if ($property->getIsKey() || in_array($property->getField(), $fields)) {
+                    $classProperties[] = $property;
+                }
+            }
+
+            $entity->setProperties($classProperties);
+        }
 
         /** @var Property $property */
         foreach ($entity->getProperties() as $property){
@@ -44,15 +59,39 @@ class ClassCreator
                     ->addProperty($property->getName())
                     ->setVisibility(Property::PROPERTY_VISIBILITY)
                     ->addComment(str_replace('ZZ', $property->getField(),
-                        Property::PROPERTY_ANNOTATION_ISKEY));
+                        str_replace('ZZ_DESC', $property->getDescription(),
+                            str_replace('ZZ_TYPE', $property->getFieldType(),
+                                str_replace('ZZ_QUOTES', $property->hasQuotes(),
+                                    Property::PROPERTY_ANNOTATION_ISKEY)))));
             } else {
+
+                $annotation = $property->getFieldType() === 'choice' ? Property::PROPERTY_ANNOTATION_CHOICES : Property::PROPERTY_ANNOTATION;
+
+                $choices = '';
+
+                foreach ($property->getChoices() as $key => $value) {
+                    $choices .= $key . '|' . $value . '#';
+                }
+
+                $choices = substr_replace($choices ,'', -1);
+
                 $class
                     ->addProperty($property->getName())
                     ->setVisibility(Property::PROPERTY_VISIBILITY)
                     ->addComment(str_replace('ZZ', $property->getField(),
-                        Property::PROPERTY_ANNOTATION));
+                        str_replace('ZZ_DESC', $property->getDescription(),
+                            str_replace('ZZ_TYPE', $property->getFieldType(),
+                                str_replace('ZZ_QUOTES', $property->hasQuotes(),
+                                    str_replace('ZZ_CHOICES', $choices,
+                                        $annotation))))));
+
             }
+
             $this->addGetter($property, $class);
+
+            if ($type === 'sl' && !$property->getIsKey()) {
+                $this->addSetter($property, $class);
+            }
 
         }
         return $file;
@@ -62,6 +101,13 @@ class ClassCreator
     {
         $class->addMethod('get'.ucfirst($property->getName()))
             ->addBody('return $this->'.$property->getName().';');
+    }
+
+    private function addSetter(Property $property, ClassType $class)
+    {
+        $class->addMethod('set'.ucfirst($property->getName()))
+            ->addBody('return $this->set(\''.$property->getName().'\', $'.$property->getName().');')
+            ->addParameter($property->getName());
     }
 
     private function getBaseFile(): PhpFile

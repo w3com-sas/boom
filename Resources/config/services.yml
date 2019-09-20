@@ -30,13 +30,18 @@ services:
 
   W3com\BoomBundle\Command\UpdateViewsCommand:
     arguments:
-      - '@W3com\BoomBundle\Service\BoomManager'
+      - '@W3com\BoomBundle\Service\BoomGenerator'
     tags:
       - { name: 'console.command', command: 'boom:update-views' }
 
   W3com\BoomBundle\Command\UpdateViewCommand:
     arguments:
-      - '@W3com\BoomBundle\Service\BoomManager'
+      - '@W3com\BoomBundle\Service\BoomGenerator'
     tags:
       - { name: 'console.command', command: 'boom:update-view' }
 
+  W3com\BoomBundle\Command\MakeEntityCommand:
+    arguments:
+    - '@W3com\BoomBundle\Service\BoomGenerator'
+    tags:
+    - { name: 'console.command', command: 'boom:maker' }

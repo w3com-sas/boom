@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use W3com\BoomBundle\Generator\Model\Entity;
-use W3com\BoomBundle\Service\BoomManager;
+use W3com\BoomBundle\Service\BoomGenerator;
 
 class UpdateViewCommand extends Command
 {
@@ -19,9 +19,9 @@ class UpdateViewCommand extends Command
 
     private $generator;
 
-    public function __construct(BoomManager $manager)
+    public function __construct(BoomGenerator $generator)
     {
-        $this->generator = $manager->getGenerator();
+        $this->generator = $generator;
         parent::__construct();
     }
 
@@ -47,7 +47,7 @@ class UpdateViewCommand extends Command
 
         if (empty($input->getArgument('entity'))) {
 
-            $entities = $this->generator->getOdsInspector()->getOdsEntities();
+            $entities = $this->generator->getOdsInspector()->getEntities();
 
             $io->title('Calculation view list : ');
 

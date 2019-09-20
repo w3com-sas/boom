@@ -3,13 +3,13 @@
 namespace W3com\BoomBundle\Generator;
 
 use Symfony\Component\Cache\Adapter\AdapterInterface;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
+use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
 
-class OdsInspector
+class OdsInspector implements InspectorInterface
 {
 
     const NODE_SCHEMA = 'Schema';
@@ -34,10 +34,15 @@ class OdsInspector
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->oDataRestClient = new OdataRestClient($manager, $cache);
-        $this->initOdsEntities();
+        $this->initEntities();
     }
 
-    public function getOdsEntity($name)
+    /**
+     * @param $name
+     * @return Entity
+     * @throws EntityNotFoundException
+     */
+    public function getEntity($name)
     {
         /** @var Entity $entity */
         foreach ($this->entities as $entity) {
@@ -45,17 +50,17 @@ class OdsInspector
                 return $entity;
             }
         }
-        throw new NotFoundResourceException('Unable to find "' . $name .
+        throw new EntityNotFoundException('Unable to find "' . $name .
             '" calculation view in services.xsodata ');
     }
 
-    public function getOdsEntities()
+    public function getEntities()
     {
         return $this->entities;
     }
 
 
-    public function initOdsEntities()
+    public function initEntities()
     {
         $odsViewMetadata = $this->oDataRestClient->getOdsViewMetadata();
         $schema = array_column($odsViewMetadata, $this::NODE_SCHEMA);

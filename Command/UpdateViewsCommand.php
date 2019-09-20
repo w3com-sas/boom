@@ -7,15 +7,15 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use W3com\BoomBundle\Service\BoomManager;
+use W3com\BoomBundle\Service\BoomGenerator;
 
 class UpdateViewsCommand extends Command
 {
     private $generator;
 
-    public function __construct(BoomManager $manager)
+    public function __construct(BoomGenerator $generator)
     {
-        $this->generator = $manager->getGenerator();
+        $this->generator = $generator;
         parent::__construct();
     }
 

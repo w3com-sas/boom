@@ -10,7 +10,7 @@ use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
 
-class AppInspector
+class AppInspector implements InspectorInterface
 {
 
     const ANNOTATION_COLUMN = 'column';
@@ -43,7 +43,7 @@ class AppInspector
      * @return mixed|Entity|null
      * @throws \ReflectionException
      */
-    public function getProjectEntity($name)
+    public function getEntity($name)
     {
         $this->checkToInit();
         /** @var Entity $entity */
@@ -55,7 +55,7 @@ class AppInspector
         return null;
     }
 
-    public function getProjectEntities()
+    public function getEntities()
     {
         return $this->entities;
     }
@@ -63,7 +63,7 @@ class AppInspector
     /**
      * @throws \ReflectionException
      */
-    public function initProjectEntities()
+    public function initEntities()
     {
         $this->finder->files()->in($this->manager->config['entity_directory']);
         foreach ($this->finder as $fileInfo) {
@@ -146,7 +146,7 @@ class AppInspector
     private function checkToInit()
     {
         if (empty($this->entities)) {
-            $this->initProjectEntities();
+            $this->initEntities();
         }
     }
 }

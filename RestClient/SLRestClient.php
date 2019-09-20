@@ -5,22 +5,26 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Pool;
-use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
 class SLRestClient implements RestClientInterface
 {
+    const SL_METADATA_URI = '$metadata';
+
     /**
      * @var BoomManager
      */
     private $manager;
+
+    private $xmlEncoder;
 
     private $batchRequest = [];
 
     public function __construct(BoomManager $manager)
     {
         $this->manager = $manager;
+        $this->xmlEncoder = new XmlEncoder();
     }
 
     public function get(string $uri, $file = false)
@@ -81,6 +85,37 @@ class SLRestClient implements RestClientInterface
             } catch (ConnectException $e) {
                 $this->manager->stopwatch->stop('SL-get');
                 $this->manager->logger->error($e->getMessage());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            }
+        }
+    }
+
+    public function getMetadata()
+    {
+        $client = $this->manager->getCurrentClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+                $this->manager->stopwatch->start('SL-get');
+                //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
+                $res = $client->request('GET', self::SL_METADATA_URI, []);
+                $response = $res->getBody()->getContents();
+                $stop = $this->manager->stopwatch->stop('SL-get');
+                $this->manager->addToCollectedData('sl', $res->getStatusCode(), '$metadata',
+                    null, $response, $stop);
+                return $this->getValuesFromXmlResponse($response);
+
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->login();
+                } else {
+                    $response = $e->getResponse()->getBody()->getContents();
+                    $this->manager->logger->error($response, [self::SL_METADATA_URI]);
+                    throw new \Exception('Unknown error while launching POST request');
+                }
+            } catch (ConnectException $e) {
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
@@ -342,5 +377,10 @@ class SLRestClient implements RestClientInterface
             $this->manager->logger->error($response);
             throw new \Exception('Unknown error while loging in');
         }
+    }
+
+    public function getValuesFromXmlResponse($response)
+    {
+        return $this->xmlEncoder->decode($response, 'array');
     }
 }
