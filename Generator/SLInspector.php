@@ -125,8 +125,12 @@ class SLInspector implements InspectorInterface
             $entity->setKey($key[0][$this::NAME_ENTITY_PROPERTY]);
         }
 
-        foreach ($this->entityTypes[$type[1]][$this::NAME_PROPERTY] as $propertyMetadata) {
-            $this->hydratePropertyModel($propertyMetadata, $entity);
+        if (array_key_exists($this::NAME_ENTITY_PROPERTY, $this->entityTypes[$type[1]][$this::NAME_PROPERTY])) {
+            $this->hydratePropertyModel($this->entityTypes[$type[1]][$this::NAME_PROPERTY], $entity);
+        } else {
+            foreach ($this->entityTypes[$type[1]][$this::NAME_PROPERTY] as $propertyMetadata) {
+                $this->hydratePropertyModel($propertyMetadata, $entity);
+            }
         }
 
         if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
