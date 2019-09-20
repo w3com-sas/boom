@@ -16,10 +16,6 @@ use W3com\BoomBundle\Service\BoomGenerator;
 
 class MakeEntityCommand extends Command
 {
-    private $createdEntities = [];
-
-    private $odsEntities = [];
-
     private $generator;
 
     public function __construct(BoomGenerator $generator)
@@ -74,29 +70,7 @@ class MakeEntityCommand extends Command
                 }
             }
 
-            $fieldRepo = $this->generator->getManager()->getRepository('FieldDefinition');
-
-            $percent = count($entity->getProperties());
-            $io->progressStart($percent);
-
-            /** @var Property $property */
-            foreach ($entity->getProperties() as $property) {
-                if (strpos(strtolower($property->getField()), 'u_w3c') !== false
-                    && strpos(strtolower($entity->getTable()), 'w3c') !== false) {
-
-                        /** @var FieldDefinition $fieldDefinition */
-                        $fieldDefinition = $fieldRepo->find('@' . substr($entity->getTable(),2) . '_' . $property->getField());
-
-                        if ($fieldDefinition !== null) {
-                            $property->setDescription($fieldDefinition->getDescription());
-                        } else {
-                            $property->setDescription($property->getField());
-                        }
-                } else {
-                    $property->setDescription($property->getField());
-                }
-                $io->progressAdvance(1);
-            }
+            $io->progressStart(1);
 
             $generator->createSapEntity($entity->getTable());
 

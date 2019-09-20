@@ -40,6 +40,8 @@ class SLInspector implements InspectorInterface
 
     private $entityTypes = [];
 
+    private $fieldsDefinition = [];
+
     public function __construct(BoomManager $manager)
     {
         $this->boom = $manager;
@@ -85,6 +87,8 @@ class SLInspector implements InspectorInterface
 
     public function initEntities()
     {
+        AnnotationRegistry::registerLoader('class_exists');
+
         $metadata = $this->SLClient->getMetadata();
 
         $this->metadata = $metadata;
@@ -98,6 +102,10 @@ class SLInspector implements InspectorInterface
         }
 
         $this->entityTypes = $entityTypes;
+
+        $fieldRepo = $this->boom->getRepository('FieldDefinition');
+
+        $this->fieldsDefinition = $fieldRepo->findAll();
 
         foreach ($entitiesMetadata as $entityMetadata) {
             $this->hydrateEntityModel($entityMetadata);
@@ -142,12 +150,20 @@ class SLInspector implements InspectorInterface
 
     public function hydratePropertyModel($propertyMetadata, Entity $entity)
     {
-        AnnotationRegistry::registerLoader('class_exists');
-
         $property = new Property();
         $property->setType(Property::TYPE_SL);
 
         $property->setDescription($propertyMetadata[$this::NAME_ENTITY_PROPERTY]);
+
+        if (strpos(strtolower($propertyMetadata[$this::NAME_ENTITY_PROPERTY]), 'u_w3c') !== false) {
+            /** @var FieldDefinition $fieldDefinition */
+            foreach ($this->fieldsDefinition as $fieldDefinition) {
+                if (strtolower($fieldDefinition->getColumn_name()) === strtolower($propertyMetadata[$this::NAME_ENTITY_PROPERTY])) {
+                    $property->setDescription($fieldDefinition->getDescription());
+                    break;
+                }
+            }
+        }
 
         foreach ($propertyMetadata as $propertyMetadatum => $value) {
 
