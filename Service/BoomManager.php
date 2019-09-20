@@ -188,6 +188,14 @@ class BoomManager
     }
 
     /**
+     * @return Client
+     */
+    public function getSlClient()
+    {
+        return $this->restClients['sl'];
+    }
+
+    /**
      * @param $connection
      *
      * @return BoomManager

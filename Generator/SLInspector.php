@@ -9,6 +9,7 @@ use W3com\BoomBundle\Generator\Model\Property;
 use W3com\BoomBundle\HanaEntity\FieldDefinition;
 use W3com\BoomBundle\RestClient\SLRestClient;
 use W3com\BoomBundle\Service\BoomManager;
+use W3com\BoomBundle\Utils\StringUtils;
 
 class SLInspector implements InspectorInterface
 {
@@ -156,6 +157,7 @@ class SLInspector implements InspectorInterface
             foreach ($this->fieldsDefinition as $fieldDefinition) {
                 if (strtolower($fieldDefinition->getColumn_name()) === strtolower($propertyMetadata[$this::NAME_ENTITY_PROPERTY])) {
                     $property->setDescription($fieldDefinition->getDescription());
+                    $property->setName(StringUtils::descriptionToProperty($property->getDescription()));
                     break;
                 }
             }
@@ -167,7 +169,9 @@ class SLInspector implements InspectorInterface
 
                 case $this::NAME_ENTITY_PROPERTY:
                     $property->setField($value);
-                    $property->setName(str_replace('_', '', lcfirst(str_ireplace('u_w3c_', '', $value))));
+                    if (!$property->getName()) {
+                        $property->setName(str_replace('_', '', lcfirst(str_ireplace('u_w3c_', '', $value))));
+                    }
                     break;
                 case $this::TYPE_PROPERTY:
                     $hasQuotes = 'true';
@@ -194,6 +198,9 @@ class SLInspector implements InspectorInterface
                                 'Oui' => 'tYes',
                                 'Non' => 'tNo'
                             ]);
+                            break;
+                        default:
+                            $value = 'choice';
                             break;
                     }
 

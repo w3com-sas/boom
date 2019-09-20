@@ -1,0 +1,10 @@
+<?php
+
+namespace W3com\BoomBundle\HanaEnum;
+
+class StraightLineCalculationMethodEnum
+{
+	const SLCMAUQUISITIONVALUEDIVIDEDBYTOTALUSEFULLIFE = '';
+	const SLCMPERCENTAGEOFACQUISITIONVALUE = '';
+	const SLCMNETBOOKVALUEDIVIDEDBYREMAININGLIFE = '';
+}

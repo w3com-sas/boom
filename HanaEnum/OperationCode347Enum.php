@@ -1,0 +1,13 @@
+<?php
+
+namespace W3com\BoomBundle\HanaEnum;
+
+class OperationCode347Enum
+{
+	const OCGOODSORSERVICIESACQUISITIONS = '';
+	const OCPUBLICENTITIESACQUISITIONS = '';
+	const OCTRAVELAGENCIESPURCHASES = '';
+	const OCSALESORSERVICESREVENUES = '';
+	const OCPUBLICSUBSIDIES = '';
+	const OCTRAVELAGENCIESSALES = '';
+}

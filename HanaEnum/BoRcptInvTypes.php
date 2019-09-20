@@ -1,0 +1,34 @@
+<?php
+
+namespace W3com\BoomBundle\HanaEnum;
+
+class BoRcptInvTypes
+{
+	const IT_ALLTRANSACTIONS = '';
+	const IT_OPENINGBALANCE = '';
+	const IT_CLOSINGBALANCE = '';
+	const IT_INVOICE = '';
+	const IT_CREDITNOTE = '';
+	const IT_TAXINVOICE = '';
+	const IT_RETURN = '';
+	const IT_PURCHASEINVOICE = '';
+	const IT_PURCHASECREDITNOTE = '';
+	const IT_PURCHASEDELIVERYNOTE = '';
+	const IT_PURCHASERETURN = '';
+	const IT_RECEIPT = '';
+	const IT_DEPOSIT = '';
+	const IT_JOURNALENTRY = '';
+	const IT_PAYMENTADVICE = '';
+	const IT_CHEQUESFORPAYMENT = '';
+	const IT_STOCKRECONCILIATIONS = '';
+	const IT_GENERALRECEIPTTOSTOCK = '';
+	const IT_GENERALRELEASEFROMSTOCK = '';
+	const IT_TRANSFERBETWEENWAREHOUSES = '';
+	const IT_WORKINSTRUCTIONS = '';
+	const IT_DEFERREDDEPOSIT = '';
+	const IT_CORRECTIONINVOICE = '';
+	const IT_APCORRECTIONINVOICE = '';
+	const IT_ARCORRECTIONINVOICE = '';
+	const IT_DOWNPAYMENT = '';
+	const IT_PURCHASEDOWNPAYMENT = '';
+}
