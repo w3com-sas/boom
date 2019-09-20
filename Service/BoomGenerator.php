@@ -77,6 +77,7 @@ class BoomGenerator
 
     public function createSapEntity($tableName, $fields = [])
     {
+        $this->getSLInspector()->initEntities();
         $entity = $this->SLInspector->getEntity($tableName);
         $phpClass = $this->classCreator->generateClass($entity, 'sl', $fields);
         file_put_contents($this->manager->config['entity_directory'] . '/'

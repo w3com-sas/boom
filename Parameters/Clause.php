@@ -48,14 +48,14 @@ class Clause
                 // gestion du null dans les calculation views
                 $quote = (null === $value) ? '' : $this->quote;
                 $value = (null === $value) ? 'null' : $value;
-                $tmp[] = sprintf($this->operator, $this->column, $quote.$value.$quote);
+                $tmp[] = sprintf($this->operator, $this->column, $quote . $value . $quote);
             }
-            $retour = '('.implode(' or ', $tmp).')';
+            $retour = '(' . implode(' or ', $tmp) . ')';
         } else {
             // gestion du null dans les calculation views
             $quote = (null === $this->value) ? '' : $this->quote;
             $value = (null === $this->value) ? 'null' : $this->value;
-            $retour = sprintf($this->operator, $this->column, $quote.$value.$quote);
+            $retour = sprintf($this->operator, $this->column, $quote . $value . $quote);
         }
 
         return $retour;

@@ -45,12 +45,8 @@ class SLInspector implements InspectorInterface
     public function __construct(BoomManager $manager)
     {
         $this->boom = $manager;
-
         $this->SLClient = new SLRestClient($manager);
-
-        $this->initEntities();
     }
-
 
     /**
      * @param $name
