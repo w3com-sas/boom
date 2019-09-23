@@ -7,5 +7,4 @@ class BoSeriesTypeEnum
 	const STDOCUMENT = '';
 	const STBUSINESSPARTNER = '';
 	const STITEM = '';
-	const STRESOURCE = '';
 }

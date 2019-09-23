@@ -4,6 +4,7 @@ namespace W3com\BoomBundle\Generator;
 
 use DateInterval;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Nette\PhpGenerator\ClassType;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
@@ -58,6 +59,26 @@ class SLInspector implements InspectorInterface
         $this->SLClient = new SLRestClient($manager, $cache);
         $this->cache = $cache;
     }
+/*
+    public function initEnum()
+    {
+        $metadata = $this->SLClient->getMetadata();
+        $enums = $metadata['edmx:DataServices']['Schema']['EnumType'];
+
+        foreach ($enums as $enum) {
+            $class = new ClassType($enum['@Name']);
+            foreach ($enum['Member'] as $property) {
+                if (isset($property['@Name'])) {
+                    $class->addConstant(explode(' ', strtoupper($property['@Name']))[0], '');
+                }
+            }
+            dump($class);
+            file_put_contents(__DIR__ . '/../HanaEnum/'
+                . $enum['@Name'] . '.php', '<?php' . "\n\n" .
+                'namespace W3com\\BoomBundle\\HanaEnum;' . "\n\n" .
+                $class);
+        }
+    }*/
 
     /**
      * @param $name
@@ -110,7 +131,7 @@ class SLInspector implements InspectorInterface
 
         $fieldDefCache = $this->cache->getItem($this::STORAGE_KEY);
 
-        if (!$fieldDefCache->isHit()){
+        if (!$fieldDefCache->isHit()) {
             $fieldRepo = $this->boom->getRepository('FieldDefinition');
             $this->fieldsDefinition = $fieldRepo->findAll();
             $fieldDefCache->set($this->fieldsDefinition);
