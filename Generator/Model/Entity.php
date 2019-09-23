@@ -18,7 +18,6 @@ class Entity
 
     private $key;
 
-
     public static function formatTableName($name)
     {
         if (substr($name, -4) === 'Type') {

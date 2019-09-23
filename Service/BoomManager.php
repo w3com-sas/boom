@@ -104,7 +104,7 @@ class BoomManager
         $this->setCurrentConnection('default');
 
         // creating rest clients
-        $slRestClient = new SLRestClient($this);
+        $slRestClient = new SLRestClient($this, $cache);
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;

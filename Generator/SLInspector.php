@@ -2,12 +2,14 @@
 
 namespace W3com\BoomBundle\Generator;
 
+use DateInterval;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
 use W3com\BoomBundle\HanaEntity\FieldDefinition;
+use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Utils\StringUtils;
@@ -30,7 +32,7 @@ class SLInspector implements InspectorInterface
 
     const TYPE_PROPERTY = '@Type';
 
-    const STORAGE_KEY = 'sl.inspector.data';
+    const STORAGE_KEY = 'sl.field.definition';
 
     private $boom;
 
@@ -53,7 +55,7 @@ class SLInspector implements InspectorInterface
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->boom = $manager;
-        $this->SLClient = new SLRestClient($manager);
+        $this->SLClient = new SLRestClient($manager, $cache);
         $this->cache = $cache;
     }
 
@@ -94,45 +96,33 @@ class SLInspector implements InspectorInterface
     {
         AnnotationRegistry::registerLoader('class_exists');
 
-        $cache = $this->cache->getItem(self::STORAGE_KEY);
+        $this->metadata = $this->SLClient->getMetadata();
+        $entitiesMetadata = $this->metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
+        $this->enumTypes = $this->metadata['edmx:DataServices']['Schema']['EnumType'];
 
-        if (!$cache->isHit()) {
-            $metadata = $this->SLClient->getMetadata();
+        $entityTypes = [];
 
-            $this->metadata = $metadata;
-
-            $entitiesMetadata = $metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
-
-            $this->enumTypes = $metadata['edmx:DataServices']['Schema']['EnumType'];
-
-            $entityTypes = [];
-
-            foreach ($this->metadata['edmx:DataServices']['Schema']['EntityType'] as $entityType) {
-                $entityTypes[$entityType[$this::NAME_ENTITY_PROPERTY]] = $entityType;
-            }
-
-            $this->entityTypes = $entityTypes;
-
-            $fieldRepo = $this->boom->getRepository('FieldDefinition');
-
-            $this->fieldsDefinition = $fieldRepo->findAll();
-
-            foreach ($entitiesMetadata as $entityMetadata) {
-                $this->hydrateEntityModel($entityMetadata);
-            }
-
-            $cache->set([
-                'UDTs' => $this->UDTEntities,
-                'SAP' => $this->SAPEntities
-            ]);
-            $this->cache->save($cache);
-        } else {
-            $datas = $cache->get();
-
-            $this->SAPEntities = $datas['SAP'];
-            $this->UDTEntities = $datas['UDTs'];
+        foreach ($this->metadata['edmx:DataServices']['Schema']['EntityType'] as $entityType) {
+            $entityTypes[$entityType[$this::NAME_ENTITY_PROPERTY]] = $entityType;
         }
 
+        $this->entityTypes = $entityTypes;
+
+        $fieldDefCache = $this->cache->getItem($this::STORAGE_KEY);
+
+        if (!$fieldDefCache->isHit()){
+            $fieldRepo = $this->boom->getRepository('FieldDefinition');
+            $this->fieldsDefinition = $fieldRepo->findAll();
+            $fieldDefCache->set($this->fieldsDefinition);
+            $fieldDefCache->expiresAfter(DateInterval::createFromDateString('1 day'));
+            $this->cache->save($fieldDefCache);
+        } else {
+            $this->fieldsDefinition = $fieldDefCache->get();
+        }
+
+        foreach ($entitiesMetadata as $entityMetadata) {
+            $this->hydrateEntityModel($entityMetadata);
+        }
     }
 
     private function hydrateEntityModel($entityMetadata)
@@ -220,7 +210,7 @@ class SLInspector implements InspectorInterface
 
                 foreach ($this->enumTypes as $enumType) {
                     if ($enumType['@Name'] === $enumName) {
-                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\'.$enumName;
+                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\' . $enumName;
                         foreach ($enumType['Member'] as $enumChoice) {
                             if (isset($enumChoice['@Name'])) {
 

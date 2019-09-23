@@ -12,7 +12,9 @@ class OdataRestClient implements RestClientInterface
 {
 
     const ODS_METADATA_URI = '$metadata';
+    const CACHE_METADATA_LIFETIME = 86400;
     const STORAGE_KEY = 'ods.metadata';
+
     /**
      * @var BoomManager
      */
@@ -82,7 +84,6 @@ class OdataRestClient implements RestClientInterface
     public function getOdsViewMetadata()
     {
         $cacheMetadata = $this->cache->getItem(self::STORAGE_KEY);
-
         if (!$cacheMetadata->isHit()){
             $param = [
                 'auth' => $this->auth,
@@ -96,6 +97,7 @@ class OdataRestClient implements RestClientInterface
                 null, $response, $stop);
             $metadata = $this->getValuesFromXmlResponse($response);
             $cacheMetadata->set($metadata);
+            $cacheMetadata->expiresAfter(\DateInterval::createFromDateString('1 day'));
             $this->cache->save($cacheMetadata);
             return $metadata;
         }

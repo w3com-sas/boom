@@ -5,12 +5,14 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
 class SLRestClient implements RestClientInterface
 {
     const SL_METADATA_URI = '$metadata';
+    const STORAGE_KEY = 'sl.metadata';
 
     /**
      * @var BoomManager
@@ -21,8 +23,14 @@ class SLRestClient implements RestClientInterface
 
     private $batchRequest = [];
 
-    public function __construct(BoomManager $manager)
+    /**
+     * @var AdapterInterface
+     */
+    private $cache;
+
+    public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
+        $this->cache = $cache;
         $this->manager = $manager;
         $this->xmlEncoder = new XmlEncoder();
     }
@@ -92,33 +100,41 @@ class SLRestClient implements RestClientInterface
 
     public function getMetadata()
     {
-        $client = $this->manager->getCurrentClient();
-        $attempts = 0;
-        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
-            try {
-                ++$attempts;
-                $this->manager->stopwatch->start('SL-get');
-                //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
-                $res = $client->request('GET', self::SL_METADATA_URI, []);
-                $response = $res->getBody()->getContents();
-                $stop = $this->manager->stopwatch->stop('SL-get');
-                $this->manager->addToCollectedData('sl', $res->getStatusCode(), '$metadata',
-                    null, $response, $stop);
-                return $this->getValuesFromXmlResponse($response);
+        $cacheMetadata = $this->cache->getItem($this::STORAGE_KEY);
+        if (!$cacheMetadata->isHit()){
+            $client = $this->manager->getCurrentClient();
+            $attempts = 0;
+            while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+                try {
+                    ++$attempts;
+                    $this->manager->stopwatch->start('SL-get');
+                    //$res = $this->client->request('GET', $uri, ['auth' => $this->auth]);
+                    $res = $client->request('GET', self::SL_METADATA_URI, []);
+                    $response = $res->getBody()->getContents();
+                    $stop = $this->manager->stopwatch->stop('SL-get');
+                    $this->manager->addToCollectedData('sl', $res->getStatusCode(), '$metadata',
+                        null, $response, $stop);
+                    $metadata = $this->getValuesFromXmlResponse($response);
+                    $cacheMetadata->set($metadata);
+                    $cacheMetadata->expiresAfter(\DateInterval::createFromDateString('1 day'));
+                    $this->cache->save($cacheMetadata);
+                    return $metadata;
 
-            } catch (ClientException $e) {
-                if (401 == $e->getCode()) {
-                    $this->login();
-                } else {
-                    $response = $e->getResponse()->getBody()->getContents();
-                    $this->manager->logger->error($response, [self::SL_METADATA_URI]);
-                    throw new \Exception('Unknown error while launching POST request');
+                } catch (ClientException $e) {
+                    if (401 == $e->getCode()) {
+                        $this->login();
+                    } else {
+                        $response = $e->getResponse()->getBody()->getContents();
+                        $this->manager->logger->error($response, [self::SL_METADATA_URI]);
+                        throw new \Exception('Unknown error while launching POST request');
+                    }
+                } catch (ConnectException $e) {
+                    $this->manager->logger->error($e->getMessage(), $e->getTrace());
+                    throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
                 }
-            } catch (ConnectException $e) {
-                $this->manager->logger->error($e->getMessage(), $e->getTrace());
-                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }
         }
+        return $cacheMetadata->get();
     }
 
     public function request(string $uri, $data, $method='POST')
