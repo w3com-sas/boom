@@ -64,7 +64,7 @@ class BoomGenerator
     {
         $this->manager = $manager;
         $this->appInspector = new AppInspector($manager);
-        $this->SLInspector = new SLInspector($manager);
+        $this->SLInspector = new SLInspector($manager, $cache);
         $this->odsInspector = new OdsInspector($manager, $cache);
         $this->comparator = new EntityComparator(
             $this->appInspector,

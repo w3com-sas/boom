@@ -35,8 +35,6 @@ class MakeEntityCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-        $io->title("Welcome in the Boom Maker Command");
-
         $SAPTables = [];
 
         $UDTsTable = [];
@@ -44,6 +42,8 @@ class MakeEntityCommand extends Command
         $generator = $this->generator;
 
         $SLInspector = $generator->getSLInspector();
+
+        $SLInspector->initEntities();
 
         foreach ($SLInspector->getUDTEntities() as $UDTEntity) {
             $UDTsTable[] = $UDTEntity->getName();
@@ -53,8 +53,9 @@ class MakeEntityCommand extends Command
             $SAPTables[] = $SAPEntity->getTable();
         }
 
-        $isUDT = $io->confirm("Entity is from an UDT ?");
+        $io->title("Welcome in the Boom Maker Command");
 
+        $isUDT = $io->confirm("Entity is from an UDT ?");
 
         if ($isUDT) {
             $table = $io->choice("What's the name of the table ?", $UDTsTable);

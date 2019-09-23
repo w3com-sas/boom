@@ -3,6 +3,7 @@
 namespace W3com\BoomBundle\Generator;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
@@ -29,6 +30,8 @@ class SLInspector implements InspectorInterface
 
     const TYPE_PROPERTY = '@Type';
 
+    const STORAGE_KEY = 'sl.inspector.data';
+
     private $boom;
 
     private $SLClient;
@@ -43,10 +46,15 @@ class SLInspector implements InspectorInterface
 
     private $fieldsDefinition = [];
 
-    public function __construct(BoomManager $manager)
+    private $enumTypes = [];
+
+    private $cache;
+
+    public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->boom = $manager;
         $this->SLClient = new SLRestClient($manager);
+        $this->cache = $cache;
     }
 
     /**
@@ -86,34 +94,52 @@ class SLInspector implements InspectorInterface
     {
         AnnotationRegistry::registerLoader('class_exists');
 
-        $metadata = $this->SLClient->getMetadata();
+        $cache = $this->cache->getItem(self::STORAGE_KEY);
 
-        $this->metadata = $metadata;
+        if (!$cache->isHit()) {
+            $metadata = $this->SLClient->getMetadata();
 
-        $entitiesMetadata = $metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
+            $this->metadata = $metadata;
 
-        $entityTypes = [];
+            $entitiesMetadata = $metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
 
-        foreach ($this->metadata['edmx:DataServices']['Schema']['EntityType'] as $entityType) {
-            $entityTypes[$entityType[$this::NAME_ENTITY_PROPERTY]] = $entityType;
+            $this->enumTypes = $metadata['edmx:DataServices']['Schema']['EnumType'];
+
+            $entityTypes = [];
+
+            foreach ($this->metadata['edmx:DataServices']['Schema']['EntityType'] as $entityType) {
+                $entityTypes[$entityType[$this::NAME_ENTITY_PROPERTY]] = $entityType;
+            }
+
+            $this->entityTypes = $entityTypes;
+
+            $fieldRepo = $this->boom->getRepository('FieldDefinition');
+
+            $this->fieldsDefinition = $fieldRepo->findAll();
+
+            foreach ($entitiesMetadata as $entityMetadata) {
+                $this->hydrateEntityModel($entityMetadata);
+            }
+
+            $cache->set([
+                'UDTs' => $this->UDTEntities,
+                'SAP' => $this->SAPEntities
+            ]);
+            $this->cache->save($cache);
+        } else {
+            $datas = $cache->get();
+
+            $this->SAPEntities = $datas['SAP'];
+            $this->UDTEntities = $datas['UDTs'];
         }
 
-        $this->entityTypes = $entityTypes;
-
-        $fieldRepo = $this->boom->getRepository('FieldDefinition');
-
-        $this->fieldsDefinition = $fieldRepo->findAll();
-
-        foreach ($entitiesMetadata as $entityMetadata) {
-            $this->hydrateEntityModel($entityMetadata);
-        }
     }
 
     private function hydrateEntityModel($entityMetadata)
     {
         $entity = new Entity();
 
-        $entity->setName(str_replace('U_W3C_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
+        $entity->setName(str_replace('U_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
         $entity->setTable(str_replace('Type', '', $entityMetadata[$this::NAME_ENTITY_PROPERTY]));
 
         $type = explode('.', $entityMetadata[$this::TYPE_ENTITY_PROPERTY]);
@@ -163,52 +189,59 @@ class SLInspector implements InspectorInterface
             }
         }
 
-        foreach ($propertyMetadata as $propertyMetadatum => $value) {
-
-            switch ($propertyMetadatum) {
-
-                case $this::NAME_ENTITY_PROPERTY:
-                    $property->setField($value);
-                    if (!$property->getName()) {
-                        $property->setName(str_replace('_', '', lcfirst(str_ireplace('u_w3c_', '', $value))));
-                    }
-                    break;
-                case $this::TYPE_PROPERTY:
-                    $hasQuotes = 'true';
-                    switch ($value) {
-                        case Property::FIELD_TYPE_DATE_TIME:
-                            $value = 'date';
-                            break;
-                        case Property::FIELD_TYPE_DOUBLE:
-                            $value = 'float';
-                            break;
-                        case Property::FIELD_TYPE_INTEGER:
-                            $value = 'int';
-                            $hasQuotes = 'false';
-                            break;
-                        case Property::FIELD_TYPE_STRING:
-                            $value = 'string';
-                            break;
-                        case Property::FIELD_TYPE_TIME:
-                            $value = 'date';
-                            break;
-                        case Property::FIELD_TYPE_YES_NO_ENUM:
-                            $value = 'choice';
-                            $property->setChoices([
-                                'Oui' => 'tYes',
-                                'Non' => 'tNo'
-                            ]);
-                            break;
-                        default:
-                            $value = 'choice';
-                            break;
-                    }
-
-                    $property->setFieldType($value);
-                    $property->setHasQuotes($hasQuotes);
-                    break;
-            }
+        $property->setField($propertyMetadata[$this::NAME_ENTITY_PROPERTY]);
+        if (!$property->getName()) {
+            $property->setName(str_replace('_', '', lcfirst(str_ireplace('u_w3c_', '', $propertyMetadata[$this::NAME_ENTITY_PROPERTY]))));
         }
+
+        $hasQuotes = 'true';
+
+        switch ($propertyMetadata[$this::TYPE_PROPERTY]) {
+            case Property::FIELD_TYPE_DATE_TIME:
+                $value = 'date';
+                break;
+            case Property::FIELD_TYPE_DOUBLE:
+                $value = 'float';
+                break;
+            case Property::FIELD_TYPE_INTEGER:
+                $value = 'int';
+                $hasQuotes = 'false';
+                break;
+            case Property::FIELD_TYPE_STRING:
+                $value = 'string';
+                break;
+            case Property::FIELD_TYPE_TIME:
+                $value = 'date';
+                break;
+            default:
+                $enumName = substr($propertyMetadata[$this::TYPE_PROPERTY], 6);
+                $value = 'choice';
+                $choices = [];
+
+                foreach ($this->enumTypes as $enumType) {
+                    if ($enumType['@Name'] === $enumName) {
+                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\'.$enumName;
+                        foreach ($enumType['Member'] as $enumChoice) {
+                            if (isset($enumChoice['@Name'])) {
+
+                                $const = strtoupper($enumChoice['@Name']);
+
+                                $choice = constant("$enumClassName::$const");
+
+                                $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
+                            }
+                        }
+                        $property->setChoices($choices);
+                        break;
+                    }
+                }
+
+                break;
+        }
+
+        $property->setFieldType($value);
+        $property->setHasQuotes($hasQuotes);
+
         $entity->setProperty($property);
     }
 }

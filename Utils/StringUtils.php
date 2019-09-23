@@ -11,10 +11,7 @@ class StringUtils {
         $words = array_filter(explode(' ', $description));
 
         foreach ($words as $key => $word) {
-            $words[$key] = strtolower($word);
-            if ($key !== 0) {
-                $words[$key] = ucfirst($words[$key]);
-            }
+            $words[$key] = $key !== 0 ? ucfirst(strtolower($word)) : strtolower($word);
         }
 
         return implode($words);

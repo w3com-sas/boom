@@ -70,7 +70,7 @@ class ClassCreator
                 $choices = '';
 
                 foreach ($property->getChoices() as $key => $value) {
-                    $choices .= $key . '|' . $value . '#';
+                    $choices .= $value . '|' . $key . '#';
                 }
 
                 $choices = substr_replace($choices ,'', -1);
