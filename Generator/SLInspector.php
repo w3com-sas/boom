@@ -154,14 +154,14 @@ class SLInspector implements InspectorInterface
             }
         }
 
-        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
+        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
             $this->UDTEntities[] = $entity;
         } else {
             $this->SAPEntities[] = $entity;
         }
     }
 
-    public function hydratePropertyModel($propertyMetadata, Entity $entity)
+    private function hydratePropertyModel($propertyMetadata, Entity $entity)
     {
         $property = new Property();
         $property->setType(Property::TYPE_SL);
@@ -216,7 +216,11 @@ class SLInspector implements InspectorInterface
 
                                 $const = strtoupper($enumChoice['@Name']);
 
-                                $choice = constant("$enumClassName::$const");
+                                try {
+                                    $choice = constant("$enumClassName::$const");
+                                } catch (\ErrorException $e) {
+                                    $choice = '';
+                                }
 
                                 $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
                             }
