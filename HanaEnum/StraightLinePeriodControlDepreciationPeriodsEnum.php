@@ -6,4 +6,5 @@ class StraightLinePeriodControlDepreciationPeriodsEnum
 {
 	const SLPCDPSTANDARD = '';
 	const SLPCDPINDIVIDUAL = '';
+    const SLPCDPINDIVIDUALUSAGE = '';
 }

@@ -11,4 +11,5 @@ class BoDocWhsAutoIssueMethod
 	const WHSBINQTYASCENDINGORDER = '';
 	const WHSBINFIFO = '';
 	const WHSBINLIFO = '';
+    const WHSBINSINGLEBINPREFERRED = '';
 }

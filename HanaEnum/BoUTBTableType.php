@@ -9,4 +9,5 @@ class BoUTBTableType
 	const BOTT_MASTERDATA = '';
 	const BOTT_MASTERDATALINES = '';
 	const BOTT_NOOBJECT = '';
+    const BOTT_NOOBJECTAUTOINCREMENT = '';
 }
