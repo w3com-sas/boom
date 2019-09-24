@@ -205,57 +205,59 @@ class SLInspector implements InspectorInterface
             $property->setName(str_replace('_', '', lcfirst(str_ireplace('u_w3c_', '', $propertyMetadata[$this::NAME_ENTITY_PROPERTY]))));
         }
 
-        $hasQuotes = 'true';
+        $property->setFieldTypeSAPFormat($propertyMetadata[$this::TYPE_PROPERTY], $this->enumTypes);
 
-        switch ($propertyMetadata[$this::TYPE_PROPERTY]) {
-            case Property::FIELD_TYPE_DATE_TIME:
-                $value = 'date';
-                break;
-            case Property::FIELD_TYPE_DOUBLE:
-                $value = 'float';
-                break;
-            case Property::FIELD_TYPE_INTEGER:
-                $value = 'int';
-                $hasQuotes = 'false';
-                break;
-            case Property::FIELD_TYPE_STRING:
-                $value = 'string';
-                break;
-            case Property::FIELD_TYPE_TIME:
-                $value = 'date';
-                break;
-            default:
-                $enumName = substr($propertyMetadata[$this::TYPE_PROPERTY], 6);
-                $value = 'choice';
-                $choices = [];
-
-                foreach ($this->enumTypes as $enumType) {
-                    if ($enumType['@Name'] === $enumName) {
-                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\' . $enumName;
-                        foreach ($enumType['Member'] as $enumChoice) {
-                            if (isset($enumChoice['@Name'])) {
-
-                                $const = strtoupper($enumChoice['@Name']);
-
-                                try {
-                                    $choice = constant("$enumClassName::$const");
-                                } catch (\ErrorException $e) {
-                                    $choice = '';
-                                }
-
-                                $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
-                            }
-                        }
-                        $property->setChoices($choices);
-                        break;
-                    }
-                }
-
-                break;
-        }
-
-        $property->setFieldType($value);
-        $property->setHasQuotes($hasQuotes);
+//        $hasQuotes = 'true';
+//
+//        switch ($propertyMetadata[$this::TYPE_PROPERTY]) {
+//            case Property::FIELD_TYPE_DATE_TIME:
+//                $value = 'date';
+//                break;
+//            case Property::FIELD_TYPE_DOUBLE:
+//                $value = 'float';
+//                break;
+//            case Property::FIELD_TYPE_INTEGER:
+//                $value = 'int';
+//                $hasQuotes = 'false';
+//                break;
+//            case Property::FIELD_TYPE_STRING:
+//                $value = 'string';
+//                break;
+//            case Property::FIELD_TYPE_TIME:
+//                $value = 'date';
+//                break;
+//            default:
+//                $enumName = substr($propertyMetadata[$this::TYPE_PROPERTY], 6);
+//                $value = 'choice';
+//                $choices = [];
+//
+//                foreach ($this->enumTypes as $enumType) {
+//                    if ($enumType['@Name'] === $enumName) {
+//                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\' . $enumName;
+//                        foreach ($enumType['Member'] as $enumChoice) {
+//                            if (isset($enumChoice['@Name'])) {
+//
+//                                $const = strtoupper($enumChoice['@Name']);
+//
+//                                try {
+//                                    $choice = constant("$enumClassName::$const");
+//                                } catch (\ErrorException $e) {
+//                                    $choice = '';
+//                                }
+//
+//                                $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
+//                            }
+//                        }
+//                        $property->setChoices($choices);
+//                        break;
+//                    }
+//                }
+//
+//                break;
+//        }
+//
+//        $property->setFieldType($value);
+//        $property->setHasQuotes($hasQuotes);
 
         $entity->setProperty($property);
     }

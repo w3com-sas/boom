@@ -120,7 +120,7 @@ class OdsInspector implements InspectorInterface
                         $property->setName(strtolower($value));
                         break;
                     case $this::TYPE_PROPERTY:
-                        $property->setFieldType($value);
+                        $property->setFieldTypeSAPFormat($value);
                         break;
                 }
             }

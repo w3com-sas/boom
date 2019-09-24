@@ -79,6 +79,64 @@ class Property
     }
 
     /**
+     * @param $fieldType
+     * @param array $enumTypes
+     */
+    public function setFieldTypeSAPFormat($fieldType, $enumTypes = [])
+    {
+        $hasQuotes = 'true';
+        switch ($fieldType) {
+            case self::FIELD_TYPE_DATE_TIME:
+                $value = 'date';
+                break;
+            case self::FIELD_TYPE_DOUBLE:
+                $value = 'float';
+                break;
+            case self::FIELD_TYPE_INTEGER:
+                $value = 'int';
+                $hasQuotes = 'false';
+                break;
+            case self::FIELD_TYPE_STRING:
+                $value = 'string';
+                break;
+            case self::FIELD_TYPE_TIME:
+                $value = 'date';
+                break;
+            default:
+                $enumName = substr($fieldType, 6);
+                $value = 'choice';
+                $choices = [];
+
+                foreach ($enumTypes as $enumType) {
+                    if ($enumType['@Name'] === $enumName) {
+                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\' . $enumName;
+                        foreach ($enumType['Member'] as $enumChoice) {
+                            if (isset($enumChoice['@Name'])) {
+
+                                $const = strtoupper($enumChoice['@Name']);
+
+                                try {
+                                    $choice = constant("$enumClassName::$const");
+                                } catch (\ErrorException $e) {
+                                    $choice = '';
+                                }
+
+                                $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
+                            }
+                        }
+                        $this->setChoices($choices);
+                        break;
+                    }
+                }
+
+                break;
+        }
+
+        $this->setFieldType($value);
+        $this->setHasQuotes($hasQuotes);
+    }
+
+    /**
      * @return mixed
      */
     public function getIsKey()
