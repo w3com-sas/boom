@@ -45,3 +45,13 @@ services:
     - '@W3com\BoomBundle\Service\BoomGenerator'
     tags:
     - { name: 'console.command', command: 'boom:maker' }
+
+  W3com\BoomBundle\Command\ClearCacheCommand:
+    arguments:
+      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+    tags:
+    - { name: 'console.command', command: 'boom:cl' }
+
+  W3com\BoomBundle\Form\BoomTypeGuesser:
+    tags:
+      - {name: 'form.type_guesser'}
