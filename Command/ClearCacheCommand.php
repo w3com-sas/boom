@@ -13,7 +13,10 @@ use W3com\BoomBundle\RestClient\SLRestClient;
 
 class ClearCacheCommand extends Command
 {
-    private $toRemoveItems = [OdataRestClient::STORAGE_KEY, SLRestClient::STORAGE_KEY];
+    private $toRemoveItems = [
+        OdataRestClient::STORAGE_KEY,
+        SLRestClient::STORAGE_KEY
+    ];
 
     private $cache;
 

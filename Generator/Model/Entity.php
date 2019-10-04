@@ -8,7 +8,9 @@ class Entity
 {
     const ABSTRACT_ENTITY = 'AbstractEntity';
 
-    const ANNOTATION = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS")';
+    const ANNOTATION_READ = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS")';
+
+    const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE")';
 
     private $name;
 
@@ -67,15 +69,7 @@ class Entity
      */
     public function setProperty(Property $property)
     {
-        if ($property->getType() == Property::TYPE_ODS || $property->getType() === Property::TYPE_SL) {
-            if ($property->getField() == $this->getKey()) {
-                $property->setIsKey(true);
-            } else {
-                $property->setIsKey(false);
-            }
-        }
-
-        $this->properties[] = $property;
+        $this->properties[] = $property->setIsKey(($property->getField() == $this->getKey()));
     }
 
     /**

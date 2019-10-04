@@ -32,8 +32,6 @@ class Property
 
     private $name;
 
-    private $type;
-
     private $field;
 
     private $fieldType;
@@ -45,6 +43,12 @@ class Property
     private $hasQuotes;
 
     private $description;
+
+    private $isMandatory; //TODO
+
+    private $defaultValue; //TODO
+
+    private $isUDF = false;
 
     /**
      * @return mixed
@@ -146,10 +150,13 @@ class Property
 
     /**
      * @param mixed $isKey
+     * @return Property
      */
     public function setIsKey($isKey)
     {
         $this->isKey = $isKey;
+
+        return $this;
     }
 
     /**
@@ -187,22 +194,6 @@ class Property
     /**
      * @return mixed
      */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param mixed $type
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getDescription()
     {
         return $this->description;
@@ -230,6 +221,22 @@ class Property
     public function setHasQuotes($hasQuotes)
     {
         $this->hasQuotes = $hasQuotes;
+    }
+
+    /**
+     * @param mixed $isUDF
+     */
+    public function setIsUDF($isUDF)
+    {
+        $this->isUDF = $isUDF;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isUDF()
+    {
+        return $this->isUDF;
     }
 
 }

@@ -4,11 +4,11 @@ namespace W3com\BoomBundle\Utils;
 
 class StringUtils {
 
-    static public function descriptionToProperty($description)
+    static public function stringToCamelCase($string)
     {
-        $description = preg_replace('/[^A-Za-z0-9]/', ' ', self::skip_accents($description));
+        $string = preg_replace('/[^A-Za-z0-9]/', ' ', self::skipAccents($string));
 
-        $words = array_filter(explode(' ', $description));
+        $words = array_filter(explode(' ', $string));
 
         foreach ($words as $key => $word) {
             $words[$key] = $key !== 0 ? ucfirst(strtolower($word)) : strtolower($word);
@@ -17,7 +17,12 @@ class StringUtils {
         return implode($words);
     }
 
-    static private function skip_accents($str, $charset='utf-8')
+    static public function stringToPascalCase($string)
+    {
+        return ucfirst(self::stringToCamelCase($string));
+    }
+
+    static private function skipAccents($str, $charset='utf-8')
     {
         $str = htmlentities( $str, ENT_NOQUOTES, $charset );
 

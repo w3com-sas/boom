@@ -70,7 +70,7 @@ class BoomGenerator
             $this->appInspector,
             $this->odsInspector
         );
-        $this->classCreator = new ClassCreator($manager);
+        $this->classCreator = new ClassCreator($manager, $this);
         $this->messenger = new Messenger();
 
     }

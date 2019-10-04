@@ -116,7 +116,6 @@ class AppInspector implements InspectorInterface
             foreach ($this->reader->getPropertyAnnotations($property) as $annotations) {
 
                 $modelProperty = new Property();
-                $modelProperty->setType(Property::TYPE_APP);
 
                 foreach ($annotations as $annotation => $value) {
 

@@ -9,18 +9,20 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 use W3com\BoomBundle\Annotation\EntityColumnMeta;
 use W3com\BoomBundle\Annotation\EntityMeta;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
+use W3com\BoomBundle\Service\BoomGenerator;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
 
 class ClassCreator
 {
-
     private $manager;
+    private $generator;
 
-    public function __construct(BoomManager $manager)
+    public function __construct(BoomManager $manager, BoomGenerator $generator)
     {
         $this->manager = $manager;
+        $this->generator = $generator;
     }
 
     public function generateClass(Entity $entity, $type = 'ods', $fields = [])
@@ -28,14 +30,31 @@ class ClassCreator
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
 
+        $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
+
         $class = $namespace->addClass($entity->getName());
         $class
-            ->addExtend(AbstractEntity::class)
-            ->addComment(
-                str_replace('ZZ_ALIAS', $entity->getTable(),
-                    str_replace('ZZ_TYPE_READ', $type,
-                        str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION))
-                    ));
+            ->addExtend(AbstractEntity::class);
+
+        if ($type === 'ods') {
+            $class
+                ->addComment("\n" .
+                    str_replace('ZZ_ALIAS', $entity->getTable(),
+                        str_replace('ZZ_TYPE_READ', $type,
+                            str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION_READ))
+                        ) . "\n");
+        } else {
+            $class
+                ->addComment("\n" .
+                    str_replace('ZZ_ALIAS', $entity->getTable(),
+                        str_replace('ZZ_TYPE_READ', $type,
+                            str_replace('ZZ_TYPE_WRITE', $type,
+                                str_replace('ZZ_ALIAS_WRITE', $entity->getTable(), Entity::ANNOTATION_WRITE)
+                            )
+                        )
+                    ) . "\n"
+                );
+        }
 
         if ($fields !== []) {
             $properties = $entity->getProperties();
@@ -58,32 +77,36 @@ class ClassCreator
                 $class
                     ->addProperty($property->getName())
                     ->setVisibility(Property::PROPERTY_VISIBILITY)
-                    ->addComment(str_replace('ZZ', $property->getField(),
+                    ->addComment("\n" . str_replace('ZZ', $property->getField(),
                         str_replace('ZZ_DESC', $property->getDescription(),
                             str_replace('ZZ_TYPE', $property->getFieldType(),
                                 str_replace('ZZ_QUOTES', $property->hasQuotes(),
-                                    Property::PROPERTY_ANNOTATION_ISKEY)))));
+                                    Property::PROPERTY_ANNOTATION_ISKEY)))) . "\n");
             } else {
 
                 $annotation = $property->getFieldType() === 'choice' ? Property::PROPERTY_ANNOTATION_CHOICES : Property::PROPERTY_ANNOTATION;
 
                 $choices = '';
 
-                foreach ($property->getChoices() as $key => $value) {
-                    $choices .= $value . '|' . $key . '#';
+                if (is_array($property->getChoices())) {
+                    foreach ($property->getChoices() as $key => $value) {
+                        $choices .= $value . '|' . $key . '#';
+                    }
+                    $choices = substr_replace($choices ,'', -1);
+                } else {
+                    $choices = $property->getChoices();
                 }
 
-                $choices = substr_replace($choices ,'', -1);
 
                 $class
                     ->addProperty($property->getName())
                     ->setVisibility(Property::PROPERTY_VISIBILITY)
-                    ->addComment(str_replace('ZZ', $property->getField(),
+                    ->addComment("\n" . str_replace('ZZ', $property->getField(),
                         str_replace('ZZ_DESC', $property->getDescription(),
                             str_replace('ZZ_TYPE', $property->getFieldType(),
                                 str_replace('ZZ_QUOTES', $property->hasQuotes(),
                                     str_replace('ZZ_CHOICES', $choices,
-                                        $annotation))))));
+                                        $annotation))))) . "\n");
 
             }
 

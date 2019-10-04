@@ -109,7 +109,6 @@ class OdsInspector implements InspectorInterface
         foreach ($propertyMetadata as $propertiesMetadata) {
 
             $property = new Property();
-            $property->setType(Property::TYPE_ODS);
 
             foreach ($propertiesMetadata as $propertyMetadatum => $value) {
 

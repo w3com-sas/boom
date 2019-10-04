@@ -265,7 +265,12 @@ class BoomManager
         // checks if custom repo exists
         $repoClassName = $this->config['app_namespace'] . '\\HanaRepository\\' . $entityName . 'Repository';
         if (!class_exists($repoClassName)) {
-            $repo = new DefaultRepository($metadata);
+            $repoClassName = 'W3com\\BoomBundle\\HanaRepository\\' . $entityName . 'Repository';
+            if (class_exists($repoClassName)) {
+                $repo = new $repoClassName($metadata);
+            } else {
+                $repo = new DefaultRepository($metadata);
+            }
         } else {
             $repo = new $repoClassName($metadata);
             $this->logger->info("Loaded custom repo $repoClassName");

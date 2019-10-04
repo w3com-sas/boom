@@ -38,6 +38,8 @@ class FieldDefinition extends AbstractEntity
     /** @EntityColumnMeta(column="DESCRIPTION") */
     protected $description;
 
+    /** @EntityColumnMeta(column="Choices") */
+    protected $choices;
 
     public function getTable_name()
     {
@@ -78,5 +80,13 @@ class FieldDefinition extends AbstractEntity
     public function getDescription()
     {
         return $this->description;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getChoices()
+    {
+        return $this->choices;
     }
 }

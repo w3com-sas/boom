@@ -23,7 +23,6 @@ class MakeEntityCommand extends Command
 
     protected function configure()
     {
-
         $this
             ->setName('boom:maker')
             ->setDescription('Create HanaEntity with data in SAP');
@@ -98,7 +97,7 @@ class MakeEntityCommand extends Command
             $continue = true;
 
             while ($continue) {
-                $io->writeln('Properties of '.$entity->getTable().' Entity :');
+                $io->section('Properties of '.$entity->getTable().' Entity :');
                 $io->listing($properties);
                 $continue = $io->confirm("Want you add field in your entity ?");
                 if ($continue) {

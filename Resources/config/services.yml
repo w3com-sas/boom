@@ -46,6 +46,12 @@ services:
     tags:
     - { name: 'console.command', command: 'boom:maker' }
 
+  W3com\BoomBundle\Command\CreateUDTCommand:
+    arguments:
+    - '@W3com\BoomBundle\Service\BoomManager'
+    tags:
+    - { name: 'console.command', command: 'boom:create-udt' }
+
   W3com\BoomBundle\Command\ClearCacheCommand:
     arguments:
       - '@Symfony\Component\Cache\Adapter\AdapterInterface'
