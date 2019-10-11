@@ -96,7 +96,6 @@ class SLInspector implements InspectorInterface
 
     public function addMetaToEntity(Entity $entity)
     {
-        //TODO : Ajouter les data de FieldDefinition dans les entités
         /** @var FieldDefinitionRepository $fieldRepo */
         $fieldRepo = $this->boom->getRepository('FieldDefinition');
 
@@ -123,6 +122,8 @@ class SLInspector implements InspectorInterface
                         $property->setFieldType('choice');
                         $property->setChoices($field->getChoices());
                     }
+                    $property->setIsMandatory($field->isMandatory() !== 'N');
+                    $property->setDefaultValue($field->getDefaultValue());
                 }
             }
         }
@@ -218,6 +219,10 @@ class SLInspector implements InspectorInterface
         if (strpos(strtolower($propertyMetadata[$this::NAME_ENTITY_PROPERTY]), 'u_') !== false) {
             /** @var FieldDefinition $fieldDefinition */
             $property->setIsUDF(true);
+        }
+
+        if (isset($propertyMetadata['@Nullable']) && $propertyMetadata['@Nullable'] == 'false') {
+            $property->setIsMandatory(true);
         }
 
         $property->setName(str_replace('_', '', lcfirst($propertyMetadata[$this::NAME_ENTITY_PROPERTY])));

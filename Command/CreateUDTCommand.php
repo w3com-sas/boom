@@ -25,7 +25,7 @@ class CreateUDTCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('boom:create-udt')
+            ->setName('boom:make:udt')
             ->setDescription('Create UDT in SAP');
     }
 
@@ -79,9 +79,6 @@ class CreateUDTCommand extends Command
 
         $fieldId = 0;
 
-        //TODO Default value, et Mandatory
-        //TODO Gestion des subtypes, 15 choix possibles
-
         while ($addingField) {
             $udf = new UserFieldsMD();
 
@@ -89,11 +86,12 @@ class CreateUDTCommand extends Command
 
             $udfName = $io->ask("What is the name of the field ?");
 
-            //TODO limite de 8 char au nom, + uppercase... Tester les accents et char spéciaux
+            $udfName = $prefix . strtoupper($udfName);
 
-            $udfName = $prefix . $udfName;
-
-            $udfName = 'W3C_' . $udfName;
+            if (strlen($udfName) > 8) {
+                $io->error('The field name ('.$udfName.') must contain less than 9 characters.');
+                continue;
+            }
 
             $udfDescr = $io->ask("Give a description");
 
@@ -104,23 +102,48 @@ class CreateUDTCommand extends Command
                 'Float'
             ]);
 
+            $udfSubType = UserFieldsMD::SUBTYPE_NONE;
+            $udfSubTypes = [];
+
             switch ($udfType) {
                 case 'Alpha':
                     $udfType = UserFieldsMD::TYPE_ALPHA;
+                    $udfSubTypes = [
+                        'Text' => UserFieldsMD::SUBTYPE_NONE,
+                        'Address' => UserFieldsMD::SUBTYPE_ADDRESS,
+                        'Phone' => UserFieldsMD::SUBTYPE_PHONE
+                    ];
                     break;
                 case 'Numeric':
                     $udfType = UserFieldsMD::TYPE_NUMERIC;
                     break;
                 case 'Float':
                     $udfType = UserFieldsMD::TYPE_FLOAT;
+                    $udfSubTypes = [
+                        'Rate' => UserFieldsMD::SUBTYPE_RATE,
+                        'Amount' => UserFieldsMD::SUBTYPE_AMOUNT,
+                        'Price' => UserFieldsMD::SUBTYPE_PRICE,
+                        'Quantity' => UserFieldsMD::SUBTYPE_QUANTITY,
+                        'Percentage' => UserFieldsMD::SUBTYPE_PERCENTAGE,
+                        'Measurement' => UserFieldsMD::SUBTYPE_MEASUREMENT
+                    ];
                     break;
                 case 'Date':
                     $udfType = UserFieldsMD::TYPE_DATE;
+                    $udfSubTypes = [
+                        'Date' => UserFieldsMD::SUBTYPE_NONE,
+                        'Time' => UserFieldsMD::SUBTYPE_TIME
+                    ];
                     break;
             }
 
+            if ($udfSubTypes !== []) {
+                $udfSubType = $io->choice('Please chose a SubType to your field ?', array_keys($udfSubTypes));
+                $udfSubType = $udfSubTypes[$udfSubType];
+            }
+
             if (($udfType === UserFieldsMD::TYPE_NUMERIC) || ($udfType === UserFieldsMD::TYPE_ALPHA)) {
-                $size = $io->ask('Size of the field', 10, function ($number) {
+                $size = $io->ask('Size of the field', 11, function ($number) {
                     if (!is_numeric($number)) {
                         throw new \RuntimeException('You must type a number.');
                     }
@@ -130,11 +153,64 @@ class CreateUDTCommand extends Command
                 $udf->setSize($size);
             }
 
+            $choiceType = $io->confirm('Your UDF is a choice type ?', false);
+
+            $validValues = [];
+            $num = 1;
+
+            while ($choiceType) {
+                $io->title('Valid value n°' . $num);
+                $vValue = $io->ask('What is the value ?');
+                $vDescr = $io->ask('Give a description');
+                $validValues[] = [
+                    'Value' => $vValue,
+                    'Description' => $vDescr
+                ];
+                if (count($validValues) >= 2) {
+                    $choiceType = $io->confirm('Want you add a valid value to your UDF ?');
+                }
+                $num++;
+            }
+
+            $mandatory = $io->confirm('Is it mandatory ?', false);
+
+            $createDefaultValue = true;
+
+            $defaultValue = '';
+
+            while ($createDefaultValue) {
+                $defaultValue = $io->ask('What is the default value ? (Press \'return\' if no default value is defined)');
+
+                if ($defaultValue && $validValues !== []) {
+                    foreach ($validValues as $validValue) {
+                        if ($validValue['Value'] === $defaultValue) {
+                            $createDefaultValue = false;
+                            break;
+                        }
+                    }
+                    if ($createDefaultValue) {
+                        $io->error('Your default value is not in valid values !');
+                    }
+                } else {
+                    $createDefaultValue = false;
+                }
+            }
+
             $udf->setName($udfName);
             $udf->setTableName($udfTable);
             $udf->setType($udfType);
+            $udf->setSubType($udfSubType);
             $udf->setDescription($udfDescr);
             $udf->setFieldID($fieldId);
+            $udf->setMandatory($mandatory ?
+                UserFieldsMD::MANDATORY_YES :
+                UserFieldsMD::MANDATORY_NO
+            );
+            $udf->setValidValuesMD($validValues);
+
+            if ($defaultValue) {
+                $udf->setDefaultValue($defaultValue);
+            }
 
             try {
                 $udfRepo = $this->manager->getRepository('UserFieldsMD');
@@ -144,9 +220,10 @@ class CreateUDTCommand extends Command
                 $fieldsName[] = $udfName;
 
                 $fieldId++;
+
+                $io->success($udfName . ' added to UDT !');
             } catch (\Exception $e) {
                 $io->error($e->getMessage());
-                sleep(1);
             }
 
             $io->section('Fields of UDT');
@@ -155,5 +232,7 @@ class CreateUDTCommand extends Command
 
             $addingField = $io->confirm("Want you add a field to your UDT ?");
         }
+
+        $io->success('You can now use ' . $udtName . ' in your project !');
     }
 }

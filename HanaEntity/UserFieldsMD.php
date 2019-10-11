@@ -15,14 +15,26 @@ use W3com\BoomBundle\Annotation\EntityMeta;
 class UserFieldsMD extends \W3com\BoomBundle\HanaEntity\AbstractEntity
 {
     const TYPE_ALPHA = 'db_Alpha';
+    const SUBTYPE_ADDRESS = 'st_Address';
+    const SUBTYPE_PHONE = 'st_Phone';
 
     const TYPE_NUMERIC = 'db_Numeric';
 
     const TYPE_FLOAT = 'db_Float';
+    const SUBTYPE_RATE = 'st_Rate';
+    const SUBTYPE_AMOUNT = 'st_Sum';
+    const SUBTYPE_PRICE = 'st_Price';
+    const SUBTYPE_QUANTITY = 'st_Quantity';
+    const SUBTYPE_PERCENTAGE = 'st_Percentage';
+    const SUBTYPE_MEASUREMENT = 'st_Measurement';
 
     const TYPE_DATE = 'db_Date';
+    const SUBTYPE_TIME = 'st_Time';
+
+    const SUBTYPE_NONE = 'st_None';
 
     const MANDATORY_NO = 'tNO';
+    const MANDATORY_YES = 'tYES';
 
 	/** @EntityColumnMeta(column="Name", description="Name", type="string", quotes=true) */
 	protected $name;

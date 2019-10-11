@@ -6,11 +6,25 @@ class Property
 {
     const PROPERTY_VISIBILITY = 'protected';
 
-    const PROPERTY_ANNOTATION_CHOICES = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="choice", quotes=ZZ_QUOTES, choices="ZZ_CHOICES")';
+    const PROPERTY_ANNOTATION_BASE = '@EntityColumnMeta(column="ZZ_FIELD", description="ZZ_DESC", type="ZZ_TYPE"';
 
-    const PROPERTY_ANNOTATION = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
+    const PROPERTY_ANNOTATION_CHOICES = ', choices="ZZ_CHOICES"';
 
-    const PROPERTY_ANNOTATION_ISKEY = '@EntityColumnMeta(column="ZZ", isKey=true, description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
+    const PROPERTY_ANNOTATION_QUOTES = ', quotes=false';
+
+    const PROPERTY_ANNOTATION_IS_KEY = ', isKey=true';
+
+    const PROPERTY_ANNOTATION_DEFAULT_VALUE = ', defaultValue="ZZ_DEFAULT_VALUE"';
+
+    const PROPERTY_ANNOTATION_IS_MANDATORY = ', isMandatory=true';
+
+    const PROPERTY_ANNOTATION_END = ')';
+
+//    const PROPERTY_ANNOTATION_CHOICES = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="choice", quotes=ZZ_QUOTES, choices="ZZ_CHOICES")';
+//
+//    const PROPERTY_ANNOTATION = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
+//
+//    const PROPERTY_ANNOTATION_ISKEY = '@EntityColumnMeta(column="ZZ", isKey=true, description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
 
     const TYPE_ODS = 'ods';
 
@@ -44,9 +58,9 @@ class Property
 
     private $description;
 
-    private $isMandatory; //TODO
+    private $isMandatory = false;
 
-    private $defaultValue; //TODO
+    private $defaultValue;
 
     private $isUDF = false;
 
@@ -88,7 +102,7 @@ class Property
      */
     public function setFieldTypeSAPFormat($fieldType, $enumTypes = [])
     {
-        $hasQuotes = 'true';
+        $hasQuotes = true;
         switch ($fieldType) {
             case self::FIELD_TYPE_DATE_TIME:
                 $value = 'date';
@@ -98,7 +112,7 @@ class Property
                 break;
             case self::FIELD_TYPE_INTEGER:
                 $value = 'int';
-                $hasQuotes = 'false';
+                $hasQuotes = false;
                 break;
             case self::FIELD_TYPE_STRING:
                 $value = 'string';
@@ -237,6 +251,38 @@ class Property
     public function isUDF()
     {
         return $this->isUDF;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->defaultValue;
+    }
+
+    /**
+     * @param mixed $defaultValue
+     */
+    public function setDefaultValue($defaultValue): void
+    {
+        $this->defaultValue = $defaultValue;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isMandatory()
+    {
+        return $this->isMandatory;
+    }
+
+    /**
+     * @param mixed $isMandatory
+     */
+    public function setIsMandatory($isMandatory): void
+    {
+        $this->isMandatory = $isMandatory;
     }
 
 }

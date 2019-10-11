@@ -24,7 +24,7 @@ class MakeEntityCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('boom:maker')
+            ->setName('boom:make:entity')
             ->setDescription('Create HanaEntity with data in SAP');
     }
 

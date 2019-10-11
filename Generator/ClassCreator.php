@@ -73,18 +73,20 @@ class ClassCreator
         /** @var Property $property */
         foreach ($entity->getProperties() as $property){
 
-            if ($property->getIsKey()){
-                $class
-                    ->addProperty($property->getName())
-                    ->setVisibility(Property::PROPERTY_VISIBILITY)
-                    ->addComment("\n" . str_replace('ZZ', $property->getField(),
-                        str_replace('ZZ_DESC', $property->getDescription(),
-                            str_replace('ZZ_TYPE', $property->getFieldType(),
-                                str_replace('ZZ_QUOTES', $property->hasQuotes(),
-                                    Property::PROPERTY_ANNOTATION_ISKEY)))) . "\n");
-            } else {
+            $annotation = str_replace('ZZ_FIELD', $property->getField(), Property::PROPERTY_ANNOTATION_BASE);
+            $annotation = str_replace('ZZ_DESC', $property->getDescription(), $annotation);
+            $annotation = str_replace('ZZ_TYPE', $property->getFieldType(), $annotation);
 
-                $annotation = $property->getFieldType() === 'choice' ? Property::PROPERTY_ANNOTATION_CHOICES : Property::PROPERTY_ANNOTATION;
+            if (!$property->hasQuotes()) {
+                $annotation .= Property::PROPERTY_ANNOTATION_QUOTES;
+            }
+
+            if ($property->getIsKey()) {
+                $annotation .= Property::PROPERTY_ANNOTATION_IS_KEY;
+            }
+
+            if ($property->getFieldType() === 'choice') {
+                $annotation .= Property::PROPERTY_ANNOTATION_CHOICES;
 
                 $choices = '';
 
@@ -97,18 +99,24 @@ class ClassCreator
                     $choices = $property->getChoices();
                 }
 
-
-                $class
-                    ->addProperty($property->getName())
-                    ->setVisibility(Property::PROPERTY_VISIBILITY)
-                    ->addComment("\n" . str_replace('ZZ', $property->getField(),
-                        str_replace('ZZ_DESC', $property->getDescription(),
-                            str_replace('ZZ_TYPE', $property->getFieldType(),
-                                str_replace('ZZ_QUOTES', $property->hasQuotes(),
-                                    str_replace('ZZ_CHOICES', $choices,
-                                        $annotation))))) . "\n");
-
+                $annotation = str_replace('ZZ_CHOICES', $choices, $annotation);
             }
+
+            if ($property->getDefaultValue() !== null) {
+                $annotation .= Property::PROPERTY_ANNOTATION_DEFAULT_VALUE;
+                $annotation = str_replace('ZZ_DEFAULT_VALUE', $property->getDefaultValue(), $annotation);
+            }
+
+            if ($property->isMandatory()) {
+                $annotation .= Property::PROPERTY_ANNOTATION_IS_MANDATORY;
+            }
+
+            $annotation .= Property::PROPERTY_ANNOTATION_END;
+
+            $class
+                ->addProperty($property->getName())
+                ->setVisibility(Property::PROPERTY_VISIBILITY)
+                ->addComment("\n" . $annotation . "\n");
 
             $this->addGetter($property, $class);
 

@@ -41,6 +41,12 @@ class FieldDefinition extends AbstractEntity
     /** @EntityColumnMeta(column="Choices") */
     protected $choices;
 
+    /** @EntityColumnMeta(column="NotNull") */
+    protected $isMandatory;
+
+    /** @EntityColumnMeta(column="Dflt") */
+    protected $defaultValue;
+
     public function getTable_name()
     {
         return $this->table_name;
@@ -88,5 +94,21 @@ class FieldDefinition extends AbstractEntity
     public function getChoices()
     {
         return $this->choices;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isMandatory()
+    {
+        return $this->isMandatory;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultValue()
+    {
+        return $this->defaultValue;
     }
 }
