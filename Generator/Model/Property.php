@@ -44,25 +44,25 @@ class Property
 
     const FIELD_TYPE_YES_NO_ENUM = 'SAPB1.BoYesNoEnum';
 
-    private $name;
+    public $name;
 
-    private $field;
+    public $field;
 
-    private $fieldType;
+    public $fieldType;
 
-    private $choices = [];
+    public $choices = [];
 
-    private $isKey;
+    public $isKey;
 
-    private $hasQuotes;
+    public $hasQuotes;
 
-    private $description;
+    public $description;
 
-    private $isMandatory = false;
+    public $isMandatory = false;
 
-    private $defaultValue;
+    public $defaultValue;
 
-    private $isUDF = false;
+    public $isUDF = false;
 
     /**
      * @return mixed

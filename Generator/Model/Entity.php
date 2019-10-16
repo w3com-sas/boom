@@ -12,13 +12,13 @@ class Entity
 
     const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE")';
 
-    private $name;
+    public $name;
 
-    private $table;
+    public $table;
 
-    private $properties;
+    public $properties;
 
-    private $key;
+    public $key;
 
     public static function formatTableName($name)
     {
