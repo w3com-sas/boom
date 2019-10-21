@@ -5,7 +5,7 @@ namespace W3com\BoomBundle\HanaEnum;
 class BoObjectTypes
 {
 	const OCHARTOFACCOUNTS = '';
-	const OBUSINESSPARTNERS = '';
+	const OBUSINESSPARTNERS = 'BusinessPartners';
 	const OBANKS = '';
 	const OITEMS = '';
 	const OVATGROUPS = '';

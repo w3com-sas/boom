@@ -14,6 +14,8 @@ use W3com\BoomBundle\Annotation\EntityMeta;
  */
 class UserFieldsMD extends \W3com\BoomBundle\HanaEntity\AbstractEntity
 {
+    const TYPE_MEMO = 'db_Memo';
+
     const TYPE_ALPHA = 'db_Alpha';
     const SUBTYPE_ADDRESS = 'st_Address';
     const SUBTYPE_PHONE = 'st_Phone';

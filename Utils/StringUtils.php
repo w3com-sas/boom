@@ -32,4 +32,48 @@ class StringUtils {
 
         return $str;
     }
+
+    static public function choicesArrayToString(array $choices)
+    {
+        $return = '';
+
+        foreach ($choices as $key => $value) {
+            $return .= $value . '|' . $key . '#';
+        }
+
+        $return = substr_replace($return ,'', -1);
+
+        return $return;
+    }
+
+    static public function choicesStringToArray(string $choices)
+    {
+        $keyValues = explode('#', $choices);
+
+        $return = [];
+
+        foreach ($keyValues as $keyValue) {
+            $keyValueArray = explode('|', $keyValue);
+            $return[$keyValueArray[1]] = $keyValueArray[0];
+        }
+
+        return $return;
+    }
+
+    static public function choicesStringToValidValuesMD(string $choices)
+    {
+        $keyValues = explode('#', $choices);
+
+        $return = [];
+
+        foreach ($keyValues as $keyValue) {
+            $keyValueArray = explode('|', $keyValue);
+            $return[] = [
+                'Value' => $keyValueArray[1],
+                'Description' => $keyValueArray[0]
+            ];
+        }
+
+        return $return;
+    }
 }

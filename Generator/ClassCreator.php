@@ -13,6 +13,7 @@ use W3com\BoomBundle\Service\BoomGenerator;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
+use W3com\BoomBundle\Utils\StringUtils;
 
 class ClassCreator
 {
@@ -44,16 +45,23 @@ class ClassCreator
                             str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION_READ))
                         ) . "\n");
         } else {
-            $class
-                ->addComment("\n" .
-                    str_replace('ZZ_ALIAS', $entity->getTable(),
+
+            $comment = str_replace('ZZ_ALIAS', $entity->getTable(),
                         str_replace('ZZ_TYPE_READ', $type,
                             str_replace('ZZ_TYPE_WRITE', $type,
                                 str_replace('ZZ_ALIAS_WRITE', $entity->getTable(), Entity::ANNOTATION_WRITE)
                             )
                         )
-                    ) . "\n"
-                );
+                    );
+
+            if ($entity->isToSynchronize()) {
+                $comment = str_replace('ZZ_SYNCHRO', 'true', $comment);
+            } else {
+                $comment = str_replace('ZZ_SYNCHRO', 'false', $comment);
+            }
+
+            $class
+                ->addComment("\n" . $comment . "\n");
         }
 
         if ($fields !== []) {
@@ -73,50 +81,18 @@ class ClassCreator
         /** @var Property $property */
         foreach ($entity->getProperties() as $property){
 
-            $annotation = str_replace('ZZ_FIELD', $property->getField(), Property::PROPERTY_ANNOTATION_BASE);
-            $annotation = str_replace('ZZ_DESC', $property->getDescription(), $annotation);
-            $annotation = str_replace('ZZ_TYPE', $property->getFieldType(), $annotation);
+            $annotation = $this->createPropertyAnnotation($property);
 
-            if (!$property->hasQuotes()) {
-                $annotation .= Property::PROPERTY_ANNOTATION_QUOTES;
+            if ($property->isUDF()) {
+                $annotation .= "\n" . $this->createSynchronizeAnnotation($property, $entity->getSapTable());
             }
 
-            if ($property->getIsKey()) {
-                $annotation .= Property::PROPERTY_ANNOTATION_IS_KEY;
-            }
-
-            if ($property->getFieldType() === 'choice') {
-                $annotation .= Property::PROPERTY_ANNOTATION_CHOICES;
-
-                $choices = '';
-
-                if (is_array($property->getChoices())) {
-                    foreach ($property->getChoices() as $key => $value) {
-                        $choices .= $value . '|' . $key . '#';
-                    }
-                    $choices = substr_replace($choices ,'', -1);
-                } else {
-                    $choices = $property->getChoices();
-                }
-
-                $annotation = str_replace('ZZ_CHOICES', $choices, $annotation);
-            }
-
-            if ($property->getDefaultValue() !== null) {
-                $annotation .= Property::PROPERTY_ANNOTATION_DEFAULT_VALUE;
-                $annotation = str_replace('ZZ_DEFAULT_VALUE', $property->getDefaultValue(), $annotation);
-            }
-
-            if ($property->isMandatory()) {
-                $annotation .= Property::PROPERTY_ANNOTATION_IS_MANDATORY;
-            }
-
-            $annotation .= Property::PROPERTY_ANNOTATION_END;
+            $var = $property->getVar();
 
             $class
                 ->addProperty($property->getName())
                 ->setVisibility(Property::PROPERTY_VISIBILITY)
-                ->addComment("\n" . $annotation . "\n");
+                ->addComment("\n" . '@var ' . $var . "\n" . $annotation . "\n");
 
             $this->addGetter($property, $class);
 
@@ -160,5 +136,104 @@ class ClassCreator
             return array_shift($namespace);
         }
         throw new TransformationFailedException('Unable to find namespace for file');
+    }
+
+    private function createPropertyAnnotation(Property $property)
+    {
+        $annotation = str_replace('ZZ_FIELD', $property->getField(), Property::PROPERTY_ANNOTATION_BASE);
+        $annotation = str_replace('ZZ_DESC', $property->getDescription(), $annotation);
+        $annotation = str_replace('ZZ_TYPE', $property->getFieldType(), $annotation);
+
+        if ($property->isUDF()) {
+            $annotation = str_replace('ZZ_SYNCHRO', 'true', $annotation);
+        } else {
+            $annotation = str_replace('ZZ_SYNCHRO', 'false', $annotation);
+        }
+
+        if (!$property->hasQuotes()) {
+            $annotation .= Property::PROPERTY_ANNOTATION_QUOTES;
+        }
+
+        if ($property->getIsKey()) {
+            $annotation .= Property::PROPERTY_ANNOTATION_IS_KEY;
+        }
+
+        if ($property->getChoices() !== []) {
+            $annotation .= Property::PROPERTY_ANNOTATION_CHOICES;
+
+            if (is_array($property->getChoices())) {
+                $choices = StringUtils::choicesArrayToString($property->getChoices());
+            } else {
+                $choices = $property->getChoices();
+            }
+
+            $annotation = str_replace('ZZ_CHOICES', $choices, $annotation);
+        }
+
+        if ($property->getDefaultValue() !== null) {
+            $annotation .= Property::PROPERTY_ANNOTATION_DEFAULT_VALUE;
+            $annotation = str_replace('ZZ_DEFAULT_VALUE', $property->getDefaultValue(), $annotation);
+        }
+
+        if ($property->isMandatory()) {
+            $annotation .= Property::PROPERTY_ANNOTATION_IS_MANDATORY;
+        }
+
+        $annotation .= Property::PROPERTY_ANNOTATION_END;
+
+        return $annotation;
+    }
+
+    private function createSynchronizeAnnotation(Property $property, $table)
+    {
+        $annotation = str_replace('ZZ_COLUMN', substr($property->getField(), 2), Property::SYNCHRONIZE_ANNOTATION_BASE);
+        $annotation = str_replace('ZZ_DESCRIPTION', $property->getDescription(), $annotation);
+        $annotation = str_replace('ZZ_TYPE', $property->getFieldTypeMD(), $annotation);
+        $annotation = str_replace('ZZ_SUBTYPE', $property->getFieldSubTypeMD(), $annotation);
+        $annotation = str_replace('ZZ_TABLE', $table, $annotation);
+        $annotation = str_replace('ZZ_SIZE', $property->getSize(), $annotation);
+
+        if ($property->getDefaultValue() !== null) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_DEFAULT_VALUE;
+            $annotation = str_replace('ZZ_DEFAULT_VALUE', $property->getDefaultValue(), $annotation);
+        }
+
+        if ($property->isMandatory()) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_MANDATORY;
+        }
+
+        if ($property->getLinkedUDO() !== null) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_LINKED_UDO;
+            $annotation = str_replace('ZZ_LINKED_UDO', $property->getLinkedUDO(), $annotation);
+        }
+
+        if ($property->getLinkedSystemObject() !== null) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_LINKED_SYSTEM_OBJECT;
+            $annotation = str_replace('ZZ_LINKED_SYSTEM_OBJECT', $property->getLinkedSystemObject(), $annotation);
+        }
+
+        if ($property->getLinkedTable() !== null) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_LINKED_TABLE;
+            $annotation = str_replace('ZZ_LINKED_TABLE', $property->getLinkedTable(), $annotation);
+        }
+
+        if ($property->getChoices() !== []) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_VALID_VALUES;
+
+            if (is_array($property->getChoices())) {
+                $choices = StringUtils::choicesArrayToString($property->getChoices());
+            } else {
+                $choices = $property->getChoices();
+            }
+
+            dump($choices);
+            dump(StringUtils::choicesStringToValidValuesMD($choices));
+
+            $annotation = str_replace('ZZ_VALID_VALUES', $choices, $annotation);
+        }
+
+        $annotation .= Property::SYNCHRONIZE_ANNOTATION_END;
+
+        return $annotation;
     }
 }

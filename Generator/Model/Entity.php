@@ -10,15 +10,19 @@ class Entity
 
     const ANNOTATION_READ = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS")';
 
-    const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE")';
+    const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE", synchro=ZZ_SYNCHRO)';
 
     private $name;
 
     private $table;
 
+    private $sapTable;
+
     private $properties;
 
     private $key;
+
+    private $toSynchronize = false;
 
     public static function formatTableName($name)
     {
@@ -133,6 +137,38 @@ class Entity
     public function setProperties($properties)
     {
         $this->properties = $properties;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isToSynchronize(): bool
+    {
+        return $this->toSynchronize;
+    }
+
+    /**
+     * @param bool $toSynchronize
+     */
+    public function setToSynchronize(bool $toSynchronize): void
+    {
+        $this->toSynchronize = $toSynchronize;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSapTable()
+    {
+        return $this->sapTable;
+    }
+
+    /**
+     * @param mixed $sapTable
+     */
+    public function setSapTable($sapTable): void
+    {
+        $this->sapTable = $sapTable;
     }
 
 }

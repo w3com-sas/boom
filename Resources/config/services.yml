@@ -49,6 +49,7 @@ services:
   W3com\BoomBundle\Command\CreateUDTCommand:
     arguments:
     - '@W3com\BoomBundle\Service\BoomManager'
+    - '@W3com\BoomBundle\Service\BoomGenerator'
     tags:
     - { name: 'console.command', command: 'boom:make:udt' }
 

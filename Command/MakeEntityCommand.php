@@ -52,11 +52,13 @@ class MakeEntityCommand extends Command
             $SAPTables[] = $SAPEntity->getTable();
         }
 
-        $io->title("Welcome in the Boom Maker Command");
+        $io->title("Boom Maker Command");
 
         $isUDT = $io->confirm("Entity is from an UDT ?");
 
         if ($isUDT) {
+            $io->note("If you just created UDT, you must restart Service Layer on the server with the command : /etc/init.d/b1s restart \nThen, you must clear the boom cache with the command : bin/console boom:cl");
+            $io->ask('Press enter to continue');
             $table = $io->choice("What's the name of the table ?", $UDTsTable);
             $io->section('Entity creation...');
             foreach ($SLInspector->getUDTEntities() as $UDTEntity) {

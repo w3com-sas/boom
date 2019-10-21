@@ -10,8 +10,11 @@ use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
+use W3com\BoomBundle\HanaConst\TableNames;
 use W3com\BoomBundle\HanaEntity\FieldDefinition;
+use W3com\BoomBundle\HanaEntity\UserFieldsMD;
 use W3com\BoomBundle\HanaRepository\FieldDefinitionRepository;
+use W3com\BoomBundle\HanaRepository\UserFieldsMDRepository;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
 use W3com\BoomBundle\Service\BoomManager;
@@ -50,6 +53,8 @@ class SLInspector implements InspectorInterface
     private $fieldsDefinition = [];
 
     private $enumTypes = [];
+
+    private $userFieldsMD = [];
 
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
@@ -94,12 +99,36 @@ class SLInspector implements InspectorInterface
             '" entity.');
     }
 
+    /**
+     * @param Entity $entity
+     * @return Entity
+     * @throws \Exception
+     */
     public function addMetaToEntity(Entity $entity)
     {
         /** @var FieldDefinitionRepository $fieldRepo */
         $fieldRepo = $this->boom->getRepository('FieldDefinition');
 
         $fields = $fieldRepo->findByTableName($entity->getTable());
+
+        /** @var UserFieldsMDRepository $fieldRepo */
+        $udfRepo = $this->boom->getRepository('UserFieldsMD');
+
+        $sapTableName = '@' . substr($entity->getTable(), 2);
+
+        $udfs = $udfRepo->findByTableName($sapTableName);
+
+        if ($udfs === []) {
+            $tableNameConst = strtoupper($entity->getTable());
+            try {
+                $sapTableName = constant("W3com\BoomBundle\HanaConst\TableNames::$tableNameConst");
+            } catch (\Exception $e) {
+                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
+            }
+            $udfs = $udfRepo->findByTableName($sapTableName);
+        }
+
+        $entity->setSapTable($sapTableName);
 
         if (count($fields) === 0) {
             $fields = $fieldRepo->findByTableName(substr($entity->getTable(), 2));
@@ -119,13 +148,25 @@ class SLInspector implements InspectorInterface
                     $property->setDescription($field->getDescription());
                     $property->setName(StringUtils::stringToCamelCase($field->getDescription()));
                     if ($field->getChoices() !== null) {
-                        $property->setFieldType('choice');
                         $property->setChoices($field->getChoices());
                     }
                     $property->setIsMandatory($field->isMandatory() !== 'N');
                     $property->setDefaultValue($field->getDefaultValue());
                 }
             }
+
+            /** @var UserFieldsMD $udf */
+            foreach ($udfs as $udf) {
+                if ($udf->getName() === substr($property->getField(), 2)) {
+                    $property->setFieldTypeMD($udf->getType());
+                    $property->setFieldSubTypeMD($udf->getSubType());
+                    $property->setSize($udf->getEditSize());
+                    $property->setLinkedTable($udf->getLinkedTable());
+                    $property->setLinkedSystemObject($udf->getLinkedSystemObject());
+                    $property->setLinkedUDO($udf->getLinkedUDO());
+                }
+            }
+
         }
 
         return $entity;
@@ -173,6 +214,7 @@ class SLInspector implements InspectorInterface
 
         if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
             $entityName = StringUtils::stringToPascalCase(str_replace('U_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
+            $entity->setToSynchronize(true);
         } else {
             $entityName = Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY]);
         }
