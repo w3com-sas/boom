@@ -12,17 +12,17 @@ class Entity
 
     const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE", synchro=ZZ_SYNCHRO)';
 
-    private $name;
+    public $name;
 
-    private $table;
+    public $table;
 
-    private $sapTable;
+    public $sapTable;
 
-    private $properties;
+    public $properties;
 
-    private $key;
+    public $key;
 
-    private $toSynchronize = false;
+    public $toSynchronize = false;
 
     public static function formatTableName($name)
     {
