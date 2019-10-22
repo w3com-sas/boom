@@ -210,11 +210,15 @@ class ClassCreator
         $annotation = str_replace('ZZ_TYPE', $property->getFieldTypeMD(), $annotation);
         $annotation = str_replace('ZZ_SUBTYPE', $property->getFieldSubTypeMD(), $annotation);
         $annotation = str_replace('ZZ_TABLE', $table, $annotation);
-        $annotation = str_replace('ZZ_SIZE', $property->getSize(), $annotation);
 
-        if ($property->getDefaultValue() !== null) {
+        if ($property->getDefaultValue() !== null && $property->getDefaultValue() !== '') {
             $annotation .= Property::SYNCHRONIZE_ANNOTATION_DEFAULT_VALUE;
             $annotation = str_replace('ZZ_DEFAULT_VALUE', $property->getDefaultValue(), $annotation);
+        }
+
+        if ($property->getSize() !== null) {
+            $annotation .= Property::SYNCHRONIZE_ANNOTATION_SIZE;
+            $annotation = str_replace('ZZ_SIZE', $property->getSize(), $annotation);
         }
 
         if ($property->isMandatory()) {

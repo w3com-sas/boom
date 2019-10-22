@@ -132,14 +132,12 @@ class SynchronizeCommand extends Command
         /** @var UserFieldsMDRepository $udfRepo */
         $udfRepo = $this->manager->getRepository('UserFieldsMD');
 
-        $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), $property->getField());
-
-        dump($property->getSapTable(), $property->getField());
+        $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), str_replace('u_', '', str_replace('U_', '', $property->getField())));
 
         if ($exists) {
             return;
         } else {
-            $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), strtolower($property->getField()));
+            $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), str_replace('u_', '', str_replace('U_', '', strtolower($property->getField()))));
             if ($exists) {
                 return;
             }
@@ -168,6 +166,10 @@ class SynchronizeCommand extends Command
 
         if ($property->getLinkedTable() !== null && $property->getLinkedTable() !== '') {
             $udf->setLinkedTable($property->getLinkedTable());
+        }
+
+        if ($property->getChoices() !== [] && $property->getChoices() !== null) {
+            $udf->setValidValuesMD($property->getChoices());
         }
 
         $retry = true;

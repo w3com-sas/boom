@@ -166,7 +166,7 @@ class AppInspector implements InspectorInterface
 
                     if ($annotation == $this::ANNOTATION_COLUMN) {
                         $modelProperty->setField($value);
-                        $modelProperty->setName(strtolower($value));
+                        $modelProperty->setName($value);
                     }
 
 
