@@ -114,7 +114,11 @@ class SLInspector implements InspectorInterface
         /** @var UserFieldsMDRepository $fieldRepo */
         $udfRepo = $this->boom->getRepository('UserFieldsMD');
 
-        $sapTableName = '@' . substr($entity->getTable(), 2);
+        if (strpos($entity->getTable(), 'U_') !== false) {
+            $sapTableName = '@' . substr($entity->getTable(), 2);
+        } else {
+            $sapTableName = '@' . $entity->getTable();
+        }
 
         $udfs = $udfRepo->findByTableName($sapTableName);
 
