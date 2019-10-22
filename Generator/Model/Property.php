@@ -7,40 +7,21 @@ class Property
     const PROPERTY_VISIBILITY = 'protected';
 
     const PROPERTY_ANNOTATION_BASE = '@EntityColumnMeta(column="ZZ_FIELD", description="ZZ_DESC", type="ZZ_TYPE", synchro=ZZ_SYNCHRO';
-
     const PROPERTY_ANNOTATION_CHOICES = ', choices="ZZ_CHOICES"';
-
     const PROPERTY_ANNOTATION_QUOTES = ', quotes=false';
-
     const PROPERTY_ANNOTATION_IS_KEY = ', isKey=true';
-
     const PROPERTY_ANNOTATION_DEFAULT_VALUE = ', defaultValue="ZZ_DEFAULT_VALUE"';
-
     const PROPERTY_ANNOTATION_IS_MANDATORY = ', isMandatory=true';
-
     const PROPERTY_ANNOTATION_END = ')';
 
     const SYNCHRONIZE_ANNOTATION_BASE = '@SynchronizedData(Name="ZZ_COLUMN", Type="ZZ_TYPE", SubType="ZZ_SUBTYPE", Description="ZZ_DESCRIPTION", TableName="ZZ_TABLE", EditSize=ZZ_SIZE';
-
     const SYNCHRONIZE_ANNOTATION_MANDATORY = ', Mandatory="tYES"';
-
     const SYNCHRONIZE_ANNOTATION_DEFAULT_VALUE = ', DefaultValue=ZZ_DEFAULT_VALUE';
-
     const SYNCHRONIZE_ANNOTATION_LINKED_TABLE = ', LinkedTable="ZZ_LINKED_TABLE"';
-
     const SYNCHRONIZE_ANNOTATION_LINKED_UDO = ', LinkedUDO="ZZ_LINKED_UDO"';
-
     const SYNCHRONIZE_ANNOTATION_LINKED_SYSTEM_OBJECT = ', LinkedSystemObject="ZZ_LINKED_SYSTEM_OBJECT"';
-
     const SYNCHRONIZE_ANNOTATION_VALID_VALUES = ', ValidValuesMD="ZZ_VALID_VALUES"';
-
     const SYNCHRONIZE_ANNOTATION_END = ')';
-
-//    const PROPERTY_ANNOTATION_CHOICES = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="choice", quotes=ZZ_QUOTES, choices="ZZ_CHOICES")';
-//
-//    const PROPERTY_ANNOTATION = '@EntityColumnMeta(column="ZZ", description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
-//
-//    const PROPERTY_ANNOTATION_ISKEY = '@EntityColumnMeta(column="ZZ", isKey=true, description="ZZ_DESC", type="ZZ_TYPE", quotes=ZZ_QUOTES)';
 
     const TYPE_ODS = 'ods';
 
@@ -75,6 +56,8 @@ class Property
     public $size;
 
     public $table;
+
+    public $sapTable;
 
     public $choices = [];
 
@@ -450,6 +433,22 @@ class Property
     public function setLinkedUDO($linkedUDO): void
     {
         $this->linkedUDO = $linkedUDO;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSapTable()
+    {
+        return $this->sapTable;
+    }
+
+    /**
+     * @param mixed $sapTable
+     */
+    public function setSapTable($sapTable): void
+    {
+        $this->sapTable = $sapTable;
     }
 
 }

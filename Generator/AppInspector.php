@@ -6,9 +6,14 @@ use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Finder\Finder;
+use W3com\BoomBundle\Annotation\EntityColumnMeta;
+use W3com\BoomBundle\Annotation\EntityMeta;
+use W3com\BoomBundle\Annotation\EntitySynchronizedData;
+use W3com\BoomBundle\Annotation\SynchronizedData;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
+use W3com\BoomBundle\Utils\StringUtils;
 
 class AppInspector implements InspectorInterface
 {
@@ -87,7 +92,19 @@ class AppInspector implements InspectorInterface
         $entity->setName($className);
 
         AnnotationRegistry::registerLoader('class_exists');
+
         foreach ($this->reader->getClassAnnotations($class) as $annotations) {
+
+            if (is_a($annotations, EntityMeta::class)) {
+                $entity->setToSynchronize($annotations->synchro);
+            }
+
+            if (is_a($annotations, EntitySynchronizedData::class)) {
+                $entity->setDescription($annotations->TableDescription);
+                $entity->setType($annotations->TableType);
+                $entity->setArchivable($annotations->Archivable);
+                $entity->setArchiveDate($annotations->ArchiveDateField);
+            }
 
             foreach ($annotations as $annotation => $value) {
                 // Alias Read
@@ -96,9 +113,9 @@ class AppInspector implements InspectorInterface
                     $this->hydratePropertyModel($class, $entity);
                 }
             }
-            if ($entity->getTable() !== null) {
-                $this->entities[] = $entity;
-            }
+        }
+        if ($entity->getTable() !== null) {
+            $this->entities[] = $entity;
         }
     }
 
@@ -113,9 +130,37 @@ class AppInspector implements InspectorInterface
 
             $property = new \ReflectionProperty($class->getName(), $propertyName);
 
+            $modelProperty = new Property();
+            $modelProperty->setTable($entity->getTable());
             foreach ($this->reader->getPropertyAnnotations($property) as $annotations) {
 
-                $modelProperty = new Property();
+                if (is_a($annotations, EntityColumnMeta::class)) {
+                    $modelProperty->setIsUDF($annotations->synchro);
+                    $modelProperty->setIsMandatory($annotations->isMandatory);
+                    $modelProperty->setDefaultValue($annotations->defaultValue);
+                    $modelProperty->setDescription($annotations->description);
+                    $modelProperty->setFieldType($annotations->type);
+                    $modelProperty->setHasQuotes($annotations->quotes);
+
+                    if ($annotations->choices !== null && $annotations->choices !== "") {
+                        $modelProperty->setChoices(StringUtils::choicesStringToArray($annotations->choices));
+                    }
+                }
+
+                if (is_a($annotations, SynchronizedData::class)) {
+                    $modelProperty->setLinkedUDO($annotations->LinkedUDO);
+                    $modelProperty->setLinkedTable($annotations->LinkedTable);
+                    $modelProperty->setLinkedSystemObject($annotations->LinkedSystemObject);
+                    $modelProperty->setFieldTypeMD($annotations->Type);
+                    $modelProperty->setFieldSubTypeMD($annotations->SubType);
+                    $modelProperty->setSize($annotations->EditSize);
+                    $modelProperty->setSapTable($annotations->TableName);
+
+                    if ($annotations->ValidValuesMD !== null && $annotations->ValidValuesMD !== "") {
+                        $choices = StringUtils::choicesStringToValidValuesMD($annotations->ValidValuesMD);
+                        $modelProperty->setChoices($choices);
+                    }
+                }
 
                 foreach ($annotations as $annotation => $value) {
 
@@ -133,9 +178,9 @@ class AppInspector implements InspectorInterface
                         }
                     }
                 }
-                $entity->setProperty($modelProperty);
 
             }
+            $entity->setProperty($modelProperty);
         }
     }
 

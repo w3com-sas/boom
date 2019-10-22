@@ -8,6 +8,8 @@ use Nette\PhpGenerator\PhpNamespace;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use W3com\BoomBundle\Annotation\EntityColumnMeta;
 use W3com\BoomBundle\Annotation\EntityMeta;
+use W3com\BoomBundle\Annotation\EntitySynchronizedData;
+use W3com\BoomBundle\Annotation\SynchronizedData;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Service\BoomGenerator;
 use W3com\BoomBundle\Service\BoomManager;
@@ -61,7 +63,23 @@ class ClassCreator
             }
 
             $class
-                ->addComment("\n" . $comment . "\n");
+                ->addComment("\n" . $comment);
+        }
+
+        if ($entity->isToSynchronize()) {
+            $synchAnnot = Entity::SYNCHRONIZE_ANNOTATION_BASE;
+            $synchAnnot = str_replace('ZZ_TABLE_NAME', substr($entity->getTable(), 2), $synchAnnot);
+            $synchAnnot = str_replace('ZZ_TABLE_DESCRIPTION', $entity->getDescription(), $synchAnnot);
+            $synchAnnot = str_replace('ZZ_TABLE_TYPE', $entity->getType(), $synchAnnot);
+            $synchAnnot = str_replace('ZZ_ARCHIVABLE', $entity->getArchivable(), $synchAnnot);
+
+            if ($entity->getArchiveDate() !== null) {
+                $synchAnnot .= Entity::SYNCHRONIZE_ANNOTATION_ARCHIVE_DATE;
+                $synchAnnot = str_replace('ZZ_TABLE_ARCHIVE_DATE', $entity->getArchiveDate(), $synchAnnot);
+            }
+
+            $synchAnnot .= Entity::SYNCHRONIZE_ANNOTATION_END;
+            $class->addComment($synchAnnot . "\n");
         }
 
         if ($fields !== []) {
@@ -125,6 +143,8 @@ class ClassCreator
         $namespace = $file->addNamespace($entityNamespace);
         $namespace
             ->addUse(EntityColumnMeta::class)
+            ->addUse(SynchronizedData::class)
+            ->addUse(EntitySynchronizedData::class)
             ->addUse(EntityMeta::class);
         return $file;
     }
@@ -225,9 +245,6 @@ class ClassCreator
             } else {
                 $choices = $property->getChoices();
             }
-
-            dump($choices);
-            dump(StringUtils::choicesStringToValidValuesMD($choices));
 
             $annotation = str_replace('ZZ_VALID_VALUES', $choices, $annotation);
         }

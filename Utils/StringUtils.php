@@ -6,11 +6,15 @@ class StringUtils {
 
     static public function stringToCamelCase($string)
     {
-        $string = preg_replace('/[^A-Za-z]/', ' ', self::skipAccents($string));
+        $string = preg_replace('/[^A-Za-z0-9]/', ' ', self::skipAccents($string));
 
         $words = array_filter(explode(' ', $string));
 
         foreach ($words as $key => $word) {
+            if ($key === 0 && is_numeric($word)) {
+                unset($words[$key]);
+                continue;
+            }
             $words[$key] = $key !== 0 ? ucfirst(strtolower($word)) : strtolower($word);
         }
 

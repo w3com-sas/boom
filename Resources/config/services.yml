@@ -46,6 +46,13 @@ services:
     tags:
     - { name: 'console.command', command: 'boom:make:entity' }
 
+  W3com\BoomBundle\Command\SynchronizeCommand:
+    arguments:
+    - '@W3com\BoomBundle\Service\BoomGenerator'
+    - '@W3com\BoomBundle\Service\BoomManager'
+    tags:
+    - { name: 'console.command', command: 'boom:synchronize' }
+
   W3com\BoomBundle\Command\CreateUDTCommand:
     arguments:
     - '@W3com\BoomBundle\Service\BoomManager'

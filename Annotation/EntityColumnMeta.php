@@ -42,18 +42,43 @@ class EntityColumnMeta extends Annotation
      */
     public $type;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     public $isKey = false;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     public $quotes = true;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     public $readOnly = false;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     public $ipName;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     public $choices = '';
+
+    /**
+     * @var bool
+     */
+    public $synchro = false;
+
+    /**
+     * @var bool
+     */
+    public $isMandatory = false;
+
+    /**
+     * @var string
+     */
+    public $defaultValue = null;
 }

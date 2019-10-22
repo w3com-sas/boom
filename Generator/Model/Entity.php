@@ -12,9 +12,23 @@ class Entity
 
     const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE", synchro=ZZ_SYNCHRO)';
 
+    const SYNCHRONIZE_ANNOTATION_BASE = '@EntitySynchronizedData(TableName="ZZ_TABLE_NAME", TableDescription="ZZ_TABLE_DESCRIPTION", TableType="ZZ_TABLE_TYPE", Archivable="ZZ_ARCHIVABLE"';
+
+    const SYNCHRONIZE_ANNOTATION_ARCHIVE_DATE = ', ArchiveDateField="ZZ_ARCHIVE_DATE"';
+
+    const SYNCHRONIZE_ANNOTATION_END = ')';
+
     public $name;
 
     public $table;
+
+    public $description;
+
+    public $type;
+
+    public $archivable;
+
+    public $archiveDate;
 
     public $sapTable;
 
@@ -169,6 +183,70 @@ class Entity
     public function setSapTable($sapTable): void
     {
         $this->sapTable = $sapTable;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param mixed $description
+     */
+    public function setDescription($description): void
+    {
+        $this->description = $description;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param mixed $type
+     */
+    public function setType($type): void
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArchivable()
+    {
+        return $this->archivable;
+    }
+
+    /**
+     * @param mixed $archivable
+     */
+    public function setArchivable($archivable): void
+    {
+        $this->archivable = $archivable;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArchiveDate()
+    {
+        return $this->archiveDate;
+    }
+
+    /**
+     * @param mixed $archiveDate
+     */
+    public function setArchiveDate($archiveDate): void
+    {
+        $this->archiveDate = $archiveDate;
     }
 
 }

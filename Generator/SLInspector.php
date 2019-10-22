@@ -13,8 +13,10 @@ use W3com\BoomBundle\Generator\Model\Property;
 use W3com\BoomBundle\HanaConst\TableNames;
 use W3com\BoomBundle\HanaEntity\FieldDefinition;
 use W3com\BoomBundle\HanaEntity\UserFieldsMD;
+use W3com\BoomBundle\HanaEntity\UserTablesMD;
 use W3com\BoomBundle\HanaRepository\FieldDefinitionRepository;
 use W3com\BoomBundle\HanaRepository\UserFieldsMDRepository;
+use W3com\BoomBundle\HanaRepository\UserTablesMDRepository;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
 use W3com\BoomBundle\Service\BoomManager;
@@ -111,6 +113,18 @@ class SLInspector implements InspectorInterface
 
         $fields = $fieldRepo->findByTableName($entity->getTable());
 
+        if ($entity->isToSynchronize()) {
+            /** @var UserTablesMDRepository $udtRepo */
+            $udtRepo = $this->boom->getRepository('UserTablesMD');
+            /** @var UserTablesMD $udt */
+            $udt =  $udtRepo->find(substr($entity->getTable(), 2));
+
+            $entity->setDescription($udt->getTableDescription());
+            $entity->setType($udt->getTableType());
+            $entity->setArchivable($udt->getArchivable());
+            $entity->setArchiveDate($udt->getArchiveDateField());
+        }
+
         /** @var UserFieldsMDRepository $fieldRepo */
         $udfRepo = $this->boom->getRepository('UserFieldsMD');
 
@@ -144,12 +158,6 @@ class SLInspector implements InspectorInterface
 
         $entity->setSapTable($sapTableName);
 
-        if (count($fields) === 0) {
-            $fields = $fieldRepo->findByTableName(substr($entity->getTable(), 2));
-            if (count($fields) === 0) {
-                $fields = $fieldRepo->findByTableName('@' . substr($entity->getTable(), 2));
-            }
-        }
 
         /** @var Property $property */
         foreach ($entity->getProperties() as $property) {
@@ -174,6 +182,7 @@ class SLInspector implements InspectorInterface
                 if ($udf->getName() === substr($property->getField(), 2)) {
                     $property->setFieldTypeMD($udf->getType());
                     $property->setFieldSubTypeMD($udf->getSubType());
+                    $property->setSapTable($udf->getTableName());
                     $property->setSize($udf->getEditSize());
                     $property->setLinkedTable($udf->getLinkedTable());
                     $property->setLinkedSystemObject($udf->getLinkedSystemObject());

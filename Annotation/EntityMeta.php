@@ -40,4 +40,8 @@ class EntityMeta extends Annotation
      */
     public $description = '';
 
+    /**
+     * @var bool
+     */
+    public $synchro = false;
 }
