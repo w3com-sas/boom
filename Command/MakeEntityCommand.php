@@ -96,17 +96,25 @@ class MakeEntityCommand extends Command
                 }
             }
 
-            $continue = true;
+            $allProperties = $io->confirm("Want you add all properties to your entity ?", false);
 
-            while ($continue) {
-                $io->section('Properties of '.$entity->getTable().' Entity :');
-                $io->listing($properties);
-                $continue = $io->confirm("Want you add field in your entity ?");
-                if ($continue) {
-                    $newProperty = $io->choice("Wich one ?", $propertiesChoices);
-                    $properties[] = $newProperty;
-                    unset($propertiesChoices[array_search($newProperty, $propertiesChoices)]);
-                    $io->success($newProperty." added to the entity !");
+            if ($allProperties) {
+                foreach ($propertiesChoices as $property) {
+                    $properties[] = $property;
+                }
+            } else {
+                $continue = true;
+
+                while ($continue) {
+                    $io->section('Properties of '.$entity->getTable().' Entity :');
+                    $io->listing($properties);
+                    $continue = $io->confirm("Want you add field in your entity ?");
+                    if ($continue) {
+                        $newProperty = $io->choice("Wich one ?", $propertiesChoices);
+                        $properties[] = $newProperty;
+                        unset($propertiesChoices[array_search($newProperty, $propertiesChoices)]);
+                        $io->success($newProperty." added to the entity !");
+                    }
                 }
             }
 
