@@ -86,7 +86,7 @@ class StringUtils {
         $return = [];
 
         foreach ($choices as $choice) {
-            $return[$choice['Description']] = $choice['Value'];
+            $return[$choice['Value']] = $choice['Description'];
         }
 
         return $return;
