@@ -6,7 +6,7 @@ class StringUtils {
 
     static public function stringToCamelCase($string)
     {
-        $string = preg_replace('/[^A-Za-z0-9]/', ' ', self::skipAccents($string));
+        $string = preg_replace('/[^A-Za-z]/', ' ', self::skipAccents($string));
 
         $words = array_filter(explode(' ', $string));
 
