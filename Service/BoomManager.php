@@ -88,17 +88,20 @@ class BoomManager
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request)
     {
+        if($request->getCurrentRequest() != null){
+            $query = $request->getCurrentRequest()->query;
+            $session = $request->getCurrentRequest()->getSession();
 
-        $query = $request->getCurrentRequest()->query;
-        $session = $request->getCurrentRequest()->getSession();
-
-        if($query->has('slcontext') && $query->has('username') && $query->has('companydb')){
-            $session->set('username',$query->get('username'));
-            $session->set('companydb',$query->get('companydb'));
-            $session->set('slcontext',$query->get('slcontext'));
-        }
-        if($session->has('username') && $session->has('companydb') && $session->has('slcontext')){
-            $this->inSlContextMode = true;
+            if($query->has('slcontext') && $query->has('username') && $query->has('companydb')){
+                $session->set('username',$query->get('username'));
+                $session->set('companydb',$query->get('companydb'));
+                $session->set('slcontext',$query->get('slcontext'));
+            }
+            if($session->has('username') && $session->has('companydb') && $session->has('slcontext')){
+                $this->inSlContextMode = true;
+            }
+        } else {
+            $session = null;
         }
 
         $this->config = $config;
