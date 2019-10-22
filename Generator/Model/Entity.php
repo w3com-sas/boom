@@ -136,9 +136,9 @@ class Entity
     {
         /** @var Property $property */
         foreach ($this->properties as $property){
-            if ($property->getName() === $name){
+            if ($property->getName() === $name && $property->getName() !== null){
                 return $property;
-            } elseif ($property->getField() === $name){
+            } elseif ($property->getField() === $name && $property->getName() !== null){
                 return $property;
             }
         }

@@ -32,7 +32,6 @@ class ClassCreator
     {
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
-
         $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
 
         $class = $namespace->addClass($entity->getName());

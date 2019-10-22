@@ -12,7 +12,6 @@ class FieldDefinitionRepository extends AbstractRepository
             ->addFilter('table_name', $tableName);
 
         $result = $this->findAll($params);
-
         return $result;
     }
 }

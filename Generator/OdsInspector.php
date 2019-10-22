@@ -8,6 +8,7 @@ use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
+use W3com\BoomBundle\Utils\StringUtils;
 
 class OdsInspector implements InspectorInterface
 {
@@ -90,7 +91,7 @@ class OdsInspector implements InspectorInterface
 
             switch ($metadatum) {
                 case $this::NAME_ENTITY_PROPERTY:
-                    $entity->setName(Entity::formatTableName($value));
+                    $entity->setName(StringUtils::stringToPascalCase($value));
                     $entity->setTable(str_replace('Type', '', $value));
                     break;
                 case $this::NAME_PROPERTY:
@@ -116,7 +117,7 @@ class OdsInspector implements InspectorInterface
 
                     case $this::NAME_ENTITY_PROPERTY:
                         $property->setField($value);
-                        $property->setName(strtolower($value));
+                        $property->setName(StringUtils::stringToCamelCase($value));
                         break;
                     case $this::TYPE_PROPERTY:
                         $property->setFieldTypeSAPFormat($value);

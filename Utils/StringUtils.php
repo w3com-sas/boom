@@ -58,7 +58,11 @@ class StringUtils {
 
         foreach ($keyValues as $keyValue) {
             $keyValueArray = explode('|', $keyValue);
-            $return[$keyValueArray[1]] = $keyValueArray[0];
+            if (count($keyValueArray) > 1){
+                $return[$keyValueArray[1]] = $keyValueArray[0];
+            } else {
+                $return[$keyValueArray[0]] = $keyValueArray[0];
+            }
         }
 
         return $return;
