@@ -12,6 +12,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
@@ -21,6 +22,7 @@ use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\Repository\RepoMetadata;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
+use W3com\BoomBundle\Utils\StringUtils;
 
 class BoomManager
 {
@@ -70,16 +72,35 @@ class BoomManager
     private $collectedData;
 
     /**
+     * @var bool
+     */
+    private $inSlContextMode = false;
+
+    /**
      * BoomManager constructor.
      *
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch|null $stopwatch
      * @param AdapterInterface $cache
+     * @param RequestStack $request
      * @throws AnnotationException
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request)
     {
+
+        $query = $request->getCurrentRequest()->query;
+        $session = $request->getCurrentRequest()->getSession();
+
+        if($query->has('slcontext') && $query->has('username') && $query->has('companydb')){
+            $session->set('username',$query->get('username'));
+            $session->set('companydb',$query->get('companydb'));
+            $session->set('slcontext',$query->get('slcontext'));
+        }
+        if($session->has('username') && $session->has('companydb') && $session->has('slcontext')){
+            $this->inSlContextMode = true;
+        }
+
         $this->config = $config;
         $this->reader = new AnnotationReader();
         $this->logger = $logger;
@@ -100,8 +121,15 @@ class BoomManager
         );
         $this->clients['odata'] = $client;
 
-        // creating the default SL connection
-        $this->setCurrentConnection('default');
+        if($this->inSlContextMode){
+            $this->setSLContextToCurrentConnection(
+                $session->get('slcontext'),
+                $session->get('username'),
+                $session->get('companydb'));
+        } else {
+            // creating the default SL connection
+            $this->setCurrentConnection('default');
+        }
 
         // creating rest clients
         $slRestClient = new SLRestClient($this, $cache);
@@ -177,6 +205,37 @@ class BoomManager
     public function getCurrentClient()
     {
         return $this->clients[$this->currentConnection];
+    }
+
+    /**
+     * @param $SLContext
+     * @param $UserName
+     * @param $CompanyDB
+     */
+    public function setSLContextToCurrentConnection($SLContext, $UserName, $CompanyDB)
+    {
+        $connection = 'SLContext';
+
+        $this->currentConnection = $connection;
+
+        if (!array_key_exists($connection, $this->clients)) {
+            // creating the cookie jar
+            $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
+                $connection . '_' . $CompanyDB . '_' . $UserName;
+            file_put_contents($cookiePath,StringUtils::convertSLContextToCookieJarFileContent($SLContext,$this->config['service_layer']['base_uri']));
+            $jar = new FileCookieJar($cookiePath,true);
+
+            $client = new Client(
+                [
+                    'cookies' => $jar,
+                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
+                    'verify' => $this->config['odata_service']['verify_https'],
+                ]
+            );
+
+            $this->clients[$connection] = $client;
+
+        }
     }
 
     /**

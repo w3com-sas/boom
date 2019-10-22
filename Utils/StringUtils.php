@@ -37,6 +37,45 @@ class StringUtils {
         return $str;
     }
 
+    static public function convertSLContextToCookieJarFileContent($SLContext,$sl_base_uri)
+    {
+        // we receive B1SESSION=0450302c-f023-11e9-8000-0050569c6df1;;HttpOnly;path=/b1s/v1;ROUTEID=.node1
+        // we must build [
+        //{"Name":"ROUTEID","Value":".node1","Domain":"10.61.23.3","Path":"\/b1s","Max-Age":null,"Expires":null,"Secure":false,"Discard":false,"HttpOnly":false},
+        //{"Name":"B1SESSION","Value":"122269ae-f023-11e9-8000-0050569c6df1","Domain":"10.61.23.3","Path":"\/","Max-Age":null,"Expires":null,"Secure":false,"Discard":false,"HttpOnly":true}
+        //]
+        $B1SESSION = substr($SLContext,strpos($SLContext,'B1SESSION=')+strlen('B1SESSION='),strpos($SLContext,';')-strlen('B1SESSION='));
+        $ROUTEID = substr($SLContext,strpos($SLContext,'ROUTEID=')+strlen('ROUTEID='));
+        $DOMAIN = str_replace(['https://','http://',':50000/',':50000'],'',$sl_base_uri);
+
+        $return = [
+            [
+                "Name" => "ROUTEID",
+                "Value" => $ROUTEID,
+                "Domain" => $DOMAIN,
+                "Path" => "/b1s/v1",
+                "Max-Age" => null,
+                "Expires" => null,
+                "Secure" => false,
+                "Discard" => false,
+                "HttpOnly" => false
+            ],
+            [
+                "Name" => "B1SESSION",
+                "Value" => $B1SESSION,
+                "Domain" => $DOMAIN,
+                "Path" => "/b1s/v1",
+                "Max-Age" => null,
+                "Expires" => null,
+                "Secure" => false,
+                "Discard" => false,
+                "HttpOnly" => true
+            ]
+        ];
+
+        return json_encode($return);
+    }
+
     static public function choicesArrayToString(array $choices)
     {
         $return = '';

@@ -5,6 +5,7 @@ services:
       - '@logger'
       - '@debug.stopwatch'
       - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\HttpFoundation\RequestStack'
     tags:
       - { name: monolog.logger.generator, channel: hana }
     public: true
