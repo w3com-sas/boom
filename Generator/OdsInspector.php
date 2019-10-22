@@ -91,7 +91,7 @@ class OdsInspector implements InspectorInterface
 
             switch ($metadatum) {
                 case $this::NAME_ENTITY_PROPERTY:
-                    $entity->setName(StringUtils::stringToPascalCase($value));
+                    $entity->setName(StringUtils::stringToPascalCase(str_replace('Type', '', $value)));
                     $entity->setTable(str_replace('Type', '', $value));
                     break;
                 case $this::NAME_PROPERTY:
