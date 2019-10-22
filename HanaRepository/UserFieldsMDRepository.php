@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\HanaRepository;
 
+use W3com\BoomBundle\Parameters\Clause;
 use W3com\BoomBundle\Repository\AbstractRepository;
 
 class UserFieldsMDRepository extends AbstractRepository
@@ -20,7 +21,7 @@ class UserFieldsMDRepository extends AbstractRepository
     public function findByTableName($tableName)
     {
         $params = $this->createParams()
-            ->addFilter('tableName', $tableName);
+            ->addFilter('tableName', $tableName, Clause::CONTAINS);
 
         $result = $this->findAll($params);
 

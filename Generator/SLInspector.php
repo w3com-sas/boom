@@ -125,7 +125,7 @@ class SLInspector implements InspectorInterface
             $entity->setArchiveDate($udt->getArchiveDateField());
         }
 
-        /** @var UserFieldsMDRepository $fieldRepo */
+        /** @var UserFieldsMDRepository $udfRepo */
         $udfRepo = $this->boom->getRepository('UserFieldsMD');
 
         if (strpos($entity->getTable(), 'U_') !== false) {
