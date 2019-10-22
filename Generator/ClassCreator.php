@@ -32,7 +32,6 @@ class ClassCreator
     {
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
-        $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
 
         $class = $namespace->addClass($entity->getName());
         $class
@@ -46,6 +45,7 @@ class ClassCreator
                             str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION_READ))
                         ) . "\n");
         } else {
+            $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
 
             $comment = str_replace('ZZ_ALIAS', $entity->getTable(),
                         str_replace('ZZ_TYPE_READ', $type,
