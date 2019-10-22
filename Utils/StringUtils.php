@@ -80,4 +80,15 @@ class StringUtils {
 
         return $return;
     }
+
+    static public function choicesValidValuesMDToArray(array $choices)
+    {
+        $return = [];
+
+        foreach ($choices as $choice) {
+            $return[$choice['Description']] = $choice['Value'];
+        }
+
+        return $return;
+    }
 }

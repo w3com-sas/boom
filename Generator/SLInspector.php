@@ -187,6 +187,10 @@ class SLInspector implements InspectorInterface
                     $property->setLinkedTable($udf->getLinkedTable());
                     $property->setLinkedSystemObject($udf->getLinkedSystemObject());
                     $property->setLinkedUDO($udf->getLinkedUDO());
+
+                    if ($udf->getValidValuesMD() !== []) {
+                        $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
+                    }
                 }
             }
 
