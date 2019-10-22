@@ -120,6 +120,16 @@ class SLInspector implements InspectorInterface
             $sapTableName = '@' . $entity->getTable();
         }
 
+        if (count($fields) === 0) {
+            $fields = $fieldRepo->findByTableName(substr($entity->getTable(), 2));
+            if (count($fields) === 0) {
+                $fields = $fieldRepo->findByTableName('@' . substr($entity->getTable(), 2));
+                if (count($fields) === 0) {
+                    $fields = $fieldRepo->findByTableName('@' . $entity->getTable());
+                }
+            }
+        }
+
         $udfs = $udfRepo->findByTableName($sapTableName);
 
         if ($udfs === []) {
