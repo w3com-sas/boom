@@ -63,7 +63,6 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
                 // integers can also be the id of an entity or a checkbox (0 or 1)
                 return new TypeGuess(IntegerType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
             case 'date':
-
                 return new TypeGuess(TextType::class, ['label' => $annotations['label'], 'attr' => ['class' => 'datepicker-here',
                     'data-language' => 'fr']], Guess::MEDIUM_CONFIDENCE);
             case 'float':
@@ -140,7 +139,12 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
         )) {
             $ar['choices'] = $annotation->choices;
             $ar['label'] = $annotation->description;
-            $ar['type'] = $annotation->type;
+
+            if ($annotation->choices != null){
+                $ar['type'] = 'choice';
+            } else {
+                $ar['type'] = $annotation->type;
+            }
         }
 
 
