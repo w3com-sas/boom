@@ -153,8 +153,8 @@ class AppInspector implements InspectorInterface
                     $modelProperty->setLinkedSystemObject($annotations->LinkedSystemObject);
                     $modelProperty->setFieldTypeMD($annotations->Type);
                     $modelProperty->setFieldSubTypeMD($annotations->SubType);
-                    $modelProperty->setSize($annotations->EditSize);
                     $modelProperty->setSapTable($annotations->TableName);
+                    $modelProperty->setSize($annotations->EditSize);
 
                     if ($annotations->ValidValuesMD !== null && $annotations->ValidValuesMD !== "") {
                         $choices = StringUtils::choicesStringToValidValuesMD($annotations->ValidValuesMD);

@@ -71,22 +71,43 @@ class SynchronizeCommand extends Command
             $io->title('Entities creation...');
             $io->progressStart(count($listEntities));
 
+            $nbEntitiesCreated = 0;
             foreach ($listEntities as $entity) {
-                $this->entityCreation($entity);
+                $created = $this->entityCreation($entity);
+                if ($created) {
+                    $nbEntitiesCreated++;
+                }
                 $io->progressAdvance(1);
             }
 
             $io->progressFinish();
+
+            if ($nbEntitiesCreated === 0) {
+                $io->success('Entities are already up to date!');
+            } else {
+                $io->success($nbEntitiesCreated . ' entity(ies) created !');
+            }
 
             $io->title('Properties creation...');
             $io->progressStart(count($listProperties));
 
+            $nbPropertiesCreated = 0;
             foreach ($listProperties as $property) {
-                $this->propertyCreation($property);
+                $created = $this->propertyCreation($property, $io);
+                if ($created) {
+                    $nbPropertiesCreated++;
+                }
                 $io->progressAdvance(1);
             }
 
             $io->progressFinish();
+
+            if ($nbPropertiesCreated === 0) {
+                $io->success('Properties are already up to date!');
+            } else {
+                $io->success($nbPropertiesCreated . ' property(ies) created !');
+            }
+
         } else {
 //            /** @var Entity $entity */
 //            foreach ($appInspector->getEntities() as $entity) {
@@ -110,7 +131,7 @@ class SynchronizeCommand extends Command
         $exists = $udtRepo->find(substr($entity->getTable(), 2));
 
         if ($exists) {
-            return;
+            return false;
         }
 
         $udt = new UserTablesMD();
@@ -125,9 +146,11 @@ class SynchronizeCommand extends Command
         }
 
         $udtRepo->add($udt);
+
+        return true;
     }
 
-    private function propertyCreation(Property $property)
+    private function propertyCreation(Property $property, SymfonyStyle $io)
     {
         /** @var UserFieldsMDRepository $udfRepo */
         $udfRepo = $this->manager->getRepository('UserFieldsMD');
@@ -135,11 +158,11 @@ class SynchronizeCommand extends Command
         $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), str_replace('u_', '', str_replace('U_', '', $property->getField())));
 
         if ($exists) {
-            return;
+            return false;
         } else {
             $exists = $udfRepo->findByTableNameAndFieldName($property->getSapTable(), str_replace('u_', '', str_replace('U_', '', strtolower($property->getField()))));
             if ($exists) {
-                return;
+                return false;
             }
         }
 
@@ -149,11 +172,14 @@ class SynchronizeCommand extends Command
         $udf->setType($property->getFieldTypeMD());
         $udf->setSubType($property->getFieldSubTypeMD());
         $udf->setDescription($property->getDescription());
-        $udf->setEditSize($property->getSize());
-        $udf->setName(str_replace('u_', '', str_replace('U_', '', $property->getName())));
+        $udf->setName(str_replace('u_', '', str_replace('U_', '', $property->getField())));
 
         if ($property->isMandatory()) {
             $udf->setMandatory('tYES');
+        }
+
+        if ($property->getSize()) {
+            $udf->setEditSize($property->getSize());
         }
 
         if ($property->getLinkedSystemObject() !== null && $property->getLinkedSystemObject() !== '') {
@@ -181,7 +207,13 @@ class SynchronizeCommand extends Command
                 $retry = false;
             } catch (\Exception $e) {
                 $nbTour++;
+                if ($nbTour === 5) {
+                    $io->error('An error occurred during creation of ' . $property->getName() . ' field in ' .
+                       $property->getTable() . ' entity : ' . $e->getMessage());
+                    return false;
+                }
             }
         }
+        return true;
     }
 }

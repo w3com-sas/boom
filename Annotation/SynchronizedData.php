@@ -38,7 +38,7 @@ class SynchronizedData extends Annotation
     /**
      * @var int
      */
-    public $EditSize = 10;
+    public $EditSize = null;
 
     /**
      * @var string
