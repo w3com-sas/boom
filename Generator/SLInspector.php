@@ -180,6 +180,11 @@ class SLInspector implements InspectorInterface
             /** @var UserFieldsMD $udf */
             foreach ($udfs as $udf) {
                 if ($udf->getName() === substr($property->getField(), 2)) {
+                    if ($udf->getMandatory() === 'tYES') {
+                        $property->setIsMandatory(true);
+                    } else {
+                        $property->setIsMandatory(false);
+                    }
                     $property->setFieldTypeMD($udf->getType());
                     $property->setFieldSubTypeMD($udf->getSubType());
                     $property->setSapTable($udf->getTableName());
