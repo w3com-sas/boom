@@ -9,6 +9,7 @@ class AbstractEntity
 {
     protected $changedFields = [];
     protected $collabPackField = '';
+    private $refl = null;
 
 
     public function set($field, $value, $registerAsChanged = true)
@@ -65,7 +66,7 @@ class AbstractEntity
      */
     public function getFieldByDescription($description): string
     {
-        $refl = new \ReflectionClass(get_class($this));
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
@@ -90,7 +91,7 @@ class AbstractEntity
      */
     public function getTypeByField($fieldName)
     {
-        $refl = new \ReflectionClass(get_class($this));
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
@@ -114,7 +115,8 @@ class AbstractEntity
      * @throws \ReflectionException
      */
     public function getChoicesByProperty($propertyName){
-        $refl = new \ReflectionClass(get_class($this));
+
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
@@ -139,7 +141,7 @@ class AbstractEntity
      */
     public function getDescriptionByProperty($propertyName): string
     {
-        $refl = new \ReflectionClass(get_class($this));
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
@@ -164,7 +166,7 @@ class AbstractEntity
      */
     public function getPropertyByColumn($column): string
     {
-        $refl = new \ReflectionClass(get_class($this));
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
@@ -188,7 +190,7 @@ class AbstractEntity
      */
     public function getEntityJson()
     {
-        $refl = new \ReflectionClass(get_class($this));
+        $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
         $ar = [];
         foreach ($refl->getProperties() as $property) {
@@ -201,6 +203,17 @@ class AbstractEntity
         }
 
         return \GuzzleHttp\json_encode($ar);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    private function getReflectionClass()
+    {
+        if ($this->refl === null){
+            $this->refl = new \ReflectionClass(get_class($this));
+        }
+        return $this->refl;
     }
 
 
