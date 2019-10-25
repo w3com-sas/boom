@@ -4,12 +4,14 @@ namespace W3com\BoomBundle\HanaEntity;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use W3com\BoomBundle\Annotation\EntityColumnMeta;
 
 class AbstractEntity
 {
     protected $changedFields = [];
     protected $collabPackField = '';
     private $refl = null;
+    private $propertiesAnnotation = [];
 
 
     public function set($field, $value, $registerAsChanged = true)
@@ -114,7 +116,8 @@ class AbstractEntity
      * @throws AnnotationException
      * @throws \ReflectionException
      */
-    public function getChoicesByProperty($propertyName){
+    public function getChoicesByProperty($propertyName)
+    {
 
         $refl = $this->getReflectionClass();
         $reader = new AnnotationReader();
@@ -170,14 +173,16 @@ class AbstractEntity
         $reader = new AnnotationReader();
 
         foreach ($refl->getProperties() as $property) {
-            if ($annotation = $reader->getPropertyAnnotation(
-                $property,
-                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
-            )) {
 
-                if ($annotation->column == $column) {
-                    return $property->getName();
-                }
+            if (array_key_exists($property->getName(), $this->propertiesAnnotation)) {
+                $annotation = $this->propertiesAnnotation[$column];
+            } else {
+                $annotation = $reader->getPropertyAnnotation($property, EntityColumnMeta::class);
+                $this->propertiesAnnotation[$column] = $annotation;
+            }
+
+            if ($annotation->column == $column) {
+                return $property->getName();
             }
         }
         return '';
@@ -194,6 +199,7 @@ class AbstractEntity
         $reader = new AnnotationReader();
         $ar = [];
         foreach ($refl->getProperties() as $property) {
+
             if ($annotation = $reader->getPropertyAnnotation(
                 $property,
                 'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
@@ -210,7 +216,7 @@ class AbstractEntity
      */
     private function getReflectionClass()
     {
-        if ($this->refl === null){
+        if ($this->refl === null) {
             $this->refl = new \ReflectionClass(get_class($this));
         }
         return $this->refl;
