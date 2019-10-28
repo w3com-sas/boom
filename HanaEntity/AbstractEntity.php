@@ -175,10 +175,10 @@ class AbstractEntity
         foreach ($refl->getProperties() as $property) {
 
             if (array_key_exists($property->getName(), $this->propertiesAnnotation)) {
-                $annotation = $this->propertiesAnnotation[$column];
+                $annotation = $this->propertiesAnnotation[$property->getName()];
             } else {
                 $annotation = $reader->getPropertyAnnotation($property, EntityColumnMeta::class);
-                $this->propertiesAnnotation[$column] = $annotation;
+                $this->propertiesAnnotation[$property->getName()] = $annotation;
             }
 
             if ($annotation->column == $column) {
