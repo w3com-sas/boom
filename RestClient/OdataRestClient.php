@@ -71,6 +71,7 @@ class OdataRestClient implements RestClientInterface
 
                 return null;
             } else {
+                $this->manager->logger->error($uri);
                 $this->manager->logger->error($e->getResponse()->getBody()->getContents());
                 throw new \Exception('Unknown error while launching GET request');
             }
