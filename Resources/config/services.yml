@@ -47,6 +47,12 @@ services:
     tags:
     - { name: 'console.command', command: 'boom:make:entity' }
 
+  W3com\BoomBundle\Command\MakeODSEntityCommand:
+    arguments:
+    - '@W3com\BoomBundle\Service\BoomGenerator'
+    tags:
+    - { name: 'console.command', command: 'boom:make:ods-entity' }
+
   W3com\BoomBundle\Command\SynchronizeCommand:
     arguments:
     - '@W3com\BoomBundle\Service\BoomGenerator'

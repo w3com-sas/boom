@@ -68,7 +68,6 @@ class OdataRestClient implements RestClientInterface
             $this->manager->addToCollectedData('ods', $e->getResponse()->getStatusCode(), $uri, null, $response, $stop);
             if (404 == $e->getCode()) {
                 $this->manager->logger->info($e->getResponse()->getBody()->getContents());
-
                 return null;
             } else {
                 $this->manager->logger->error($uri);
