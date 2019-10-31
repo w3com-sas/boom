@@ -1,6 +1,6 @@
 # MakeEntityCommand Documentation
 
-La commande s'exécute avec bin/console boom:make:entity.
+La commande s'exécute avec ``bin/console boom:make:entity``.
 
 Elle permet de créer une classe PHP relative à une table existante dans SAP (système ou utilisateur).
 
@@ -72,7 +72,7 @@ Properties of BusinessPartners Entity :
   ...
 ```
 
-Répondre "no" pour créer l'entité :
+Répondre ``no`` pour créer l'entité :
 
 ```
 Properties of BusinessPartners Entity :
