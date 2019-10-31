@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Form\Guess\Guess;
 use Symfony\Component\Form\Guess\TypeGuess;
+use W3com\BoomBundle\Form\Type\SapDateType;
 
 class BoomTypeGuesser implements FormTypeGuesserInterface
 {
@@ -63,8 +64,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
                 // integers can also be the id of an entity or a checkbox (0 or 1)
                 return new TypeGuess(IntegerType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
             case 'date':
-                return new TypeGuess(TextType::class, ['label' => $annotations['label'], 'attr' => ['class' => 'datepicker-here',
-                    'data-language' => 'fr']], Guess::MEDIUM_CONFIDENCE);
+                return new TypeGuess(SapDateType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
             case 'float':
             case 'double':
             case 'real':

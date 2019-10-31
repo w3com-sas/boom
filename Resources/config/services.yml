@@ -76,3 +76,13 @@ services:
   W3com\BoomBundle\Form\BoomTypeGuesser:
     tags:
       - {name: 'form.type_guesser'}
+
+  W3com\BoomBundle\Form\DataTransformer\SapDateTransformer:
+    tags:
+      - {name: 'form.type'}
+
+  W3com\BoomBundle\Form\Type\SapDateType:
+    arguments:
+      - '@W3com\BoomBundle\Form\DataTransformer\SapDateTransformer'
+    tags:
+      - {name: 'form.type'}
