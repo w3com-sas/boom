@@ -8,7 +8,7 @@ Elle permet de créer une classe PHP relative à une table existante dans SAP (s
 
 Choisir une table utilisateur parmi la liste de choix proposée en tapant le nombre, le nom de la table, ou en utilisant les flêches haut et bas pour la sélectionner.
 
-```
+```console
 What's the name of the table ?:
   [0 ] CorAcctConf
   [1 ] CorCorFs
@@ -30,7 +30,7 @@ La classe se crée avec la totalité des champs en propriété, ainsi que les ge
 
 Choisir une table utilisateur parmi la liste de choix proposée en tapant le nombre, le nom de la table, ou en utilisant les flêches haut et bas pour la sélectionner.
 
-```
+```console
 What's the name of the table ?:
   [0  ] ChartOfAccounts
   [1  ] BusinessPartnerGroups
@@ -45,14 +45,14 @@ What's the name of the table ?:
 
 Choisir si la génération prend la totalité des champs présent dans la table (non par défaut) :
 
-```
+```console
  Want you add all properties to your entity ? (yes/no) [no]:
  > 
 ```
 
 Si non, choisir un à un les champs souhaités en propriété ce classe. La clé primaire de la table est inclus de base.
 
-```
+```console
 Properties of BusinessPartners Entity :
 ---------------------------------------
 
@@ -74,7 +74,7 @@ Properties of BusinessPartners Entity :
 
 Répondre ``no`` pour créer l'entité :
 
-```
+```console
 Properties of BusinessPartners Entity :
 ---------------------------------------
 
