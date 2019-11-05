@@ -6,7 +6,12 @@ use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\MultipartStream;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -16,6 +21,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
+use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\HanaEntity\Attachments2;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
@@ -26,6 +32,9 @@ use W3com\BoomBundle\Utils\StringUtils;
 
 class BoomManager
 {
+    const BATCH_CREATE = 'CREATE';
+    const BATCH_UPDATE = 'UPDATE';
+
     /**
      * @var string current connection key (ex: default, connection1), as defined in config
      */
@@ -77,6 +86,11 @@ class BoomManager
     private $inSlContextMode = false;
 
     /**
+     * @var array
+     */
+    private $requests = [];
+
+    /**
      * BoomManager constructor.
      *
      * @param array $config
@@ -88,16 +102,16 @@ class BoomManager
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request)
     {
-        if($request->getCurrentRequest() != null){
+        if ($request->getCurrentRequest() != null) {
             $query = $request->getCurrentRequest()->query;
             $session = $request->getCurrentRequest()->getSession();
 
-            if($query->has('slcontext') && $query->has('username') && $query->has('companydb')){
-                $session->set('username',$query->get('username'));
-                $session->set('companydb',$query->get('companydb'));
-                $session->set('slcontext',$query->get('slcontext'));
+            if ($query->has('slcontext') && $query->has('username') && $query->has('companydb')) {
+                $session->set('username', $query->get('username'));
+                $session->set('companydb', $query->get('companydb'));
+                $session->set('slcontext', $query->get('slcontext'));
             }
-            if($session->has('username') && $session->has('companydb') && $session->has('slcontext')){
+            if ($session->has('username') && $session->has('companydb') && $session->has('slcontext')) {
                 $this->inSlContextMode = true;
             }
         } else {
@@ -124,7 +138,7 @@ class BoomManager
         );
         $this->clients['odata'] = $client;
 
-        if($this->inSlContextMode){
+        if ($this->inSlContextMode) {
             $this->setSLContextToCurrentConnection(
                 $session->get('slcontext'),
                 $session->get('username'),
@@ -225,8 +239,8 @@ class BoomManager
             // creating the cookie jar
             $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $CompanyDB . '_' . $UserName;
-            file_put_contents($cookiePath,StringUtils::convertSLContextToCookieJarFileContent($SLContext,$this->config['service_layer']['base_uri']));
-            $jar = new FileCookieJar($cookiePath,true);
+            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->config['service_layer']['base_uri']));
+            $jar = new FileCookieJar($cookiePath, true);
 
             $client = new Client(
                 [
@@ -307,9 +321,9 @@ class BoomManager
         }
 
         // checks if entity exists
-        $boomEntityClassName = 'W3com\\BoomBundle\\HanaEntity\\'.$entityName;
+        $boomEntityClassName = 'W3com\\BoomBundle\\HanaEntity\\' . $entityName;
 
-        if(class_exists($boomEntityClassName)){
+        if (class_exists($boomEntityClassName)) {
             $entityClassName = $boomEntityClassName;
         } else {
             $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityName;
@@ -337,9 +351,7 @@ class BoomManager
             $repo = new $repoClassName($metadata);
             $this->logger->info("Loaded custom repo $repoClassName");
         }
-
         $this->repositories[$entityName] = $repo;
-
         return $repo;
     }
 
@@ -424,7 +436,7 @@ class BoomManager
         return $this->getAnnotationMetadata($entityClassName, $entityName);
     }
 
-    public function sendAttachment($documents,$absoluteEntry=0)
+    public function sendAttachment($documents, $absoluteEntry = 0)
     {
         $isNew = intval($absoluteEntry) == 0;
         $client = $this->restClients['sl'];
@@ -432,16 +444,16 @@ class BoomManager
         $rawBody = "";
 
 
-        foreach($documents as $document){
+        foreach ($documents as $document) {
 
-            if(!array_key_exists('path',$document)) continue;
-            if(!file_exists($document['path'])) continue;
+            if (!array_key_exists('path', $document)) continue;
+            if (!file_exists($document['path'])) continue;
 
             $fileUtil = new File($document['path']);
             $systemFilename = $fileUtil->getFilename();
             $filetype = $fileUtil->getMimeType();
 
-            if(array_key_exists('filename',$document)){
+            if (array_key_exists('filename', $document)) {
                 $serverFilename = $document['filename'];
             } else {
                 $serverFilename = $systemFilename;
@@ -449,20 +461,20 @@ class BoomManager
 
             $rawBody .=
                 "--$customBoundary\r\n"
-                ."Content-Disposition: form-data; name=\"files\"; filename=\"".$serverFilename."\"\r\n"
-                ."Content-Type: ".$filetype."\r\n"
-                ."\r\n"
-                .file_get_contents($document['path'])."\r\n";
+                . "Content-Disposition: form-data; name=\"files\"; filename=\"" . $serverFilename . "\"\r\n"
+                . "Content-Type: " . $filetype . "\r\n"
+                . "\r\n"
+                . file_get_contents($document['path']) . "\r\n";
         }
 
         $rawBody .= "--$customBoundary--\r\n\r\n";
 
-        if($isNew){
+        if ($isNew) {
             $response = $client->request(
                 'Attachments2',
                 [
                     'headers' => [
-                        'Content-Type' => 'multipart/form-data;boundary='.$customBoundary,
+                        'Content-Type' => 'multipart/form-data;boundary=' . $customBoundary,
                     ],
                     'body' => $rawBody
                 ]
@@ -470,33 +482,76 @@ class BoomManager
             $absoluteEntry = $response['AbsoluteEntry'];
         } else {
             $response = $client->request(
-                'Attachments2('.$absoluteEntry.')',
+                'Attachments2(' . $absoluteEntry . ')',
                 [
                     'headers' => [
-                        'Content-Type' => 'multipart/form-data;boundary='.$customBoundary,
+                        'Content-Type' => 'multipart/form-data;boundary=' . $customBoundary,
                     ],
                     'body' => $rawBody
                 ]
             );
-
         }
-
         return $absoluteEntry;
+    }
+
+    public function batch($data)
+    {
+        $client = $this->getCurrentClient();
+        $request1 = new Request('POST', 'Items', ['Content-Type' => 'application/json'],
+            json_encode(['ItemCode' => 'ItemTest3', 'ItemName' => 'Name1']));
+        $request2 = new Request('POST', 'Items', ['Content-Type' => 'application/json'],
+            json_encode(['ItemCode' => 'ItemTest4', 'ItemName' => 'Name2']));
+        $responses = Pool::batch($client, [$request1, $request2]);
     }
 
     public function getAttachmentInfos($absEntry)
     {
-        $response = $this->restClients['sl']->get('Attachments2('.$absEntry.')');
-
+        $response = $this->restClients['sl']->get('Attachments2(' . $absEntry . ')');
         return $response['Attachments2_Lines'];
     }
 
     public function downloadAttachment($absEntry, $fileName = null)
     {
         if ($fileName == null) {
-            return $this->restClients['sl']->get('Attachments2('.$absEntry.')/$value', true);
+            return $this->restClients['sl']->get('Attachments2(' . $absEntry . ')/$value', true);
         } else {
-            return $this->restClients['sl']->get('Attachments2('.$absEntry.')/$value?filename=\''.$fileName.'\'', true);
+            return $this->restClients['sl']->get('Attachments2(' . $absEntry . ')/$value?filename=\'' . $fileName . '\'', true);
+        }
+    }
+
+    public function persist(AbstractEntity $entity, $method = self::BATCH_CREATE)
+    {
+        $class = substr(get_class($entity), strrpos(get_class($entity), '\\') + 1);
+        $repo = $this->getRepository($class);
+        $repoMetadata = $repo->getRepoMetadata();
+        $uri = $repoMetadata->getAliasWrite();
+        $data = $repo->getDataToSend($entity->getChangedFields(), $entity);
+        $requestMethod = $method === self::BATCH_CREATE ? 'POST' : 'PATCH';
+
+        if ($method === self::BATCH_UPDATE) {
+            $id = $entity->get($repoMetadata->getKey());
+            $quotes = $repoMetadata->getColumns()[$repoMetadata->getKey()]['quotes'] ? "'" : "";
+            $uri .= '(' . $quotes . $id . $quotes . ')';
+        }
+        $this->requests[] = new Request($requestMethod, $uri, ['Content-Type' => 'application/json'],
+            json_encode($data));
+    }
+
+    public function flush()
+    {
+        $this->stopwatch->start('SL-batch');
+        $responses = Pool::batch($this->getCurrentClient(), $this->requests);
+        $stop = $this->stopwatch->stop('SL-batch');
+        foreach ($responses as $response) {
+            if ($response instanceof ClientException || $response instanceof ServerException) {
+                throw new \Exception($response->getMessage());
+            } else {
+// TODO : add uri and param info
+                /** @var Response $response */
+                $content = $response->getBody()->getContents();
+                $this->addToCollectedData('sl', $response->getStatusCode(),
+                    null, null, $content, $stop);
+            }
         }
     }
 }

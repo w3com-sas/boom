@@ -5,6 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Psr7\Request;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
@@ -19,9 +20,10 @@ class SLRestClient implements RestClientInterface
      */
     private $manager;
 
+    /**
+     * @var XmlEncoder
+     */
     private $xmlEncoder;
-
-    private $batchRequest = [];
 
     /**
      * @var AdapterInterface
@@ -281,6 +283,7 @@ class SLRestClient implements RestClientInterface
             }
         }
     }
+
 
     public function put(string $uri, $data)
     {

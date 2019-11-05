@@ -18,7 +18,6 @@ class AbstractEntity
     {
         $this->$field = $value;
         $this->changedFields[$field] = $registerAsChanged;
-
         return $this;
     }
 
@@ -181,7 +180,7 @@ class AbstractEntity
                 $this->propertiesAnnotation[$property->getName()] = $annotation;
             }
 
-            if ($annotation->column == $column) {
+            if ($annotation !== null && $annotation->column == $column) {
                 return $property->getName();
             }
         }
