@@ -26,7 +26,7 @@ class StringUtils {
         return ucfirst(self::stringToCamelCase($string));
     }
 
-    static private function skipAccents($str, $charset='utf-8')
+    static public function skipAccents($str, $charset='utf-8')
     {
         $str = htmlentities( $str, ENT_NOQUOTES, $charset );
 

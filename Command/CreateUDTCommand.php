@@ -168,7 +168,7 @@ class CreateUDTCommand extends Command
                         $tables[] = substr($entity->getTable(), 2);
                     }
 
-                    $linkedTableName = $io->choice('Wich table ?', $tables);
+                    $linkedTableName = $io->choice('Which table ?', $tables);
 
                     $udf->setLinkedTable($linkedTableName);
 

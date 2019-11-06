@@ -10,7 +10,7 @@ class UserFieldsMDRepository extends AbstractRepository
     public function findByTableNameAndFieldName($tableName, $fieldName)
     {
         $params = $this->createParams()
-            ->addFilter('tableName', $tableName)
+            ->addFilter('tableName', $tableName, Clause::CONTAINS)
             ->addFilter('name', $fieldName);
 
         $result = $this->findAll($params);

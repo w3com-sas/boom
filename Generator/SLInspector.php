@@ -142,6 +142,7 @@ class SLInspector implements InspectorInterface
         /** @var UserFieldsMD $udf */
         foreach ($udfs as $udf) {
             $found = false;
+            $propertyToChange = new Property();
 
             /** @var Property $property */
             foreach ($entity->getProperties() as $property) {
@@ -152,72 +153,29 @@ class SLInspector implements InspectorInterface
                 }
             }
 
-            if (!isset($propertyToChange)) {
-                $propertyToChange = new Property();
-            }
-
-            $propertyToChange = $this->hydratePropertyWithUDF($propertyToChange, $udf);
+            $this->hydratePropertyWithUDF($propertyToChange, $udf);
 
             if (!$found) {
-                $newProperties = $entity->getProperties();
-                $newProperties[] = $propertyToChange;
-                $entity->setProperties($newProperties);
+                $entity->setProperty($propertyToChange, true);
             }
         }
-
-//        /** @var Property $property */
-//        foreach ($entity->getProperties() as $property) {
-//            if (!$property->isUDF()) {
-//                continue;
-//            }
-//            /** @var FieldDefinition $field */
-//            foreach ($fields as $field) {
-//                if (strtolower($property->getField()) === strtolower($field->getColumn_name())) {
-//                    $property->setDescription($field->getDescription());
-//                    $property->setName(StringUtils::stringToCamelCase($field->getDescription()));
-//                    if ($field->getChoices() !== null) {
-//                        $property->setChoices($field->getChoices());
-//                    }
-//                    $property->setIsMandatory($field->isMandatory() !== 'N');
-//                    $property->setDefaultValue($field->getDefaultValue());
-//                }
-//            }
-//
-//            /** @var UserFieldsMD $udf */
-//            foreach ($udfs as $udf) {
-//                if ($udf->getName() === substr($property->getField(), 2)) {
-//                    if ($udf->getMandatory() === 'tYES') {
-//                        $property->setIsMandatory(true);
-//                    } else {
-//                        $property->setIsMandatory(false);
-//                    }
-//                    $property->setFieldTypeMD($udf->getType());
-//                    $property->setFieldSubTypeMD($udf->getSubType());
-//                    $property->setSapTable($udf->getTableName());
-//                    $property->setSize($udf->getEditSize());
-//                    $property->setLinkedTable($udf->getLinkedTable());
-//                    $property->setLinkedSystemObject($udf->getLinkedSystemObject());
-//                    $property->setLinkedUDO($udf->getLinkedUDO());
-//
-//                    if ($udf->getValidValuesMD() !== []) {
-//                        $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
-//                    }
-//                }
-//            }
-//
-//        }
 
         return $entity;
     }
 
     private function hydratePropertyWithUDF(Property $property, UserFieldsMD $udf)
     {
-        $property->setDescription($udf->getDescription());
 
-        if ($udf->getDescription() != false) {
+        $property->setIsUDF(true);
+
+        $property->setField('U_' . $udf->getName());
+
+        if ($udf->getDescription() != false && $property->getName() == false) {
             $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
+            $property->setDescription($udf->getDescription());
         } else {
             $property->setName(StringUtils::stringToCamelCase($udf->getName()));
+            $property->setDescription($property->getField());
         }
 
         $property->setDefaultValue($udf->getDefaultValue());
@@ -238,9 +196,9 @@ class SLInspector implements InspectorInterface
 
         if ($udf->getValidValuesMD() !== []) {
             $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
+        } else {
+            $property->setChoices([]);
         }
-
-        return $property;
     }
 
     public function getEntities()

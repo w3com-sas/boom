@@ -11,7 +11,7 @@ use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Service\BoomGenerator;
 
-class MakeEntityCommand extends Command
+class MakeSLEntityCommand extends Command
 {
     private $generator;
 
@@ -24,7 +24,7 @@ class MakeEntityCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('boom:make:entity')
+            ->setName('boom:make:sl-entity')
             ->setDescription('Create HanaEntity with data in SAP');
     }
 
@@ -110,7 +110,7 @@ class MakeEntityCommand extends Command
                     $io->listing($properties);
                     $continue = $io->confirm("Want you add field in your entity ?");
                     if ($continue) {
-                        $newProperty = $io->choice("Wich one ?", $propertiesChoices);
+                        $newProperty = $io->choice("Which one ?", $propertiesChoices);
                         $properties[] = $newProperty;
                         unset($propertiesChoices[array_search($newProperty, $propertiesChoices)]);
                         $io->success($newProperty." added to the entity !");

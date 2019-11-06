@@ -29,23 +29,11 @@ services:
       - '@Symfony\Component\Cache\Adapter\AdapterInterface'
     public: true
 
-  W3com\BoomBundle\Command\UpdateViewsCommand:
-    arguments:
-      - '@W3com\BoomBundle\Service\BoomGenerator'
-    tags:
-      - { name: 'console.command', command: 'boom:update-views' }
-
-  W3com\BoomBundle\Command\UpdateViewCommand:
-    arguments:
-      - '@W3com\BoomBundle\Service\BoomGenerator'
-    tags:
-      - { name: 'console.command', command: 'boom:update-view' }
-
-  W3com\BoomBundle\Command\MakeEntityCommand:
+  W3com\BoomBundle\Command\MakeSLEntityCommand:
     arguments:
     - '@W3com\BoomBundle\Service\BoomGenerator'
     tags:
-    - { name: 'console.command', command: 'boom:make:entity' }
+    - { name: 'console.command', command: 'boom:make:sl-entity' }
 
   W3com\BoomBundle\Command\MakeODSEntityCommand:
     arguments:

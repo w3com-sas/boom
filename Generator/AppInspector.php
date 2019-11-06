@@ -147,21 +147,6 @@ class AppInspector implements InspectorInterface
                     }
                 }
 
-                if (is_a($annotations, SynchronizedData::class)) {
-                    $modelProperty->setLinkedUDO($annotations->LinkedUDO);
-                    $modelProperty->setLinkedTable($annotations->LinkedTable);
-                    $modelProperty->setLinkedSystemObject($annotations->LinkedSystemObject);
-                    $modelProperty->setFieldTypeMD($annotations->Type);
-                    $modelProperty->setFieldSubTypeMD($annotations->SubType);
-                    $modelProperty->setSapTable($annotations->TableName);
-                    $modelProperty->setSize($annotations->EditSize);
-
-                    if ($annotations->ValidValuesMD !== null && $annotations->ValidValuesMD !== "") {
-                        $choices = StringUtils::choicesStringToValidValuesMD($annotations->ValidValuesMD);
-                        $modelProperty->setChoices($choices);
-                    }
-                }
-
                 foreach ($annotations as $annotation => $value) {
 
                     if ($annotation == $this::ANNOTATION_COLUMN) {
@@ -176,6 +161,22 @@ class AppInspector implements InspectorInterface
                         if ($value) {
                             $entity->setKey($modelProperty->getField());
                         }
+                    }
+                }
+
+                if (is_a($annotations, SynchronizedData::class)) {
+                    $modelProperty->setLinkedUDO($annotations->LinkedUDO);
+                    $modelProperty->setLinkedTable($annotations->LinkedTable);
+                    $modelProperty->setLinkedSystemObject($annotations->LinkedSystemObject);
+                    $modelProperty->setFieldTypeMD($annotations->Type);
+                    $modelProperty->setFieldSubTypeMD($annotations->SubType);
+                    $modelProperty->setSapTable($annotations->TableName);
+                    $modelProperty->setSize($annotations->EditSize);
+                    $modelProperty->setName(StringUtils::stringToCamelCase($annotations->Description));
+
+                    if ($annotations->ValidValuesMD !== null && $annotations->ValidValuesMD !== "") {
+                        $choices = StringUtils::choicesStringToValidValuesMD($annotations->ValidValuesMD);
+                        $modelProperty->setChoices($choices);
                     }
                 }
 

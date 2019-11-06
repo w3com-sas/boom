@@ -47,11 +47,13 @@ class SynchronizeCommand extends Command
 
         $io->title("Boom Synchronize Command");
 
-//        $all = $io->confirm("Want you synchronize all the project ?", false);
-        $all = true;
+        $all = $io->confirm("Want you synchronize all the project ?", false);
+//        $all = true;
 
         $listEntities = [];
         $listProperties = [];
+
+        $entitiesHavingPropertiesToSync = [];
 
         /** @var Entity $entity */
         foreach ($appInspector->getEntities() as $entity) {
@@ -61,6 +63,9 @@ class SynchronizeCommand extends Command
             /** @var Property $property */
             foreach ($entity->getProperties() as $property) {
                 if ($property->isUDF()) {
+                    if (!in_array($entity, $entitiesHavingPropertiesToSync)) {
+                        $entitiesHavingPropertiesToSync[] = $entity;
+                    }
                     $listProperties[] = $property;
                 }
             }
@@ -85,7 +90,7 @@ class SynchronizeCommand extends Command
             if ($nbEntitiesCreated === 0) {
                 $io->success('Entities are already up to date!');
             } else {
-                $io->success($nbEntitiesCreated . ' entity(ies) created !');
+                $io->success($nbEntitiesCreated . ' entity(ies) created!');
             }
 
             $io->title('Properties creation...');
@@ -105,23 +110,41 @@ class SynchronizeCommand extends Command
             if ($nbPropertiesCreated === 0) {
                 $io->success('Properties are already up to date!');
             } else {
-                $io->success($nbPropertiesCreated . ' property(ies) created !');
+                $io->success($nbPropertiesCreated . ' property(ies) created!');
             }
 
         } else {
-//            /** @var Entity $entity */
-//            foreach ($appInspector->getEntities() as $entity) {
-//                if ($entity->isToSynchronize()) {
-//                    $listEntities[] = $entity;
-//                }
-//                /** @var Property $property */
-//                foreach ($entity->getProperties() as $property) {
-//                    if ($property->isUDF()) {
-//                        $listProperties[] = $property;
-//                    }
-//                }
-//            }
+            $listEntitiesName = array_map([$this, "nameOfEntity"], $entitiesHavingPropertiesToSync);
+
+            $entityToSynch = $io->choice('Which Entity', $listEntitiesName);
+
+            foreach ($entitiesHavingPropertiesToSync as $entity) {
+                if ($entity->getName() === $entityToSynch) {
+                    if ($entity->isToSynchronize()) {
+                        $created = $this->entityCreation($entity);
+                        if ($created) {
+                            $io->success('Entity ' . $entity->getName() . ' synchronized!');
+                        } else {
+                            $io->success('Entity is already synchronized!');
+                        }
+                    }
+                    foreach ($entity->getProperties() as $property) {
+                        if ($property->isUDF()) {
+                            $created = $this->propertyCreation($property, $io);
+                            if ($created) {
+                                $io->success('Field ' . $property->getField() . ' synchronized!');
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
         }
+    }
+
+    private function nameOfEntity(Entity $entity)
+    {
+        return $entity->getName();
     }
 
     private function entityCreation(Entity $entity)
