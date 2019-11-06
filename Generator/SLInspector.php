@@ -52,11 +52,7 @@ class SLInspector implements InspectorInterface
 
     private $entityTypes = [];
 
-    private $fieldsDefinition = [];
-
     private $enumTypes = [];
-
-    private $userFieldsMD = [];
 
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
@@ -108,11 +104,6 @@ class SLInspector implements InspectorInterface
      */
     public function addMetaToEntity(Entity $entity)
     {
-        /** @var FieldDefinitionRepository $fieldRepo */
-        $fieldRepo = $this->boom->getRepository('FieldDefinition');
-
-        $fields = $fieldRepo->findByTableName($entity->getTable());
-
         if ($entity->isToSynchronize()) {
             /** @var UserTablesMDRepository $udtRepo */
             $udtRepo = $this->boom->getRepository('UserTablesMD');
@@ -134,16 +125,6 @@ class SLInspector implements InspectorInterface
             $sapTableName = '@' . $entity->getTable();
         }
 
-        if (count($fields) === 0) {
-            $fields = $fieldRepo->findByTableName(substr($entity->getTable(), 2));
-            if (count($fields) === 0) {
-                $fields = $fieldRepo->findByTableName('@' . substr($entity->getTable(), 2));
-                if (count($fields) === 0) {
-                    $fields = $fieldRepo->findByTableName('@' . $entity->getTable());
-                }
-            }
-        }
-
         $udfs = $udfRepo->findByTableName($sapTableName);
 
         if ($udfs === []) {
@@ -161,6 +142,7 @@ class SLInspector implements InspectorInterface
         /** @var UserFieldsMD $udf */
         foreach ($udfs as $udf) {
             $found = false;
+
             /** @var Property $property */
             foreach ($entity->getProperties() as $property) {
                 if ($udf->getName() === substr($property->getField(), 2)) {
@@ -169,6 +151,7 @@ class SLInspector implements InspectorInterface
                     break;
                 }
             }
+
             if (!isset($propertyToChange)) {
                 $propertyToChange = new Property();
             }
@@ -230,7 +213,13 @@ class SLInspector implements InspectorInterface
     private function hydratePropertyWithUDF(Property $property, UserFieldsMD $udf)
     {
         $property->setDescription($udf->getDescription());
-        $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
+
+        if ($udf->getDescription() == false) {
+            $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
+        } else {
+            $property->setName(StringUtils::stringToCamelCase($udf->getName()));
+        }
+
         $property->setDefaultValue($udf->getDefaultValue());
 
         if ($udf->getMandatory() === 'tYES') {
