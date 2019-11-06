@@ -214,7 +214,7 @@ class SLInspector implements InspectorInterface
     {
         $property->setDescription($udf->getDescription());
 
-        if ($udf->getDescription() == false) {
+        if ($udf->getDescription() != false) {
             $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
         } else {
             $property->setName(StringUtils::stringToCamelCase($udf->getName()));
