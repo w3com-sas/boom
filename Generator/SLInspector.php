@@ -158,50 +158,100 @@ class SLInspector implements InspectorInterface
 
         $entity->setSapTable($sapTableName);
 
-
-        /** @var Property $property */
-        foreach ($entity->getProperties() as $property) {
-            if (!$property->isUDF()) {
-                continue;
-            }
-            /** @var FieldDefinition $field */
-            foreach ($fields as $field) {
-                if (strtolower($property->getField()) === strtolower($field->getColumn_name())) {
-                    $property->setDescription($field->getDescription());
-                    $property->setName(StringUtils::stringToCamelCase($field->getDescription()));
-                    if ($field->getChoices() !== null) {
-                        $property->setChoices($field->getChoices());
-                    }
-                    $property->setIsMandatory($field->isMandatory() !== 'N');
-                    $property->setDefaultValue($field->getDefaultValue());
-                }
-            }
-
-            /** @var UserFieldsMD $udf */
-            foreach ($udfs as $udf) {
+        /** @var UserFieldsMD $udf */
+        foreach ($udfs as $udf) {
+            $found = false;
+            /** @var Property $property */
+            foreach ($entity->getProperties() as $property) {
                 if ($udf->getName() === substr($property->getField(), 2)) {
-                    if ($udf->getMandatory() === 'tYES') {
-                        $property->setIsMandatory(true);
-                    } else {
-                        $property->setIsMandatory(false);
-                    }
-                    $property->setFieldTypeMD($udf->getType());
-                    $property->setFieldSubTypeMD($udf->getSubType());
-                    $property->setSapTable($udf->getTableName());
-                    $property->setSize($udf->getEditSize());
-                    $property->setLinkedTable($udf->getLinkedTable());
-                    $property->setLinkedSystemObject($udf->getLinkedSystemObject());
-                    $property->setLinkedUDO($udf->getLinkedUDO());
-
-                    if ($udf->getValidValuesMD() !== []) {
-                        $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
-                    }
+                    $propertyToChange = $property;
+                    $found = true;
+                    break;
                 }
             }
+            if (!isset($propertyToChange)) {
+                $propertyToChange = new Property();
+            }
 
+            $propertyToChange = $this->hydratePropertyWithUDF($propertyToChange, $udf);
+
+            if (!$found) {
+                $newProperties = $entity->getProperties();
+                $newProperties[] = $propertyToChange;
+                $entity->setProperties($newProperties);
+            }
         }
 
+//        /** @var Property $property */
+//        foreach ($entity->getProperties() as $property) {
+//            if (!$property->isUDF()) {
+//                continue;
+//            }
+//            /** @var FieldDefinition $field */
+//            foreach ($fields as $field) {
+//                if (strtolower($property->getField()) === strtolower($field->getColumn_name())) {
+//                    $property->setDescription($field->getDescription());
+//                    $property->setName(StringUtils::stringToCamelCase($field->getDescription()));
+//                    if ($field->getChoices() !== null) {
+//                        $property->setChoices($field->getChoices());
+//                    }
+//                    $property->setIsMandatory($field->isMandatory() !== 'N');
+//                    $property->setDefaultValue($field->getDefaultValue());
+//                }
+//            }
+//
+//            /** @var UserFieldsMD $udf */
+//            foreach ($udfs as $udf) {
+//                if ($udf->getName() === substr($property->getField(), 2)) {
+//                    if ($udf->getMandatory() === 'tYES') {
+//                        $property->setIsMandatory(true);
+//                    } else {
+//                        $property->setIsMandatory(false);
+//                    }
+//                    $property->setFieldTypeMD($udf->getType());
+//                    $property->setFieldSubTypeMD($udf->getSubType());
+//                    $property->setSapTable($udf->getTableName());
+//                    $property->setSize($udf->getEditSize());
+//                    $property->setLinkedTable($udf->getLinkedTable());
+//                    $property->setLinkedSystemObject($udf->getLinkedSystemObject());
+//                    $property->setLinkedUDO($udf->getLinkedUDO());
+//
+//                    if ($udf->getValidValuesMD() !== []) {
+//                        $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
+//                    }
+//                }
+//            }
+//
+//        }
+
         return $entity;
+    }
+
+    private function hydratePropertyWithUDF(Property $property, UserFieldsMD $udf)
+    {
+        $property->setDescription($udf->getDescription());
+        $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
+        $property->setDefaultValue($udf->getDefaultValue());
+
+        if ($udf->getMandatory() === 'tYES') {
+            $property->setIsMandatory(true);
+        } else {
+            $property->setIsMandatory(false);
+        }
+
+        $property->setFieldTypeMD($udf->getType());
+        $property->setFieldSubTypeMD($udf->getSubType());
+        $property->setSapTable($udf->getTableName());
+        $property->setSize($udf->getEditSize());
+        $property->setLinkedTable($udf->getLinkedTable());
+        $property->setLinkedSystemObject($udf->getLinkedSystemObject());
+        $property->setLinkedUDO($udf->getLinkedUDO());
+
+        if ($udf->getValidValuesMD() !== []) {
+            $property->setChoices(StringUtils::choicesValidValuesMDToArray($udf->getValidValuesMD()));
+        }
+
+        return $property;
     }
 
     public function getEntities()
@@ -291,7 +341,6 @@ class SLInspector implements InspectorInterface
         $property->setDescription($propertyMetadata[$this::NAME_ENTITY_PROPERTY]);
 
         if (strpos(strtolower($propertyMetadata[$this::NAME_ENTITY_PROPERTY]), 'u_') !== false) {
-            /** @var FieldDefinition $fieldDefinition */
             $property->setIsUDF(true);
         }
 
