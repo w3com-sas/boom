@@ -349,7 +349,7 @@ class SLRestClient implements RestClientInterface
         return $ar;
     }
 
-    private function login()
+    public function login()
     {
         $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentConnection()];
         $collectedData = $loginData;

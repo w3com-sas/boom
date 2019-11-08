@@ -7,6 +7,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\MultipartStream;
@@ -22,7 +23,7 @@ use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
-use W3com\BoomBundle\HanaEntity\Attachments2;
+use W3com\BoomBundle\Http\Batch;
 use W3com\BoomBundle\Repository\AbstractRepository;
 use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\Repository\RepoMetadata;
@@ -86,9 +87,9 @@ class BoomManager
     private $inSlContextMode = false;
 
     /**
-     * @var array
+     * @var Batch
      */
-    private $requests = [];
+    private $batch;
 
     /**
      * BoomManager constructor.
@@ -117,7 +118,6 @@ class BoomManager
         } else {
             $session = null;
         }
-
         $this->config = $config;
         $this->reader = new AnnotationReader();
         $this->logger = $logger;
@@ -153,6 +153,7 @@ class BoomManager
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;
+        $this->batch = new Batch($this->getCurrentClient(), $config, $stopwatch);
     }
 
     public function getCollectedData()
@@ -201,8 +202,8 @@ class BoomManager
         if ($stop instanceof StopwatchEvent) {
             $data['duration'] = $stop->getDuration();
         }
-        $decoded = json_decode($response);
-        if (is_object($decoded)) {
+        $decoded = !is_array($response) ? json_decode($response) : $response;
+        if (is_object($decoded) ||is_array($response)) {
             $data['decoded'] = $decoded;
         }
         $this->collectedData[] = $data;
@@ -494,15 +495,6 @@ class BoomManager
         return $absoluteEntry;
     }
 
-    public function batch($data)
-    {
-        $client = $this->getCurrentClient();
-        $request1 = new Request('POST', 'Items', ['Content-Type' => 'application/json'],
-            json_encode(['ItemCode' => 'ItemTest3', 'ItemName' => 'Name1']));
-        $request2 = new Request('POST', 'Items', ['Content-Type' => 'application/json'],
-            json_encode(['ItemCode' => 'ItemTest4', 'ItemName' => 'Name2']));
-        $responses = Pool::batch($client, [$request1, $request2]);
-    }
 
     public function getAttachmentInfos($absEntry)
     {
@@ -519,39 +511,78 @@ class BoomManager
         }
     }
 
-    public function persist(AbstractEntity $entity, $method = self::BATCH_CREATE)
+    /**
+     * @param AbstractEntity $entity
+     * @throws \Exception
+     */
+    public function update(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity, true);
+        $this->batch->add(new Request('PATCH', $data['uri'], ['Content-Type' => 'application/json'],
+            json_encode($data['data'])));
+    }
+
+    /**
+     * @param AbstractEntity $entity
+     * @throws \Exception
+     */
+    public function delete(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity, true);
+        $this->batch->add(new Request('DELETE', $data['uri'], ['Content-Type' => 'application/json'],
+            json_encode($data['data'])));
+    }
+
+    /**
+     * @param AbstractEntity $entity
+     * @throws \Exception
+     */
+    public function add(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity);
+        $this->batch->add(new Request('POST', $data['uri'], ['Content-Type' => 'application/json'],
+            json_encode($data['data'])));
+    }
+
+    /**
+     * @throws \Exception
+     * @throws GuzzleException
+     */
+    public function flush()
+    {
+        try {
+            $this->stopwatch->start('SL-batch');
+            $response = $this->batch->execute();
+            $stop = $this->stopwatch->stop('SL-batch');
+            $this->addToCollectedData('SL-BATCH', $response->getStatusCode(),
+                '$batch', null, (string)$response->getBody()->getContents(), $stop);
+        } catch (ClientException $exception){
+            if ($exception->getCode() === 401){
+                $this->getSlClient()->login();
+                return $this->flush();
+            }
+        }
+    }
+
+    /**
+     * @param AbstractEntity $entity
+     * @param bool $objectExist
+     * @return array
+     * @throws \Exception
+     */
+    private function getDataFromEntity(AbstractEntity $entity, $objectExist = false)
     {
         $class = substr(get_class($entity), strrpos(get_class($entity), '\\') + 1);
         $repo = $this->getRepository($class);
         $repoMetadata = $repo->getRepoMetadata();
         $uri = $repoMetadata->getAliasWrite();
-        $data = $repo->getDataToSend($entity->getChangedFields(), $entity);
-        $requestMethod = $method === self::BATCH_CREATE ? 'POST' : 'PATCH';
-
-        if ($method === self::BATCH_UPDATE) {
+        if ($objectExist) {
             $id = $entity->get($repoMetadata->getKey());
             $quotes = $repoMetadata->getColumns()[$repoMetadata->getKey()]['quotes'] ? "'" : "";
             $uri .= '(' . $quotes . $id . $quotes . ')';
         }
-        $this->requests[] = new Request($requestMethod, $uri, ['Content-Type' => 'application/json'],
-            json_encode($data));
+        $data = $repo->getDataToSend($entity->getChangedFields(), $entity);
+        return ['data' => $data, 'uri' => $uri];
     }
 
-    public function flush()
-    {
-        $this->stopwatch->start('SL-batch');
-        $responses = Pool::batch($this->getCurrentClient(), $this->requests);
-        $stop = $this->stopwatch->stop('SL-batch');
-        foreach ($responses as $response) {
-            if ($response instanceof ClientException || $response instanceof ServerException) {
-                throw new \Exception($response->getMessage());
-            } else {
-// TODO : add uri and param info
-                /** @var Response $response */
-                $content = $response->getBody()->getContents();
-                $this->addToCollectedData('sl', $response->getStatusCode(),
-                    null, null, $content, $stop);
-            }
-        }
-    }
 }
