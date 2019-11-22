@@ -6,10 +6,8 @@ namespace W3com\BoomBundle\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
-use function Symfony\Component\Debug\Tests\testHeader;
 
 class Batch
 {

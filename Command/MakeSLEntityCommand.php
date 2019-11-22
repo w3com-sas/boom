@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Translation\Exception\NotFoundResourceException;
 use W3com\BoomBundle\Generator\Model\Entity;
+use W3com\BoomBundle\Generator\Model\Property;
 use W3com\BoomBundle\Service\BoomGenerator;
 
 class MakeSLEntityCommand extends Command
@@ -71,7 +72,7 @@ class MakeSLEntityCommand extends Command
 
             $io->progressStart(1);
 
-            $generator->createSapEntity($entity->getTable());
+            $generator->createSLEntity($entity->getTable());
 
             $io->progressFinish();
 
@@ -90,6 +91,7 @@ class MakeSLEntityCommand extends Command
 
             $propertiesChoices = [];
 
+            /** @var Property $property */
             foreach ($entity->getProperties() as $property) {
                 if (!$property->getIsKey()) {
                     $propertiesChoices[] = $property->getField();
@@ -122,7 +124,7 @@ class MakeSLEntityCommand extends Command
 
             $io->progressStart(1);
 
-            $generator->createSapEntity($entity->getTable(), $properties);
+            $generator->createSLEntity($entity->getTable(), $properties);
             $io->progressFinish();
 
             $io->success('Success in entity creation !');

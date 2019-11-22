@@ -57,7 +57,7 @@ class MakeODSEntityCommand extends Command
         }
 
         try {
-            $this->generator->createViewEntity($entity);
+            $this->generator->createODSEntity($entity);
         } catch (\Exception $e) {
             $io->error($e->getMessage());
             return;
