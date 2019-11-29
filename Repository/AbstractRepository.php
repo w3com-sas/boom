@@ -377,19 +377,32 @@ abstract class AbstractRepository implements RepositoryInterface
         /** @var AbstractEntity $complexObj */
         $complexClass = $this->manager->getRepository($complexEntity);
 
-        //create an empty entity array
-        for ($i = 0; $i < count($array); $i++) {
-            $complexObjs[] = new $complexClass->className();
+        $oneToMany = is_array($array[array_rand($array)]);
+
+        if ($oneToMany) {
+            //create an empty entity array
+            for ($i = 0; $i < count($array); $i++) {
+                $complexObjs[] = new $complexClass->className();
+            }
+        } else {
+            $complexObj = new $complexClass->className();
         }
 
-        if (count($array) > 0) {
-            foreach ($complexClass->columns as $attribute => $column) {
+
+        foreach ($complexClass->columns as $attribute => $column) {
+            if ($oneToMany) {
                 foreach ($array as $iterator => $data) {
                     if (array_key_exists($column['column'], $data)) {
                         $complexObjs[$iterator]->set($attribute, $data[$column['column']], false);
                     } elseif (array_key_exists($column['readColumn'], $data)) {
                         $complexObjs[$iterator]->set($attribute, $data[$column['readColumn']], false);
                     }
+                }
+            } else {
+                if (array_key_exists($column['column'], $array)) {
+                    $complexObj->set($attribute, $array[$column['column']], false);
+                } elseif (array_key_exists($column['readColumn'], $array)) {
+                    $complexObj->set($attribute, $array[$column['readColumn']], false);
                 }
             }
         }
