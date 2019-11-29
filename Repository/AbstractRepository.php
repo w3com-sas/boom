@@ -305,6 +305,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
                 $complexEntity = $entity->get($field);
                 $complexClass = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+                $complexData = [];
 
                 // Si l'objet à plusieurs complexType
 
@@ -314,7 +315,6 @@ abstract class AbstractRepository implements RepositoryInterface
                     foreach ($complexEntities as $complexEntity) {
 
                         // Les complex type sont des objets JSON contenus dans un ARRAY
-                        $complexData = [];
 
                         foreach ($complexEntity->getChangedFields() as $complexField => $val) {
                             if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
@@ -332,10 +332,11 @@ abstract class AbstractRepository implements RepositoryInterface
                 } else {
                     /* @var AbstractEntity $complexEntity */
                     foreach ($complexEntity->getChangedFields() as $complexField => $val) {
-                        if ($complexClass->columns[$complexField]['readOnly'] === false && $val &&
-                            $complexClass->columns[$complexField]['complexEntity'] === null) {
-                            $data[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
+                        if ($complexClass->columns[$complexField]['readOnly'] === false && $val && $complexClass->columns[$complexField]['complexEntity'] === null) {
+                            $complexData[$complexClass->columns[$complexField]['column']] = $complexEntity->get($complexField);
                         }
+                        $data[$this->columns[$field]['complexColumn']] = $complexData;
+
                     }
                 }
             }
