@@ -138,7 +138,7 @@
                             <ul>
                                 {% for param,value in line.parameters %}
                                     <li style="margin-bottom: 0">{{ param }}
-                                        : {% if value is iterable %}{{ dump(value) }}{% else %}{{ value }}{% endif %}</li>
+                                        : {{ dump(value) }}</li>
                                 {% endfor %}
                             </ul>
                         </small>
