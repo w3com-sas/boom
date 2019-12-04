@@ -304,7 +304,8 @@ abstract class AbstractRepository implements RepositoryInterface
                 $complexData = [];
                 $complexRepository = $this->manager->getRepository($this->columns[$field]['complexEntity']);
                 // Si l'objet à plusieurs complexType
-                if (is_array($complexEntities = $entity->get($field))) {
+                $complexEntities = $entity->get($field);
+                if (is_array($complexEntities) && $complexEntities[array_rand($complexEntities)] instanceof AbstractEntity) {
                     /** @var AbstractEntity $complexEntity */
                     foreach ($complexEntities as $complexEntity) {
                         // Les complex type sont des objets JSON contenus dans un ARRAY
