@@ -50,8 +50,8 @@ class Clause
             foreach ($this->value as $value) {
                 // gestion du null dans les calculation views
                 $quote = (null === $value) ? '' : $this->quote;
-                $value = (null === $value) ? 'null' : $value;
-                $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $quote.$value.$quote);
+                $value = (null === $value) ? 'null' : $quote.$value.$quote;
+                $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
                 $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
                 $tmp[] = sprintf($this->operator, $this->column, $value);
             }
@@ -59,8 +59,8 @@ class Clause
         } else {
             // gestion du null dans les calculation views
             $quote = (null === $this->value) ? '' : $this->quote;
-            $value = (null === $this->value) ? 'null' : $this->value;
-            $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $quote.$value.$quote);
+            $value = (null === $this->value) ? 'null' : $quote.$this->value.$quote;
+            $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
             $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
             $retour = sprintf($this->operator, $this->column,  $value);
         }
