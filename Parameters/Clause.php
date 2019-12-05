@@ -51,16 +51,18 @@ class Clause
                 // gestion du null dans les calculation views
                 $quote = (null === $value) ? '' : $this->quote;
                 $value = (null === $value) ? 'null' : $value;
-                $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
+                $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $quote.$value.$quote);
                 $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
-                $tmp[] = sprintf($this->operator, $this->column, $quote . $value . $quote);
+                $tmp[] = sprintf($this->operator, $this->column, $value);
             }
             $retour = '(' . implode(' or ', $tmp) . ')';
         } else {
             // gestion du null dans les calculation views
             $quote = (null === $this->value) ? '' : $this->quote;
             $value = (null === $this->value) ? 'null' : $this->value;
-            $retour = sprintf($this->operator, $this->column, $quote . $value . $quote);
+            $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $quote.$value.$quote);
+            $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
+            $retour = sprintf($this->operator, $this->column,  $value);
         }
 
         return $retour;
