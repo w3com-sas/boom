@@ -16,19 +16,22 @@ class Clause
     const LOWER_OR_EQUAL = '%s le %s';
     const AND = ' and ';
     const OR = ' or ';
+    const TO_LOWER = 'tolower(%s)';
 
     private $column;
     private $value;
     private $operator;
     private $quote;
     private $logicalOperator;
+    private $transformFunction;
 
-    public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND)
+    public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND, $transformFunction = null)
     {
         $this->column = $column;
         $this->value = $value;
         $this->operator = $operator;
         $this->quote = $quote ? "'" : '';
+        $this->transformFunction = $transformFunction;
         $this->logicalOperator = (self:: OR == $logicalOperator) ? self:: OR : self:: AND;
     }
 
@@ -48,6 +51,8 @@ class Clause
                 // gestion du null dans les calculation views
                 $quote = (null === $value) ? '' : $this->quote;
                 $value = (null === $value) ? 'null' : $value;
+                $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
+                $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
                 $tmp[] = sprintf($this->operator, $this->column, $quote . $value . $quote);
             }
             $retour = '(' . implode(' or ', $tmp) . ')';

@@ -122,11 +122,12 @@ class Parameters
      * @param string $operator
      * @param string $logicalOperator
      *
+     * @param null $transformFunction
      * @return $this
      *
      * @throws \Exception
      */
-    public function addFilter($column, $value, $operator = Clause::EQUALS, $logicalOperator = Clause:: AND)
+    public function addFilter($column, $value, $operator = Clause::EQUALS, $logicalOperator = Clause:: AND, $transformFunction = null)
     {
         // on traduit la column vers un nommage Hana
         if (!array_key_exists($column, $this->columns)) {
@@ -134,7 +135,7 @@ class Parameters
         }
         $columnHana = (null !== $this->columns[$column]['readColumn']) ? $this->columns[$column]['readColumn'] : $this->columns[$column]['column'];
         $usingQuote = $this->columns[$column]['quotes'];
-        $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator);
+        $this->filter[] = new Clause($columnHana, $value, $operator, $usingQuote, $logicalOperator, $transformFunction);
 
         // managment of ip filter
         if($this->columns[$column]['ipName'] != null){
