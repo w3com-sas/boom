@@ -40,6 +40,8 @@ class Property
 
     const FIELD_TYPE_TIME = 'Edm.Time';
 
+    const FIELD_TYPE_DECIMAL = 'Edm.Decimal';
+
     const FIELD_TYPE_YES_NO_ENUM = 'SAPB1.BoYesNoEnum';
 
     public $name;
@@ -120,13 +122,14 @@ class Property
     {
         $hasQuotes = true;
         switch ($fieldType) {
+            case self::FIELD_TYPE_DOUBLE:
+            case self::FIELD_TYPE_DECIMAL:
+                $value = 'float';
+                $var = 'float';
+                break;
             case self::FIELD_TYPE_DATE_TIME:
                 $value = 'date';
                 $var = 'string';
-                break;
-            case self::FIELD_TYPE_DOUBLE:
-                $value = 'float';
-                $var = 'float';
                 break;
             case self::FIELD_TYPE_INTEGER:
                 $value = 'int';

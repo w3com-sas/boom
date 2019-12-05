@@ -37,7 +37,6 @@ class AppInspector implements InspectorInterface
      */
     public function __construct(BoomManager $manager)
     {
-
         $this->finder = new Finder();
         $this->reader = new AnnotationReader();
         $this->manager = $manager;
