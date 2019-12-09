@@ -165,12 +165,10 @@ class SLInspector implements InspectorInterface
 
     private function hydratePropertyWithUDF(Property $property, UserFieldsMD $udf)
     {
-
         $property->setIsUDF(true);
-
         $property->setField('U_' . $udf->getName());
 
-        if ($udf->getDescription() != false && $property->getName() == false) {
+        if ($udf->getDescription() !== null && $udf->getDescription() !== "") {
             $property->setName(StringUtils::stringToCamelCase($udf->getDescription()));
             $property->setDescription($udf->getDescription());
         } else {
