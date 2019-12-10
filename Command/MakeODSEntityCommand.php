@@ -46,7 +46,6 @@ class MakeODSEntityCommand extends Command
             $calculationViews[] = $entity->getTable();
         }
         sort($calculationViews);
-
         $io->title("Boom ODS Maker Command");
         $cv = $io->choice("What's the name of the cv ?", $calculationViews);
 

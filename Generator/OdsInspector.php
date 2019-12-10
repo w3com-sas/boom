@@ -99,7 +99,7 @@ class OdsInspector implements InspectorInterface
                     break;
             }
         }
-        $this->entities[] = $entity;
+        $this->entities[$entity->getName()] = $entity;
     }
 
     private function hydratePropertyModel($propertyMetadata, Entity $entity)
