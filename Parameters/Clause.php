@@ -9,7 +9,7 @@ class Clause
     const STARTS_WITH = 'startswith(%s,%s)';
     const ENDS_WITH = 'endswith(%s,%s)';
     const CONTAINS = 'contains(%s,%s)';
-    const SUBSTRINGOF = 'substringof(%s,%s)';
+    const SUBSTRING_OF = 'substringof(%s,%s)';
     const GREATER_THAN = '%s gt %s';
     const GREATER_OR_EQUAL = '%s ge %s';
     const LOWER_THAN = '%s lt %s';
@@ -50,19 +50,21 @@ class Clause
             foreach ($this->value as $value) {
                 // gestion du null dans les calculation views
                 $quote = (null === $value) ? '' : $this->quote;
-                $value = (null === $value) ? 'null' : $quote.$value.$quote;
+                $value = (null === $value) ? 'null' : $quote . $value . $quote;
                 $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
                 $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
-                $tmp[] = sprintf($this->operator, $this->column, $value);
+                $tmp[] = $this->operator === self::SUBSTRING_OF ?
+                    sprintf($this->operator, $value, $this->column) : sprintf($this->operator, $this->column, $value);
             }
             $retour = '(' . implode(' or ', $tmp) . ')';
         } else {
             // gestion du null dans les calculation views
             $quote = (null === $this->value) ? '' : $this->quote;
-            $value = (null === $this->value) ? 'null' : $quote.$this->value.$quote;
+            $value = (null === $this->value) ? 'null' : $quote . $this->value . $quote;
             $value = (null === $this->transformFunction) ? $value : sprintf($this->transformFunction, $value);
             $this->column = (null === $this->transformFunction) ? $this->column : sprintf($this->transformFunction, $this->column);
-            $retour = sprintf($this->operator, $this->column,  $value);
+            $retour = $this->operator === self::SUBSTRING_OF ?
+                sprintf($this->operator, $value, $this->column) : sprintf($this->operator, $this->column, $value);
         }
 
         return $retour;
