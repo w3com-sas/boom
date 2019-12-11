@@ -29,5 +29,5 @@ class TableNames
     const SALESOPPORTUNITIES     = 'OOPR';
     const INCOMINGPAYMENTS       = 'ORCT';
     const VENDORPAYMENTS         = 'OVPM';
-    const BANKPAGES              = 'OACT';
+    const HOUSEBANKACCOUNTS      = 'OACT';
 }
