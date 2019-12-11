@@ -27,4 +27,6 @@ class TableNames
     const PROJECTS               = 'OPRJ';
     const WAREHOUSES             = 'OWHS';
     const SALESOPPORTUNITIES     = 'OOPR';
+    const INCOMINGPAYMENTS       = 'ORCT';
+    const VENDORPAYMENTS         = 'OVPM';
 }
