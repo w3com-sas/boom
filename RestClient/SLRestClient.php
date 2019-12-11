@@ -284,6 +284,60 @@ class SLRestClient implements RestClientInterface
         }
     }
 
+    public function cancel(string $uri)
+    {
+        /** @var Client $client */
+        $client = $this->manager->getCurrentClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+                $this->manager->stopwatch->start('SL-cancel');
+                $res = $client->request(
+                    'POST',
+                    $uri.'/Cancel'
+                );
+                $stop = $this->manager->stopwatch->stop('SL-cancel');
+                $this->manager->addToCollectedData(
+                    'sl',
+                    $res->getStatusCode(),
+                    $uri,
+                    null,
+                    $res->getBody()->getContents(),
+                    $stop
+                );
+
+                return true;
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->login();
+                } else {
+                    $stop = $this->manager->stopwatch->stop('SL-cancel');
+                    $response = $e->getResponse()->getBody()->getContents();
+                    $this->manager->addToCollectedData(
+                        'sl',
+                        $e->getResponse()->getStatusCode(),
+                        $uri,
+                        null,
+                        $response,
+                        $stop
+                    );
+                    $this->manager->logger->error($response);
+
+                    $json_error = json_decode($response,true);
+                    $errMessage = array_key_exists('error',$json_error) ?
+                        $json_error['error']['message']['value']:
+                        'Unknown error while launching POST request';
+
+                    throw new \Exception($errMessage);
+                }
+            } catch (ConnectException $e) {
+                $this->manager->stopwatch->stop('SL-cancel');
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            }
+        }
+    }
 
     public function put(string $uri, $data)
     {
