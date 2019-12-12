@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Repository;
 
+use phpDocumentor\Reflection\Types\Null_;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Parameters\Parameters;
 use W3com\BoomBundle\Service\BoomConstants;
@@ -324,45 +325,34 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @param array $updateFields
      * @param AbstractEntity $entity
+     * @param AbstractRepository|null $repository
      * @return array
      * @throws \Exception
      */
-    public function getDataToSend(array $updateFields, AbstractEntity $entity)
+    public function getDataToSend(array $updateFields, AbstractEntity $entity, AbstractRepository $repository = null)
     {
+        $repository = $repository === null ? $this : $repository;
         $data = [];
-
         foreach ($updateFields as $field => $value) {
-            if ($this->columns[$field]['readOnly'] === false && $value && $this->columns[$field]['complexEntity'] === null) {
+            if ($repository->columns[$field]['readOnly'] === false && $value && $repository->columns[$field]['complexEntity'] === null) {
                 // on exclut les column en readonly
-                $data[$this->columns[$field]['column']] = $entity->get($field);
-            } elseif ($this->columns[$field]['complexEntity'] !== null) {
+                $data[$repository->columns[$field]['column']] = $entity->get($field);
+            } elseif ($repository->columns[$field]['complexEntity'] !== null) {
                 $complexData = [];
-                $complexRepository = $this->manager->getRepository($this->columns[$field]['complexEntity']);
+                $complexRepository = $this->manager->getRepository($repository->columns[$field]['complexEntity']);
                 // Si l'objet à plusieurs complexType
                 $complexEntities = $entity->get($field);
+
                 if (is_array($complexEntities) && $complexEntities[array_rand($complexEntities)] instanceof AbstractEntity) {
                     /** @var AbstractEntity $complexEntity */
                     foreach ($complexEntities as $complexEntity) {
-                        // Les complex type sont des objets JSON contenus dans un ARRAY
-                        foreach ($complexEntity->getChangedFields() as $complexField => $val) {
-                            if ($complexRepository->columns[$complexField]['readOnly'] === false && $val &&
-                                $complexRepository->columns[$complexField]['complexEntity'] === null) {
-                                $complexData[$complexRepository->columns[$complexField]['column']] = $complexEntity->get($complexField);
-                            }
-                        }
-                        // Si il y a des data on peut préparer l'envoi, important car si on envoie
-                        // un array vide sap plante
-                        if (count($complexData) > 0) {
-                            $data[$this->columns[$field]['complexColumn']][] = $complexData;
-                        }
+                        $complexData[] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+
                     }
-                } elseif(($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
-                    foreach ($complexEntity->getChangedFields() as $complexField => $val) {
-                        if ($complexRepository->columns[$complexField]['readOnly'] === false && $val && $complexRepository->columns[$complexField]['complexEntity'] === null) {
-                            $complexData[$complexRepository->columns[$complexField]['column']] = $complexEntity->get($complexField);
-                        }
-                        $data[$this->columns[$field]['complexColumn']] = $complexData;
-                    }
+                    $data[$repository->columns[$field]['complexColumn']] = $complexData;
+
+                } elseif (($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
+                    $data[$repository->columns[$field]['complexColumn']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
                 }
             }
         }
