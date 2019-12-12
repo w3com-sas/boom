@@ -6,6 +6,7 @@ class TableNames
 {
     const BUSINESSPARTNERS       = 'OCRD';
     const ACTIVITIES             = 'OCLG';
+    const CREDITNOTES            = 'ORIN';
     const ITEMS                  = 'OITM';
     const ORDERS                 = 'ORDR';
     const QUOTATIONS             = 'OQUT';
