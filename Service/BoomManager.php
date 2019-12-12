@@ -540,6 +540,13 @@ class BoomManager
             json_encode($data['data'])));
     }
 
+    public function cancel(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity,true);
+        $this->batch->add(new Request('POST', $data['uri'].'/Cancel', ['Content-Type' => 'application/json'],
+            null));
+    }
+
     /**
      * @throws \Exception
      * @throws GuzzleException

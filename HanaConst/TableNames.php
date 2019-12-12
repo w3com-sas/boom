@@ -31,4 +31,5 @@ class TableNames
     const INCOMINGPAYMENTS       = 'ORCT';
     const VENDORPAYMENTS         = 'OVPM';
     const HOUSEBANKACCOUNTS      = 'OACT';
+    const JOURNALENTRIES         = 'OJDT';
 }
