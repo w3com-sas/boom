@@ -132,7 +132,7 @@ EOF;
             if(strpos($body,'"error"') !== false){
                 // We try to find error message
                 $search = '"value" : "';
-                $begin = strpos($body,$search)+strlen($search) + 1;
+                $begin = strpos($body,$search)+strlen($search);
                 $error = substr($body, $begin , strpos($body,'"',$begin) - $begin);
                 throw new \Exception($error);
             } else {
