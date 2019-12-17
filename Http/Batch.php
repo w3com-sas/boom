@@ -129,7 +129,15 @@ EOF;
         $changesetBoundary = str_replace('batchresponse_', '', $boundary);
         $body = (string)$response->getBody();
         if (strpos($body, "--changesetresponse_$changesetBoundary") === false){
-            throw new \Exception($body);
+            if(strpos($body,'"error"') !== false){
+                // We try to find error message
+                $search = '"value" : "';
+                $begin = strpos($body,$search)+strlen($search) + 1;
+                $error = substr($body, $begin , strpos($body,'"',$begin) - $begin);
+                throw new \Exception($error);
+            } else {
+                throw new \Exception($body);
+            }
         }
         /*
         if (!empty($body)) {
