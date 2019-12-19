@@ -100,7 +100,8 @@ EOF;
         $body .= PHP_EOL."--{$this->boundary}--";
         $body .= PHP_EOL."--batch_{$this->boundary}--";
         $body = trim($body);
-        $url = $this->rootUrl . $this->batchPath;
+        $url = /*$this->rootUrl . */$this->batchPath;
+
         $headers = array(
             'Content-Type' => sprintf('multipart/mixed; boundary=%s', 'batch_'.$this->boundary)
         );
