@@ -100,7 +100,8 @@ EOF;
         $body .= PHP_EOL."--{$this->boundary}--";
         $body .= PHP_EOL."--batch_{$this->boundary}--";
         $body = trim($body);
-        $url = $this->rootUrl . $this->batchPath;
+        $url = /*$this->rootUrl . */$this->batchPath;
+
         $headers = array(
             'Content-Type' => sprintf('multipart/mixed; boundary=%s', 'batch_'.$this->boundary)
         );
@@ -129,7 +130,15 @@ EOF;
         $changesetBoundary = str_replace('batchresponse_', '', $boundary);
         $body = (string)$response->getBody();
         if (strpos($body, "--changesetresponse_$changesetBoundary") === false){
-            throw new \Exception($body);
+            if(strpos($body,'"error"') !== false){
+                // We try to find error message
+                $search = '"value" : "';
+                $begin = strpos($body,$search)+strlen($search);
+                $error = substr($body, $begin , strpos($body,'"',$begin) - $begin);
+                throw new \Exception($error);
+            } else {
+                throw new \Exception($body);
+            }
         }
         /*
         if (!empty($body)) {
