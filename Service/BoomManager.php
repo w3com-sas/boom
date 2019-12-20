@@ -397,14 +397,12 @@ class BoomManager
             $entityClass,
             'W3com\\BoomBundle\\Annotation\\EntityMeta'
         );
-        if (!$annotation) {
-            throw new \Exception("Missing EntityMeta annotation on $entityName class.");
-        }
-        $read = $annotation->read;
-        $write = $annotation->write;
-        $aliasRead = $annotation->aliasRead;
-        $aliasWrite = $annotation->aliasWrite;
-        $aliasSearch = $annotation->aliasSearch;
+
+        $read = !$annotation ? "" : $annotation->read;
+        $write =!$annotation ? "" : $annotation->write;
+        $aliasRead =!$annotation ? "" : $annotation->aliasRead;
+        $aliasWrite =!$annotation ? "" : $annotation->aliasWrite;
+        $aliasSearch =!$annotation ? "" : $annotation->aliasSearch;
 
         $this->logger->info("Successfully read $entityName entity class");
 

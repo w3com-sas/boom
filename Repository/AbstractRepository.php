@@ -347,7 +347,6 @@ abstract class AbstractRepository implements RepositoryInterface
                     /** @var AbstractEntity $complexEntity */
                     foreach ($complexEntities as $complexEntity) {
                         $complexData[] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
-
                     }
                     $data[$repository->columns[$field]['complexColumn']] = $complexData;
 
