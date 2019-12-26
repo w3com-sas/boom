@@ -337,7 +337,7 @@ abstract class AbstractRepository implements RepositoryInterface
             if ($repository->columns[$field]['readOnly'] === false && $value && $repository->columns[$field]['complexEntity'] === null) {
                 // on exclut les column en readonly
                 $data[$repository->columns[$field]['column']] = $entity->get($field);
-            } elseif ($repository->columns[$field]['complexEntity'] !== null) {
+            } elseif ($repository->columns[$field]['complexEntity'] !== null && $value) {
                 $complexData = [];
                 $complexRepository = $this->manager->getRepository($repository->columns[$field]['complexEntity']);
                 // Si l'objet à plusieurs complexType
