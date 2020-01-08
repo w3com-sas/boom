@@ -82,6 +82,8 @@ class Property
 
     public $isUDF = false;
 
+    public $complexEntity = null;
+
     /**
      * @return mixed
      */
@@ -453,6 +455,22 @@ class Property
     public function setSapTable($sapTable): void
     {
         $this->sapTable = $sapTable;
+    }
+
+    /**
+     * @return null
+     */
+    public function getComplexEntity()
+    {
+        return $this->complexEntity;
+    }
+
+    /**
+     * @param null $complexEntity
+     */
+    public function setComplexEntity($complexEntity): void
+    {
+        $this->complexEntity = $complexEntity;
     }
 
 }
