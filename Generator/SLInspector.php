@@ -331,6 +331,10 @@ class SLInspector implements InspectorInterface
         $property->setField($propertyMetadata[$this::NAME_ENTITY_PROPERTY]);
 
         $hasQuotes = true;
+
+        $value = 'string';
+        $var = 'string';
+
         switch ($propertyMetadata[$this::TYPE_PROPERTY]) {
             case Property::FIELD_TYPE_DOUBLE:
             case Property::FIELD_TYPE_DECIMAL:
