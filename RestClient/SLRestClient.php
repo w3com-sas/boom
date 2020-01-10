@@ -223,7 +223,7 @@ class SLRestClient implements RestClientInterface
         }
     }
 
-    public function patch(string $uri, $data)
+    public function patch(string $uri, $data, $updateCollection = false)
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentClient();
@@ -232,13 +232,22 @@ class SLRestClient implements RestClientInterface
             try {
                 ++$attempts;
                 $this->manager->stopwatch->start('SL-patch');
+
+                $param = [
+                    'json' => $data,
+                ];
+                if($updateCollection === true){
+                    $param['headers'] = [
+                        'B1S-ReplaceCollectionsOnPatch' => 'true'
+                    ];
+                }
+
                 $res = $client->request(
                     'PATCH',
                     $uri,
-                    [
-                        'json' => $data,
-                    ]
+                    $param
                 );
+
                 $stop = $this->manager->stopwatch->stop('SL-patch');
                 $this->manager->addToCollectedData(
                     'sl',

@@ -231,16 +231,9 @@ abstract class AbstractRepository implements RepositoryInterface
      * @return AbstractEntity
      * @throws \Exception
      */
-    public function update(AbstractEntity $entity, $id = null)
+    public function update(AbstractEntity $entity, $updateCollection = false)
     {
-        if ($id === null) {
-            $id = $entity->get($this->key);
-        } else {
-            @trigger_error(
-                'When updating an object with Boom, specifying the entity ID is useless since 1.0 and will be removed in 2.0. Remove the second argument.',
-                E_USER_DEPRECATED
-            );
-        }
+        $id = $entity->get($this->key);
 
         if (BoomConstants::SL == $this->write) {
             // update
@@ -258,7 +251,7 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             $data = $this->getDataToSend($fields, $entity);
             if (count($data) > 0) {
-                $this->manager->restClients['sl']->patch($uri, $data);
+                $this->manager->restClients['sl']->patch($uri, $data, $updateCollection);
                 $entity->hydrate('changedFields', []);
             }
             return $entity;
