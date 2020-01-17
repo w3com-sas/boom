@@ -60,9 +60,7 @@ class BoomGenerator
     {
         $this->getSLInspector()->initEntities();
         $entity = $this->SLInspector->getEntity($tableName);
-        $phpClass = $this->classCreator->generateClass($entity, 'sl', $fields);
-        file_put_contents($this->manager->config['entity_directory'] . '/'
-            . $entity->getName() . '.php', $phpClass);
+        $this->classCreator->generateClass($entity, 'sl', $fields);
     }
 
     /**
@@ -72,9 +70,7 @@ class BoomGenerator
     public function createODSEntity($calcViewName)
     {
         $entity = $this->odsInspector->getEntity($calcViewName);
-        $phpClass = $this->classCreator->generateClass($entity);
-        file_put_contents($this->manager->config['entity_directory'] . '/'
-            . $entity->getName() . '.php', $phpClass);
+        $this->classCreator->generateClass($entity);
     }
 
     /**

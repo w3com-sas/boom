@@ -256,7 +256,8 @@ class SLInspector implements InspectorInterface
     {
         $entity = new Entity();
 
-        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
+        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false
+        || strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
             $entityName = StringUtils::stringToPascalCase(str_replace('U_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
             $entity->setToSynchronize(true);
         } else {
@@ -300,6 +301,7 @@ class SLInspector implements InspectorInterface
                 $this->SAPEntities[] = $entity;
             }
         } else {
+            $entity->setTable('U_' . $entityMetadata[$this::NAME_ENTITY_PROPERTY]);
             if (array_key_exists($this::NAME_ENTITY_PROPERTY, $entityMetadata[$this::NAME_PROPERTY])) {
                 $this->hydratePropertyModel($entityMetadata[$this::NAME_PROPERTY], $entity);
             } else {

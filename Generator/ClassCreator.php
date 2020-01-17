@@ -98,6 +98,10 @@ class ClassCreator
         /** @var Property $property */
         foreach ($entity->getProperties() as $property){
 
+            if ($property->getComplexEntity() !== null) {
+                $this->generateClass($property->getComplexEntity(), 'sl', []);
+            }
+
             $annotation = $this->createPropertyAnnotation($property);
 
             if ($property->isUDF()) {
@@ -118,7 +122,9 @@ class ClassCreator
             }
 
         }
-        return $file;
+
+        file_put_contents($this->manager->config['entity_directory'] . '/'
+            . $entity->getName() . '.php', $file);
     }
 
     private function addGetter(Property $property, ClassType $class)
