@@ -134,7 +134,7 @@ class SLInspector implements InspectorInterface
             try {
                 $sapTableName = constant("W3com\BoomBundle\HanaConst\TableNames::$tableNameConst");
             } catch (\Exception $e) {
-                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
+//                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
             }
             $udfs = $udfRepo->findByTableName($sapTableName);
         }
@@ -301,7 +301,13 @@ class SLInspector implements InspectorInterface
                 $this->SAPEntities[] = $entity;
             }
         } else {
-            $entity->setTable('U_' . $entityMetadata[$this::NAME_ENTITY_PROPERTY]);
+            $entityName = $entityMetadata[$this::NAME_ENTITY_PROPERTY];
+
+            if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
+                $entityName = 'U_' . $entityName;
+            }
+
+            $entity->setTable($entityName);
             if (array_key_exists($this::NAME_ENTITY_PROPERTY, $entityMetadata[$this::NAME_PROPERTY])) {
                 $this->hydratePropertyModel($entityMetadata[$this::NAME_PROPERTY], $entity);
             } else {
