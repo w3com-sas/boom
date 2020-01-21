@@ -204,6 +204,11 @@ class ClassCreator
             $annotation .= Property::PROPERTY_ANNOTATION_IS_MANDATORY;
         }
 
+        if ($property->getComplexEntity() !== null) {
+            $annotation .= Property::PROPERTY_ANNOTATION_COMPLEX_ENTITY;
+            $annotation = str_replace('ZZ_COMPLEX', $property->getComplexEntity()->getName(), $annotation);
+        }
+
         $annotation .= Property::PROPERTY_ANNOTATION_END;
 
         return $annotation;
