@@ -112,6 +112,10 @@ class SLInspector implements InspectorInterface
             /** @var UserTablesMD $udt */
             $udt =  $udtRepo->find(substr($entity->getTable(), 2));
 
+            if ($udt == false) {
+                $udt = $udtRepo->find($entity->getTable());
+            }
+
             $entity->setDescription($udt->getTableDescription());
             $entity->setType($udt->getTableType());
             $entity->setArchivable($udt->getArchivable());
@@ -242,7 +246,7 @@ class SLInspector implements InspectorInterface
         foreach ($udtsTyped as $udtTyped) {
             $entitiesMetadata[] = [
                 '@EntityType' => 'SAPB1.' . $udtTyped->getTableName(),
-                '@Name' => 'U_' . $udtTyped->getTableName(),
+                '@Name' => $udtTyped->getTableName(),
                 '#' => ""
             ];
         }
