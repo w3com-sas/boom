@@ -341,10 +341,10 @@ abstract class AbstractRepository implements RepositoryInterface
                     foreach ($complexEntities as $complexEntity) {
                         $complexData[] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
                     }
-                    $data[$repository->columns[$field]['complexColumn']] = $complexData;
+                    $data[$repository->columns[$field]['column']] = $complexData;
 
                 } elseif (($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
-                    $data[$repository->columns[$field]['complexColumn']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                    $data[$repository->columns[$field]['column']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
                 }
             }
         }
@@ -365,10 +365,11 @@ abstract class AbstractRepository implements RepositoryInterface
                 $obj->set($attribute, $array[$column['column']], false);
             } elseif (array_key_exists($column['readColumn'], $array)) {
                 $obj->set($attribute, $array[$column['readColumn']], false);
-            } elseif (array_key_exists($column['complexColumn'], $array) && count($array[$column['complexColumn']]) > 0) {
-                $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
-                $obj->set($attribute, $complexEntity, false);
             }
+//            elseif (array_key_exists($column['complexColumn'], $array) && count($array[$column['complexColumn']]) > 0) {
+//                $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
+//                $obj->set($attribute, $complexEntity, false);
+//            }
         }
         return $obj;
     }
