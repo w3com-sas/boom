@@ -388,9 +388,6 @@ class BoomManager
                 }
             }
         }
-        if (null == $key) {
-            throw new \Exception("No key attribute for $entityName class.");
-        }
 
         // reading EntityMeta annotation
         $annotation = $this->reader->getClassAnnotation(
@@ -398,11 +395,16 @@ class BoomManager
             'W3com\\BoomBundle\\Annotation\\EntityMeta'
         );
 
+        if (null == $key && !$annotation->isComplex) {
+            throw new \Exception("No key attribute for $entityName class.");
+        }
+
+
         $read = !$annotation ? "" : $annotation->read;
-        $write =!$annotation ? "" : $annotation->write;
-        $aliasRead =!$annotation ? "" : $annotation->aliasRead;
-        $aliasWrite =!$annotation ? "" : $annotation->aliasWrite;
-        $aliasSearch =!$annotation ? "" : $annotation->aliasSearch;
+        $write = !$annotation ? "" : $annotation->write;
+        $aliasRead = !$annotation ? "" : $annotation->aliasRead;
+        $aliasWrite = !$annotation ? "" : $annotation->aliasWrite;
+        $aliasSearch = !$annotation ? "" : $annotation->aliasSearch;
 
         $this->logger->info("Successfully read $entityName entity class");
 

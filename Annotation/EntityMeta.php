@@ -44,4 +44,9 @@ class EntityMeta extends Annotation
      * @var bool
      */
     public $synchro = false;
+
+    /**
+     * @var bool
+     */
+    public $isComplex = false;
 }

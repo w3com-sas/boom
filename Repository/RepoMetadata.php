@@ -76,7 +76,7 @@ class RepoMetadata
         BoomManager $manager,
         string $read,
         string $write,
-        string $key,
+        string $key = null,
         string $aliasRead = null,
         string $aliasWrite = null,
         string $aliasSearch = null,
@@ -137,7 +137,7 @@ class RepoMetadata
     /**
      * @return string
      */
-    public function getKey(): string
+    public function getKey(): ?string
     {
         return $this->key;
     }

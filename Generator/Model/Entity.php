@@ -10,7 +10,7 @@ class Entity
 
     const ANNOTATION_READ = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS")';
 
-    const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE", synchro=ZZ_SYNCHRO)';
+    const ANNOTATION_WRITE = '@EntityMeta(read="ZZ_TYPE_READ", write="ZZ_TYPE_WRITE", aliasRead="ZZ_ALIAS", aliasWrite="ZZ_ALIAS_WRITE", synchro=ZZ_SYNCHRO, isComplex=ZZ_COMPLEX)';
 
     const SYNCHRONIZE_ANNOTATION_BASE = '@EntitySynchronizedData(TableName="ZZ_TABLE_NAME", TableDescription="ZZ_TABLE_DESCRIPTION", TableType="ZZ_TABLE_TYPE", Archivable="ZZ_ARCHIVABLE"';
 

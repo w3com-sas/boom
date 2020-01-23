@@ -28,7 +28,7 @@ class ClassCreator
         $this->generator = $generator;
     }
 
-    public function generateClass(Entity $entity, $type = 'ods', $fields = [])
+    public function generateClass(Entity $entity, $type = 'ods', $fields = [], $isComplex = false)
     {
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
@@ -42,8 +42,9 @@ class ClassCreator
                 ->addComment("\n" .
                     str_replace('ZZ_ALIAS', $entity->getTable(),
                         str_replace('ZZ_TYPE_READ', $type,
-                            str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION_READ))
-                        ) . "\n");
+                            str_replace('ZZ_TYPE_WRITE', $type, Entity::ANNOTATION_READ)
+                        )
+                    ) . "\n");
         } else {
             $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
 
@@ -59,6 +60,12 @@ class ClassCreator
                 $comment = str_replace('ZZ_SYNCHRO', 'true', $comment);
             } else {
                 $comment = str_replace('ZZ_SYNCHRO', 'false', $comment);
+            }
+
+            if ($isComplex) {
+                $comment = str_replace('ZZ_COMPLEX', 'true', $comment);
+            } else {
+                $comment = str_replace('ZZ_COMPLEX', 'false', $comment);
             }
 
             $class
@@ -99,7 +106,7 @@ class ClassCreator
         foreach ($entity->getProperties() as $property){
 
             if ($property->getComplexEntity() !== null) {
-                $this->generateClass($property->getComplexEntity(), 'sl', []);
+                $this->generateClass($property->getComplexEntity(), 'sl', [], true);
             }
 
             $annotation = $this->createPropertyAnnotation($property);
