@@ -101,7 +101,6 @@ EOF;
         $body .= PHP_EOL."--batch_{$this->boundary}--";
         $body = trim($body);
         $url = /*$this->rootUrl . */$this->batchPath;
-
         $headers = array(
             'Content-Type' => sprintf('multipart/mixed; boundary=%s', 'batch_'.$this->boundary)
         );
@@ -112,6 +111,7 @@ EOF;
             $body
         );
         $response = $this->client->send($request);
+        $this->requests = [];
         return $this->parseResponse($response, $classes);
     }
 
