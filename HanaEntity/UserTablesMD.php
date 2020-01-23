@@ -14,7 +14,12 @@ use W3com\BoomBundle\Annotation\EntityMeta;
  */
 class UserTablesMD extends \W3com\BoomBundle\HanaEntity\AbstractEntity
 {
-    const TABLE_TYPE_OBJECT = 'bott_NoObject';
+    const TABLE_TYPE_DOCUMENT = 'bott_Document';
+    const TABLE_TYPE_DOCUMENT_LINES = 'bott_DocumentLines';
+    const TABLE_TYPE_MASTER_DATA_LINES = 'bott_MasterDataLines';
+    const TABLE_TYPE_MASTER_DATA = 'bott_MasterData';
+    const TABLE_TYPE_NO_OBJECT = 'bott_NoObject';
+    const TABLE_TYPE_NO_OBJECT_AUTO_INCREMENT = 'bott_NoObjectAutoIncrement';
 
     const ARCHIVABLE_NO = 'tNO';
 

@@ -54,6 +54,8 @@ class SLInspector implements InspectorInterface
 
     private $enumTypes = [];
 
+    private $complexTypes = [];
+
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->boom = $manager;
@@ -110,6 +112,10 @@ class SLInspector implements InspectorInterface
             /** @var UserTablesMD $udt */
             $udt =  $udtRepo->find(substr($entity->getTable(), 2));
 
+            if ($udt == false) {
+                $udt = $udtRepo->find($entity->getTable());
+            }
+
             $entity->setDescription($udt->getTableDescription());
             $entity->setType($udt->getTableType());
             $entity->setArchivable($udt->getArchivable());
@@ -132,7 +138,7 @@ class SLInspector implements InspectorInterface
             try {
                 $sapTableName = constant("W3com\BoomBundle\HanaConst\TableNames::$tableNameConst");
             } catch (\Exception $e) {
-                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
+//                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
             }
             $udfs = $udfRepo->findByTableName($sapTableName);
         }
@@ -221,6 +227,7 @@ class SLInspector implements InspectorInterface
         $this->metadata = $this->SLClient->getMetadata();
         $entitiesMetadata = $this->metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
         $this->enumTypes = $this->metadata['edmx:DataServices']['Schema']['EnumType'];
+        $this->complexTypes = $this->metadata['edmx:DataServices']['Schema']['ComplexType'];
 
         $entityTypes = [];
 
@@ -230,16 +237,31 @@ class SLInspector implements InspectorInterface
 
         $this->entityTypes = $entityTypes;
 
+        /** @var UserTablesMDRepository $udtRepo */
+        $udtRepo = $this->boom->getRepository('UserTablesMD');
+
+        $udtsTyped = $udtRepo->findAllTypedTables();
+
+        /** @var UserTablesMD $udtTyped */
+        foreach ($udtsTyped as $udtTyped) {
+            $entitiesMetadata[] = [
+                '@EntityType' => 'SAPB1.' . $udtTyped->getTableName(),
+                '@Name' => $udtTyped->getTableName(),
+                '#' => ""
+            ];
+        }
+
         foreach ($entitiesMetadata as $entityMetadata) {
             $this->hydrateEntityModel($entityMetadata);
         }
     }
 
-    private function hydrateEntityModel($entityMetadata)
+    private function hydrateEntityModel($entityMetadata, $isComplex = false)
     {
         $entity = new Entity();
 
-        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
+        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false
+        || strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
             $entityName = StringUtils::stringToPascalCase(str_replace('U_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
             $entity->setToSynchronize(true);
         } else {
@@ -248,35 +270,58 @@ class SLInspector implements InspectorInterface
 
         $entity->setName($entityName);
 
-        $entity->setTable(str_replace('Type', '', $entityMetadata[$this::NAME_ENTITY_PROPERTY]));
+        if (!$isComplex) {
+            $entity->setTable(str_replace('Type', '', $entityMetadata[$this::NAME_ENTITY_PROPERTY]));
 
-        $type = explode('.', $entityMetadata[$this::TYPE_ENTITY_PROPERTY]);
+            $type = explode('.', $entityMetadata[$this::TYPE_ENTITY_PROPERTY]);
 
-        if ($type[0] !== 'SAPB1') {
-            return;
-        }
+            if ($type[0] !== 'SAPB1') {
+                return;
+            }
 
-        $key = $this->entityTypes[$type[1]][$this::NAME_KEY][$this::NAME_PROPERTY_KEY];
+            if (isset($this->entityTypes[$type[1]])) {
+                $key = $this->entityTypes[$type[1]][$this::NAME_KEY][$this::NAME_PROPERTY_KEY];
 
-        if (isset($key[$this::NAME_ENTITY_PROPERTY])) {
-            $entity->setKey($key[$this::NAME_ENTITY_PROPERTY]);
+                if (isset($key[$this::NAME_ENTITY_PROPERTY])) {
+                    $entity->setKey($key[$this::NAME_ENTITY_PROPERTY]);
+                } else {
+                    $entity->setKey($key[0][$this::NAME_ENTITY_PROPERTY]);
+                }
+
+                if (array_key_exists($this::NAME_ENTITY_PROPERTY, $this->entityTypes[$type[1]][$this::NAME_PROPERTY])) {
+                    $this->hydratePropertyModel($this->entityTypes[$type[1]][$this::NAME_PROPERTY], $entity);
+                } else {
+                    foreach ($this->entityTypes[$type[1]][$this::NAME_PROPERTY] as $propertyMetadata) {
+                        $this->hydratePropertyModel($propertyMetadata, $entity);
+                    }
+                }
+            } else {
+                $entity->setProperties([]);
+            }
+
+            if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
+                $this->UDTEntities[] = $entity;
+            } else {
+                $this->SAPEntities[] = $entity;
+            }
         } else {
-            $entity->setKey($key[0][$this::NAME_ENTITY_PROPERTY]);
-        }
+            $entityName = $entityMetadata[$this::NAME_ENTITY_PROPERTY];
 
-        if (array_key_exists($this::NAME_ENTITY_PROPERTY, $this->entityTypes[$type[1]][$this::NAME_PROPERTY])) {
-            $this->hydratePropertyModel($this->entityTypes[$type[1]][$this::NAME_PROPERTY], $entity);
-        } else {
-            foreach ($this->entityTypes[$type[1]][$this::NAME_PROPERTY] as $propertyMetadata) {
-                $this->hydratePropertyModel($propertyMetadata, $entity);
+            if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
+                $entityName = 'U_' . $entityName;
+            }
+
+            $entity->setTable($entityName);
+            if (array_key_exists($this::NAME_ENTITY_PROPERTY, $entityMetadata[$this::NAME_PROPERTY])) {
+                $this->hydratePropertyModel($entityMetadata[$this::NAME_PROPERTY], $entity);
+            } else {
+                foreach ($entityMetadata[$this::NAME_PROPERTY] as $propertyMetadata) {
+                    $this->hydratePropertyModel($propertyMetadata, $entity);
+                }
             }
         }
 
-        if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false) {
-            $this->UDTEntities[] = $entity;
-        } else {
-            $this->SAPEntities[] = $entity;
-        }
+        return $entity;
     }
 
     private function hydratePropertyModel($propertyMetadata, Entity $entity)
@@ -297,7 +342,97 @@ class SLInspector implements InspectorInterface
 
         $property->setField($propertyMetadata[$this::NAME_ENTITY_PROPERTY]);
 
-        $property->setFieldTypeSAPFormat($propertyMetadata[$this::TYPE_PROPERTY], $this->enumTypes);
+        $hasQuotes = true;
+
+        $value = 'string';
+        $var = 'string';
+
+        switch ($propertyMetadata[$this::TYPE_PROPERTY]) {
+            case Property::FIELD_TYPE_DOUBLE:
+            case Property::FIELD_TYPE_DECIMAL:
+                $value = 'float';
+                $var = 'float';
+                break;
+            case Property::FIELD_TYPE_DATE_TIME:
+                $value = 'date';
+                $var = 'string';
+                break;
+            case Property::FIELD_TYPE_INTEGER:
+                $value = 'int';
+                $var = 'int';
+                $hasQuotes = false;
+                break;
+            case Property::FIELD_TYPE_STRING:
+                $value = 'string';
+                $var = 'string';
+                break;
+            case Property::FIELD_TYPE_TIME:
+                $value = 'time';
+                $var = 'string';
+                break;
+            default:
+
+                if (substr($propertyMetadata[$this::TYPE_PROPERTY],0,10) === 'Collection') {
+                    $value = 'array';
+                    $var = 'array';
+                    $complexEntityName = substr(substr($propertyMetadata[$this::TYPE_PROPERTY],17), 0, -1);
+                    foreach ($this->complexTypes as $complexType) {
+                        if ($complexType['@Name'] === $complexEntityName) {
+                            $var = 'array';
+                            $value = 'Collection/'.$complexEntityName;
+                            $property->setComplexEntity($this->hydrateEntityModel($complexType, true));
+                            break;
+                        }
+                    }
+                    break;
+                } else {
+                    $fieldName = substr($propertyMetadata[$this::TYPE_PROPERTY], 6);
+                }
+
+                $isEnum = false;
+                $choices = [];
+                foreach ($this->enumTypes as $enumType) {
+                    if ($enumType['@Name'] === $fieldName) {
+                        $var = 'string';
+                        $value = 'string';
+                        $isEnum = true;
+                        $enumClassName = '\W3com\BoomBundle\HanaEnum\\' . $fieldName;
+                        foreach ($enumType['Member'] as $enumChoice) {
+                            if (isset($enumChoice['@Name'])) {
+
+                                $const = strtoupper($enumChoice['@Name']);
+
+                                try {
+                                    $choice = constant("$enumClassName::$const");
+                                } catch (\ErrorException $e) {
+                                    $choice = '';
+                                }
+
+                                $choices[$enumChoice['@Name']] = $choice === '' ? $enumChoice['@Name'] : $choice;
+                            }
+                        }
+                        $property->setChoices($choices);
+                        break;
+                    }
+                }
+                if ($isEnum) {
+                    break;
+                }
+                foreach ($this->complexTypes as $complexType) {
+                    if ($complexType['@Name'] === $fieldName) {
+                        $var = $fieldName;
+                        $value = $fieldName;
+                        $property->setComplexEntity($this->hydrateEntityModel($complexType, true));
+                        break;
+                    }
+                }
+        }
+
+        $property->setVar($var);
+        $property->setFieldType($value);
+        $property->setHasQuotes($hasQuotes);
+
+//        $property->setFieldTypeSAPFormat($propertyMetadata[$this::TYPE_PROPERTY], $this->enumTypes);
 
         $entity->setProperty($property);
     }

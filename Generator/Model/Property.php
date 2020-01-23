@@ -12,6 +12,7 @@ class Property
     const PROPERTY_ANNOTATION_IS_KEY = ', isKey=true';
     const PROPERTY_ANNOTATION_DEFAULT_VALUE = ', defaultValue="ZZ_DEFAULT_VALUE"';
     const PROPERTY_ANNOTATION_IS_MANDATORY = ', isMandatory=true';
+    const PROPERTY_ANNOTATION_COMPLEX_ENTITY = ', complexEntity="ZZ_COMPLEX"';
     const PROPERTY_ANNOTATION_END = ')';
 
     const SYNCHRONIZE_ANNOTATION_BASE = '@SynchronizedData(Name="ZZ_COLUMN", Type="ZZ_TYPE", SubType="ZZ_SUBTYPE", Description="ZZ_DESCRIPTION", TableName="ZZ_TABLE"';
@@ -81,6 +82,8 @@ class Property
     public $linkedSystemObject;
 
     public $isUDF = false;
+
+    public $complexEntity = null;
 
     /**
      * @return mixed
@@ -453,6 +456,22 @@ class Property
     public function setSapTable($sapTable): void
     {
         $this->sapTable = $sapTable;
+    }
+
+    /**
+     * @return null
+     */
+    public function getComplexEntity()
+    {
+        return $this->complexEntity;
+    }
+
+    /**
+     * @param null $complexEntity
+     */
+    public function setComplexEntity($complexEntity): void
+    {
+        $this->complexEntity = $complexEntity;
     }
 
 }

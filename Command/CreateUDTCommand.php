@@ -60,8 +60,30 @@ class CreateUDTCommand extends Command
             $udtName = strpos(strtoupper($udtName), 'W3C_') === false ? 'W3C_' . strtoupper($udtName) : strtoupper($udtName);
             $udt->setTableName($udtName);
             $udt->setTableDescription($udtDescr);
-            $udt->setTableType(UserTablesMD::TABLE_TYPE_OBJECT);
             $udt->setArchivable(UserTablesMD::ARCHIVABLE_NO);
+
+            $hasType = $io->confirm('Do the table has a type ? (DocumentLines, MasterData...)', false);
+
+            if ($hasType) {
+                $typeChoices = [
+                    'Document' => UserTablesMD::TABLE_TYPE_DOCUMENT,
+                    'Document Lines' => UserTablesMD::TABLE_TYPE_DOCUMENT_LINES,
+                    'Master Data' => UserTablesMD::TABLE_TYPE_MASTER_DATA,
+                    'Master Data Lines' => UserTablesMD::TABLE_TYPE_MASTER_DATA_LINES,
+                ];
+
+                $tableType = $io->choice("What is the type of the table ?", array_keys($typeChoices));
+
+                $udt->setTableType($typeChoices[$tableType]);
+            } else {
+                $hasIncrement = $io->confirm('Want you auto increment for the table ?', false);
+
+                if ($hasIncrement) {
+                    $udt->setTableType(UserTablesMD::TABLE_TYPE_NO_OBJECT_AUTO_INCREMENT);
+                } else {
+                    $udt->setTableType(UserTablesMD::TABLE_TYPE_NO_OBJECT);
+                }
+            }
 
             $udtRepo = $this->manager->getRepository('UserTablesMD');
 
@@ -69,6 +91,7 @@ class CreateUDTCommand extends Command
                 /** @var UserTablesMD $udt */
                 $udtRepo->add($udt);
                 $udtCreated = true;
+                $io->success('UDT ' . $udtName . ' created !');
             } catch (\Exception $e) {
                 $io->error($e->getMessage());
             }
