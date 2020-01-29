@@ -74,7 +74,7 @@ class ClassCreator
 
         if ($entity->isToSynchronize()) {
             $synchAnnot = Entity::SYNCHRONIZE_ANNOTATION_BASE;
-            $synchAnnot = str_replace('ZZ_TABLE_NAME', substr($entity->getTable(), 2), $synchAnnot);
+            $synchAnnot = str_replace('ZZ_TABLE_NAME', str_replace('U_', '', $entity->getTable()), $synchAnnot);
             $synchAnnot = str_replace('ZZ_TABLE_DESCRIPTION', $entity->getDescription(), $synchAnnot);
             $synchAnnot = str_replace('ZZ_TABLE_TYPE', $entity->getType(), $synchAnnot);
             $synchAnnot = str_replace('ZZ_ARCHIVABLE', $entity->getArchivable(), $synchAnnot);
