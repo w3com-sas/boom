@@ -151,7 +151,7 @@ class SynchronizeCommand extends Command
     {
         $udtRepo = $this->manager->getRepository('UserTablesMD');
 
-        $exists = $udtRepo->find(substr($entity->getTable(), 2));
+        $exists = $udtRepo->find(str_replace('U_', '', $entity->getTable()));
 
         if ($exists) {
             return false;
@@ -159,7 +159,7 @@ class SynchronizeCommand extends Command
 
         $udt = new UserTablesMD();
 
-        $udt->setTableName(substr($entity->getTable(), 2));
+        $udt->setTableName(str_replace('U_', '', $entity->getTable()));
         $udt->setTableType($entity->getType());
         $udt->setTableDescription($entity->getDescription());
         $udt->setArchivable($entity->getArchivable());
