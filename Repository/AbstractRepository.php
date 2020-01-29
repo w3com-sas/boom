@@ -345,6 +345,8 @@ abstract class AbstractRepository implements RepositoryInterface
 
                 } elseif (($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
                     $data[$repository->columns[$field]['column']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                } elseif(is_array($complexEntities) && count($complexEntities) > 0){
+                    $data[$repository->columns[$field]['column']] = $complexEntities;
                 }
             }
         }
