@@ -114,7 +114,7 @@ class OdsInspector implements InspectorInterface
 
                     case $this::NAME_ENTITY_PROPERTY:
                         $property->setField($value);
-                        $property->setName(StringUtils::stringToCamelCase($value));
+                        $property->setName(lcfirst($value));
                         break;
                     case $this::TYPE_PROPERTY:
                         $property->setFieldTypeSAPFormat($value);
