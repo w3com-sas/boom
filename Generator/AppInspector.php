@@ -171,7 +171,7 @@ class AppInspector implements InspectorInterface
                     $modelProperty->setFieldSubTypeMD($annotations->SubType);
                     $modelProperty->setSapTable($annotations->TableName);
                     $modelProperty->setSize($annotations->EditSize);
-                    $modelProperty->setName(StringUtils::stringToCamelCase($annotations->Description));
+                    $modelProperty->setName($property->getName());
 
                     if ($annotations->ValidValuesMD !== null && $annotations->ValidValuesMD !== "") {
                         $choices = StringUtils::choicesStringToValidValuesMD($annotations->ValidValuesMD);
