@@ -392,10 +392,10 @@ abstract class AbstractRepository implements RepositoryInterface
         $dataObj = [];
         foreach ($array as $column => $value) {
             // ONE TO MANY OR ONE TO ONE
-            if (is_array($value)){
-                $dataObj[] = $this->hydrate($dataObj, $complexRepo->columns, $complexRepo->className);
+            if (is_array($value)) {
+                $dataObj[] = $this->hydrate($value, $complexRepo->columns, $complexRepo->className);
             } else {
-                $dataObj = $this->hydrate($dataObj, $complexRepo->columns, $complexRepo->className);
+                $dataObj = $this->hydrate($array, $complexRepo->columns, $complexRepo->className);
             }
         }
         return $dataObj;
