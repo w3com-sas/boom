@@ -345,7 +345,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
                 } elseif (($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
                     $data[$repository->columns[$field]['column']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
-                } elseif(is_array($complexEntities)/* && count($complexEntities) > 0*/){
+                } elseif (is_array($complexEntities)/* && count($complexEntities) > 0*/) {
                     $data[$repository->columns[$field]['column']] = $complexEntities;
                 }
             }
@@ -355,23 +355,26 @@ abstract class AbstractRepository implements RepositoryInterface
 
     /**
      * @param $array
+     * @param null $columns
+     * @param null $objClassName
      * @return AbstractEntity
      * @throws \Exception
      */
-    public function hydrate($array)
+    public function hydrate($array, $columns = null, $objClassName = null)
     {
+        $columns = $columns === null ? $this->columns : $columns;
         /** @var AbstractEntity $obj */
-        $obj = new $this->className();
-        foreach ($this->columns as $attribute => $column) {
-            if (array_key_exists($column['column'], $array)) {
+        $obj = $objClassName === null ? new $this->className() : new $objClassName();
+
+        foreach ($columns as $attribute => $column) {
+            if (array_key_exists($column['column'], $array) && $column['complexEntity'] === null) {
                 $obj->set($attribute, $array[$column['column']], false);
-            } elseif (array_key_exists($column['readColumn'], $array)) {
+            } elseif (array_key_exists($column['readColumn'], $array) && $column['complexEntity'] === null) {
                 $obj->set($attribute, $array[$column['readColumn']], false);
+            } elseif ($column['complexEntity'] !== null) {
+                $value = $this->hydrateComplexEntity($array[$column['column']], $column['complexEntity']);
+                $obj->set($attribute, $value, false);
             }
-//            elseif (array_key_exists($column['complexColumn'], $array) && count($array[$column['complexColumn']]) > 0) {
-//                $complexEntity = $this->hydrateComplexEntity($array[$column['complexColumn']], $column['complexEntity']);
-//                $obj->set($attribute, $complexEntity, false);
-//            }
         }
         return $obj;
     }
@@ -384,41 +387,18 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function hydrateComplexEntity($array, $complexEntity)
     {
-        $complexObjs = [];
         /** @var AbstractEntity $complexObj */
-        $complexClass = $this->manager->getRepository($complexEntity);
-
-        $oneToMany = is_array($array[array_rand($array)]);
-
-        if ($oneToMany) {
-            //create an empty entity array
-            for ($i = 0; $i < count($array); $i++) {
-                $complexObjs[] = new $complexClass->className();
-            }
-        } else {
-            $complexObj = new $complexClass->className();
-        }
-
-
-        foreach ($complexClass->columns as $attribute => $column) {
-            if ($oneToMany) {
-                foreach ($array as $iterator => $data) {
-                    if (array_key_exists($column['column'], $data)) {
-                        $complexObjs[$iterator]->set($attribute, $data[$column['column']], false);
-                    } elseif (array_key_exists($column['readColumn'], $data)) {
-                        $complexObjs[$iterator]->set($attribute, $data[$column['readColumn']], false);
-                    }
-                }
+        $complexRepo = $this->manager->getRepository($complexEntity);
+        $dataObj = [];
+        foreach ($array as $column => $value) {
+            // ONE TO MANY OR ONE TO ONE
+            if (is_array($value)){
+                $dataObj[] = $this->hydrate($dataObj, $complexRepo->columns, $complexRepo->className);
             } else {
-                if (array_key_exists($column['column'], $array)) {
-                    $complexObj->set($attribute, $array[$column['column']], false);
-                } elseif (array_key_exists($column['readColumn'], $array)) {
-                    $complexObj->set($attribute, $array[$column['readColumn']], false);
-                }
+                $dataObj = $this->hydrate($dataObj, $complexRepo->columns, $complexRepo->className);
             }
         }
-
-        return $complexObjs;
+        return $dataObj;
     }
 
     /**

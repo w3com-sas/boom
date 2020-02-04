@@ -35,7 +35,7 @@ class EntityColumnMeta extends Annotation
     /**
      * @var string
      */
-    public $complexEntity;
+    public $complexEntity = null;
 
     /**
      * @var string
