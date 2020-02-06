@@ -19,6 +19,7 @@ class TableNames
     const JOURNALENTRIES         = 'OJDT';
     const KNOWLEDGEBASESOLUTIONS = 'OSLT';
     const ORDERS                 = 'ORDR';
+    const PM_TIMESHEETLINEDATA   = 'ASH1';
     const PROJECTS               = 'OPRJ';
     const PURCHASEDELIVERYNOTES  = 'OPDN';
     const PURCHASEINVOICES       = 'OPCH';
