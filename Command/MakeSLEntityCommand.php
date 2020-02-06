@@ -101,9 +101,7 @@ class MakeSLEntityCommand extends Command
             $allProperties = $io->confirm("Want you add all properties to your entity ?", false);
 
             if ($allProperties) {
-                foreach ($propertiesChoices as $property) {
-                    $properties[] = $property;
-                }
+                $properties = [];
             } else {
                 $continue = true;
 
