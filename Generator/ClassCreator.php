@@ -124,7 +124,7 @@ class ClassCreator
 
             $this->addGetter($property, $class);
 
-            if ($type === 'sl' && !$property->getIsKey()) {
+            if ($type === 'sl') {
                 $this->addSetter($property, $class);
             }
 
