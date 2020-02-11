@@ -84,6 +84,10 @@ class SLRestClient implements RestClientInterface
                         $this->manager->logger->info($response);
 
                         return null;
+                    } elseif(400 == $e->getCode() && strpos($e->getMessage(),'-304') !== false) {
+                        $this->manager->logger->error('Remove cookie file');
+                        $this->manager->removeLastCookieFile();
+                        $this->login();
                     } else {
                         $this->manager->logger->error($response);
                         throw new \Exception('Unknown error while launching GET request : '.$e->getMessage().'('.$e->getCode().')');
