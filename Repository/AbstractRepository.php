@@ -256,6 +256,19 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             return $entity;
         } elseif (BoomConstants::ODS == $this->write) {
+            // update
+            $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+            $uri = $this->aliasWrite;
+            $uri = $uri . "($quotes" . $id . "$quotes)";
+
+            $fields = $entity->getChangedFields();
+            $data = $this->getDataToSend($fields, $entity);
+
+            if (count($data) > 0) {
+                $this->manager->restClients['odata']->patch($uri, $data);
+                $entity->hydrate('changedFields', []);
+            }
+            return $entity;
         } else {
             throw new \Exception('Unknown entity WRITE method');
         }
