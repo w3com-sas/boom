@@ -251,10 +251,10 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             $data = $this->getDataToSend($fields, $entity);
             if (count($data) > 0) {
-                $this->manager->restClients['sl']->patch($uri, $data, $updateCollection);
-                $entity->hydrate('changedFields', []);
+                $res = $this->manager->restClients['sl']->patch($uri, $data, $updateCollection);
+                //$entity->hydrate('changedFields', []);
+                return $this->hydrate($res);
             }
-            return $entity;
         } elseif (BoomConstants::ODS == $this->write) {
             // update
             $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
