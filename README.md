@@ -39,50 +39,52 @@ Using Flex ? Add it to a new `config/packages/boom.yaml` file.
 ````yaml
 w3com_boom:
     service_layer:
-        base_uri: '%sl_base_uri%'
-        path: '%sl_path%'
         verify_https: false
         max_login_attempts: 5
         cookies_storage_path: '%kernel.project_dir%/var/cookies'
         connections: '%sl_connections%'
     odata_service:
-        base_uri: '%ods_base_uri%'
-        path: '%ods_path%'
         verify_https: false
-        login:
-            username: '%ods_login%'
-            password: '%ods_password%'
+        connections: '%ods_connections%'
     app_namespace: AppBundle # It's App if you're using Flex
 ````
 
 Non-Flex apps : add this to your `parameters.yml.dist` :
 ````yaml
 # W3com BOOM
-    sl_base_uri: https://xxxxxx
-    sl_path: /
     sl_connections:
         default:
+            uri: https://xxxxxx
+            path: /
             username: xxxxx
             password: xxxxx
             database: xxxxx
-    ods_base_uri: https://xxxxx
-    ods_path: /
-    ods_login: xxxxx
-    ods_password: xxxxx
+    ods_connections:
+        default:
+            uri: https://xxxxx
+            path: /
+            username: xxxxx
+            password: xxxxx
 ````
 
 Non-Flex apps : adjust your `parameters.yml` on each machine accordingly. You can define as many Service Layer connections as you want :
 ````yaml
 sl_connections:
         default:
+            uri: https://default_uri
+            path: /default_path
             username: default
             password: defaultpass
             database: SBO_DEFAULT
         connection1:
+            uri: https://uri1
+            path: /path1
             username: user1
             password: user1pass
             database: SBO_DEFAULT
         connection2:
+            uri: https://uri2
+            path: /path2
             username: user2
             password: user2pass
             database: SBO_OTHER
@@ -92,21 +94,30 @@ sl_connections:
 Flex apps : add the following snippet to the `parameters` key in the `config/services.yaml` file. You can define as many Service Layer connections as you want. Here we have two connections, `default` and `prod`.
 ````yaml
 parameters:
-    sl_base_uri: '%env(boom_sl_baseuri)%'
-    sl_path: '%env(boom_sl_path)%'
     sl_connections:
         default:
+            uri: '%env(boom_sl_default_baseuri)%'
+            path: '%env(boom_sl_default_path)%'
             username: '%env(boom_sl_default_username)%'
             password: '%env(boom_sl_default_password)%'
             database: '%env(boom_sl_default_database)%'
         prod:
+            uri: '%env(boom_sl_prod_baseuri)%'
+            path: '%env(boom_sl_prod_path)%'
             username: '%env(boom_sl_prod_username)%'
             password: '%env(boom_sl_prod_password)%'
             database: '%env(boom_sl_prod_database)%'
-    ods_base_uri: '%env(boom_ods_baseuri)%'
-    ods_path: '%env(boom_ods_path)%'
-    ods_login: '%env(boom_ods_login)%'
-    ods_password: '%env(boom_ods_password)%'
+    ods_connections:
+        default:
+            uri: '%env(boom_ods_default_baseuri)%'
+            path: '%env(boom_ods_default_path)%'
+            username: '%env(boom_ods_default_login)%'
+            password: '%env(boom_ods_default_password)%'
+        prod:
+            uri: '%env(boom_ods_prod_baseuri)%'
+            path: '%env(boom_ods_prod_path)%'
+            username: '%env(boom_ods_prod_login)%'
+            password: '%env(boom_ods_prod_password)%'
 ````
 
 Flex apps : set your external parameters, see the [Symfony doc](https://symfony.com/doc/current/configuration/external_parameters.html).  

@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
+use W3com\BoomBundle\Service\BoomManager;
 
 class Batch
 {
@@ -37,7 +38,7 @@ class Batch
     private $stopwatch;
 
     public function __construct(
-        Client $client,
+        BoomManager $manager,
         $config,
         Stopwatch $stopwatch,
         $boundary = false,
@@ -45,9 +46,9 @@ class Batch
     )
     {
         $this->stopwatch = $stopwatch;
-        $this->client = $client;
+        $this->client = $manager->getCurrentClient();
         $this->boundary = $boundary ?: mt_rand();
-        $this->rootUrl = $config['service_layer']['path'];
+        $this->rootUrl = $config['service_layer']['connections'][$manager->getCurrentConnection()]['path'];
         $this->batchPath = $batchPath ?: self::BATCH_PATH;
     }
 

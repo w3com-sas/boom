@@ -125,14 +125,6 @@ class BoomManager
 
         // creating the ODS client
         $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'] . '/odata', true);
-        $client = new Client(
-            [
-                'cookies' => $jar,
-                'base_uri' => $config['odata_service']['base_uri'] . '/' . $config['odata_service']['path'],
-                'verify' => $config['odata_service']['verify_https'],
-            ]
-        );
-        $this->clients['odata'] = $client;
 
         if ($this->inSlContextMode) {
             $this->setSLContextToCurrentConnection(
@@ -144,12 +136,23 @@ class BoomManager
             $this->setCurrentConnection('default');
         }
 
+        $client = new Client(
+            [
+                'cookies' => $jar,
+                'base_uri' =>
+                    $config['odata_service']['connections'][$this->currentConnection]['uri']
+                    . '/' . $config['odata_service']['connections'][$this->currentConnection]['path'],
+                'verify' => $config['odata_service']['verify_https'],
+            ]
+        );
+        $this->clients['odata'] = $client;
+
         // creating rest clients
         $slRestClient = new SLRestClient($this, $cache);
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;
-        $this->batch = new Batch($this->getCurrentClient(), $config, $stopwatch);
+        $this->batch = new Batch($this, $config, $stopwatch);
     }
 
     public function getCollectedData()
@@ -236,13 +239,15 @@ class BoomManager
             // creating the cookie jar
             $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $CompanyDB . '_' . $UserName;
-            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->config['service_layer']['base_uri']));
+            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->config['service_layer']['connections'][$this->currentConnection]['uri']));
             $jar = new FileCookieJar($cookiePath, true);
 
             $client = new Client(
                 [
                     'cookies' => $jar,
-                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
+                    'base_uri' =>
+                        $this->config['service_layer']['connections'][$this->currentConnection]['uri']
+                        . $this->config['service_layer']['connections'][$this->currentConnection]['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
@@ -294,7 +299,9 @@ class BoomManager
             $client = new Client(
                 [
                     'cookies' => $jar,
-                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
+                    'base_uri' =>
+                        $this->config['service_layer']['connections'][$connection]['uri']
+                        . $this->config['service_layer']['connections'][$connection]['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
