@@ -318,6 +318,8 @@ class BoomManager
             $this->clients[$connection] = $client;
         }
 
+        $this->batch = new Batch($this, $this->config, $this->stopwatch);
+
         return $this;
     }
 
