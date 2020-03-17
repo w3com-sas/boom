@@ -10,6 +10,7 @@ class TableNames
     const COUNTRIES                  = 'OCRY';
     const CREDITNOTES                = 'ORIN';
     const DELIVERYNOTES              = 'ODLN';
+    const DRAFTS                     = 'ODRF';
     const EMPLOYEESINFO              = 'OHEM';
     const HOUSEBANKACCOUNTS          = 'OACT';
     const INCOMINGPAYMENTS           = 'ORCT';
