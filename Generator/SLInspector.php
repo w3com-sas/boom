@@ -432,8 +432,6 @@ class SLInspector implements InspectorInterface
         $property->setFieldType($value);
         $property->setHasQuotes($hasQuotes);
 
-//        $property->setFieldTypeSAPFormat($propertyMetadata[$this::TYPE_PROPERTY], $this->enumTypes);
-
         $entity->setProperty($property);
     }
 }

@@ -69,6 +69,7 @@ class BoomGenerator
      */
     public function createODSEntity($calcViewName)
     {
+        $this->getOdsInspector()->initEntities();
         $entity = $this->odsInspector->getEntity($calcViewName);
         $this->classCreator->generateClass($entity);
     }

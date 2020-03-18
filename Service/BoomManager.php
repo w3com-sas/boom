@@ -88,6 +88,11 @@ class BoomManager
     private $batch;
 
     /**
+     * @var array
+     */
+    private $currentConnectionsData;
+  
+    /**
      * @var string
      */
     private $last_cookie_file_path = '';
@@ -130,14 +135,6 @@ class BoomManager
 
         // creating the ODS client
         $jar = new FileCookieJar($config['service_layer']['cookies_storage_path'] . '/odata', true);
-        $client = new Client(
-            [
-                'cookies' => $jar,
-                'base_uri' => $config['odata_service']['base_uri'] . '/' . $config['odata_service']['path'],
-                'verify' => $config['odata_service']['verify_https'],
-            ]
-        );
-        $this->clients['odata'] = $client;
 
         if ($this->inSlContextMode) {
             $this->setSLContextToCurrentConnection(
@@ -149,12 +146,23 @@ class BoomManager
             $this->setCurrentConnection('default');
         }
 
+        $client = new Client(
+            [
+                'cookies' => $jar,
+                'base_uri' =>
+                    $this->currentConnectionsData['odata_service']['uri']
+                    . '/' . $this->currentConnectionsData['odata_service']['path'],
+                'verify' => $config['odata_service']['verify_https'],
+            ]
+        );
+        $this->clients['odata'] = $client;
+
         // creating rest clients
         $slRestClient = new SLRestClient($this, $cache);
         $this->restClients['sl'] = $slRestClient;
         $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;
-        $this->batch = new Batch($this->getCurrentClient(), $config, $stopwatch);
+        $this->batch = new Batch($this, $config, $stopwatch);
     }
 
     public function getCollectedData()
@@ -164,7 +172,7 @@ class BoomManager
 
     public function reloginToSL()
     {
-        $loginData = $this->config['service_layer']['connections'][$this->getCurrentConnection()];
+        $loginData = $this->currentConnectionsData['service_layer'];
 
         try {
             $res = $this->getCurrentClient()->post(
@@ -241,13 +249,15 @@ class BoomManager
             // creating the cookie jar
             $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $CompanyDB . '_' . $UserName;
-            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->config['service_layer']['base_uri']));
+            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->currentConnectionsData['service_layer']['uri']));
             $jar = new FileCookieJar($cookiePath, true);
 
             $client = new Client(
                 [
                     'cookies' => $jar,
-                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
+                    'base_uri' =>
+                        $this->currentConnectionsData['service_layer']['uri']
+                        . $this->currentConnectionsData['service_layer']['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
@@ -290,22 +300,32 @@ class BoomManager
 
         $this->currentConnection = $connection;
 
+        $this->currentConnectionsData = [
+            'service_layer' => $this->config['service_layer']['connections'][$connection],
+            'odata_service' => $this->config['odata_service']['connections'][$connection]
+        ];
+
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
+
             $this->last_cookie_file_path = $this->config['service_layer']['cookies_storage_path'] . '/' .
-                $connection . '_' . $this->config['service_layer']['connections'][$connection]['database'] . '_' .
-                str_replace('\\', '_', $this->config['service_layer']['connections'][$connection]['username']);
+                $connection . '_' . $this->currentConnectionsData['service_layer']['database'] . '_' .
+                str_replace('\\', '_', $this->currentConnectionsData['service_layer']['username']);
             $jar = new FileCookieJar($this->last_cookie_file_path,true);
 
             $client = new Client(
                 [
                     'cookies' => $jar,
-                    'base_uri' => $this->config['service_layer']['base_uri'] . $this->config['service_layer']['path'],
+                    'base_uri' =>
+                        $this->currentConnectionsData['service_layer']['uri']
+                        . $this->currentConnectionsData['service_layer']['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
             $this->clients[$connection] = $client;
         }
+
+        $this->batch = new Batch($this, $this->config, $this->stopwatch);
 
         return $this;
     }
@@ -601,4 +621,16 @@ class BoomManager
         return ['data' => $data, 'uri' => $uri];
     }
 
+    public function setDatabase($database)
+    {
+        $oldDatabase = $this->currentConnectionsData['service_layer']['database'];
+        $this->currentConnectionsData['service_layer']['database'] = $database;
+        $res = $this->reloginToSL();
+        if (!$res['valid']) {
+            $this->currentConnectionsData['service_layer']['database'] = $oldDatabase;
+            $this->reloginToSL();
+            return false;
+        }
+        return true;
+    }
 }

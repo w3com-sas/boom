@@ -1,6 +1,7 @@
 {
   "name": "w3com-sas/boom",
   "description": "Business One Object Manager",
+  "version": "3.0.0-beta",
   "type": "symfony-bundle",
   "keywords": [
     "SAP",
@@ -31,7 +32,7 @@
   "require": {
     "php": ">=7.1",
     "guzzlehttp/guzzle": "^6.2",
-    "symfony/stopwatch": "^3.4|^4.0",
+    "symfony/stopwatch": "*",
     "nette/php-generator": "^3.2",
     "symfony/console": "*",
     "symfony/serializer-pack": "*",

@@ -34,7 +34,6 @@ class OdsInspector implements InspectorInterface
     public function __construct(BoomManager $manager, AdapterInterface $cache)
     {
         $this->oDataRestClient = new OdataRestClient($manager, $cache);
-        $this->initEntities();
     }
 
     /**
