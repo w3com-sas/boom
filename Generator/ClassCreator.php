@@ -33,7 +33,8 @@ class ClassCreator
         $file = $this->getBaseFile();
         $namespace = $this->getNamespace($file);
 
-        $class = $namespace->addClass($entity->getName());
+        $className = $entity->getAlias() ? $entity->getAlias() : $entity->getName();
+        $class = $namespace->addClass($className);
         $class
             ->addExtend(AbstractEntity::class);
 
@@ -117,8 +118,10 @@ class ClassCreator
 
             $var = $property->getVar();
 
+            $propertyName = $property->getAlias() ? $property->getAlias() : $property->getName();
+
             $class
-                ->addProperty($property->getName())
+                ->addProperty($propertyName)
                 ->setVisibility(Property::PROPERTY_VISIBILITY)
                 ->addComment("\n" . '@var ' . $var . "\n" . $annotation . "\n");
 
@@ -131,20 +134,22 @@ class ClassCreator
         }
 
         file_put_contents($this->manager->config['entity_directory'] . '/'
-            . $entity->getName() . '.php', $file);
+            . $className . '.php', $file);
     }
 
     private function addGetter(Property $property, ClassType $class)
     {
-        $class->addMethod('get'.ucfirst($property->getName()))
-            ->addBody('return $this->'.$property->getName().';');
+        $propertyName = $property->getAlias() ? $property->getAlias() : $property->getName();
+        $class->addMethod('get'.ucfirst($propertyName))
+            ->addBody('return $this->'.$propertyName.';');
     }
 
     private function addSetter(Property $property, ClassType $class)
     {
-        $class->addMethod('set'.ucfirst($property->getName()))
-            ->addBody('return $this->set(\''.$property->getName().'\', $'.$property->getName().');')
-            ->addParameter($property->getName());
+        $propertyName = $property->getAlias() ? $property->getAlias() : $property->getName();
+        $class->addMethod('set'.ucfirst($propertyName))
+            ->addBody('return $this->set(\''.$propertyName.'\', $'.$propertyName.');')
+            ->addParameter($propertyName);
     }
 
     private function getBaseFile(): PhpFile

@@ -85,6 +85,8 @@ class Property
 
     public $complexEntity = null;
 
+    public $alias = null;
+
     /**
      * @return mixed
      */
@@ -472,6 +474,22 @@ class Property
     public function setComplexEntity($complexEntity): void
     {
         $this->complexEntity = $complexEntity;
+    }
+
+    /**
+     * @return null
+     */
+    public function getAlias()
+    {
+        return $this->alias;
+    }
+
+    /**
+     * @param null $alias
+     */
+    public function setAlias($alias): void
+    {
+        $this->alias = $alias;
     }
 
 }
