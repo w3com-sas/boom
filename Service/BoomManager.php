@@ -91,6 +91,11 @@ class BoomManager
      * @var array
      */
     private $currentConnectionsData;
+  
+    /**
+     * @var string
+     */
+    private $last_cookie_file_path = '';
 
     /**
      * BoomManager constructor.
@@ -302,10 +307,12 @@ class BoomManager
 
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'] . '/' .
+
+            $this->last_cookie_file_path = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $this->currentConnectionsData['service_layer']['database'] . '_' .
-                str_replace('\\', '_', $this->currentConnectionsData['service_layer']['username']),
-                true);
+                str_replace('\\', '_', $this->currentConnectionsData['service_layer']['username']);
+            $jar = new FileCookieJar($this->last_cookie_file_path,true);
+
             $client = new Client(
                 [
                     'cookies' => $jar,
@@ -369,6 +376,13 @@ class BoomManager
         }
         $this->repositories[$entityName] = $repo;
         return $repo;
+    }
+
+    public function removeLastCookieFile()
+    {
+        if($this->last_cookie_file_path != ''){
+            unlink($this->last_cookie_file_path);
+        }
     }
 
     /**

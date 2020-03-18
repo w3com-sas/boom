@@ -36,6 +36,8 @@ class Entity
 
     public $key;
 
+    public $alias = null;
+
     public $toSynchronize = false;
 
     public static function formatTableName($name)
@@ -247,6 +249,22 @@ class Entity
     public function setArchiveDate($archiveDate): void
     {
         $this->archiveDate = $archiveDate;
+    }
+
+    /**
+     * @return null
+     */
+    public function getAlias()
+    {
+        return $this->alias;
+    }
+
+    /**
+     * @param null $alias
+     */
+    public function setAlias($alias): void
+    {
+        $this->alias = $alias;
     }
 
 }

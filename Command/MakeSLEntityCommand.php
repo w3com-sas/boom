@@ -60,7 +60,7 @@ class MakeSLEntityCommand extends Command
         if ($isUDT) {
             $io->note("If you just created UDT, you must restart Service Layer on the server with the command : /etc/init.d/b1s restart \nThen, you must clear the boom cache with the command : bin/console boom:cl");
             $io->ask('Press enter to continue');
-            $table = $io->choice("What's the name of the table ?", $UDTsTable);
+            $table = $io->choice("What's the name of the table?", $UDTsTable);
             $io->section('Entity creation...');
             foreach ($SLInspector->getUDTEntities() as $UDTEntity) {
                 if ($UDTEntity->getName() === $table) {
@@ -69,6 +69,38 @@ class MakeSLEntityCommand extends Command
                     break;
                 }
             }
+
+            $alias = $io->ask("What is the class name?", $entity->getName());
+
+            $entity->setAlias($alias);
+
+            $propertyAlias = true;
+
+            while ($propertyAlias) {
+                $propertiesNames = [''];
+
+                /** @var Property $property */
+                foreach ($entity->getProperties() as $property) {
+                    if (!$property->getAlias()) {
+                        $propertiesNames[] = $property->getField();
+                    }
+                }
+
+                $propertyToEdit = $io->choice('Want you set an alias to property? Which one? (Press return for no)', $propertiesNames);
+
+                if ($propertyToEdit) {
+                    $alias = $io->ask("What is the property name?");
+                    /** @var Property $property */
+                    foreach ($entity->getProperties() as $property) {
+                        if ($property->getField() === $propertyToEdit) {
+                            $property->setAlias($alias);
+                        }
+                    }
+                } else {
+                    $propertyAlias = false;
+                }
+            }
+
 
             $io->progressStart(1);
 
@@ -87,6 +119,10 @@ class MakeSLEntityCommand extends Command
                 }
             }
 
+            $alias = $io->ask("What is the class name?", $entity->getName());
+
+            $entity->setAlias($alias);
+
             $properties = [$entity->getKey()];
 
             $propertiesChoices = [];
@@ -98,20 +134,61 @@ class MakeSLEntityCommand extends Command
                 }
             }
 
-            $allProperties = $io->confirm("Want you add all properties to your entity ?", false);
+            $allProperties = $io->confirm("Want you add all properties to your entity?", false);
 
             if ($allProperties) {
                 $properties = [];
+
+                $propertyAlias = $io->confirm('Want you set an alias to property?');
+
+                while ($propertyAlias) {
+                    $propertiesNames = [''];
+
+                    /** @var Property $property */
+                    foreach ($entity->getProperties() as $property) {
+                        if (!$property->getAlias()) {
+                            $propertiesNames[] = $property->getField();
+                        }
+                    }
+
+                    $propertyToEdit = $io->choice('Which one?', $propertiesNames);
+
+                    $alias = $io->ask("What is the property name?");
+                    /** @var Property $property */
+                    foreach ($entity->getProperties() as $property) {
+                        if ($property->getField() === $propertyToEdit) {
+                            $property->setAlias($alias);
+                        }
+                    }
+
+                    $propertyAlias = $io->confirm('Want you set an alias to an other property?');
+                }
             } else {
                 $continue = true;
 
+                $alias = $io->ask("What is the key property name name?", lcfirst($entity->getKey()));
+
+                /** @var Property $property */
+                foreach ($entity->getProperties() as $property) {
+                    if ($property->getIsKey()) {
+                        $property->setAlias($alias);
+                    }
+                }
+
                 while ($continue) {
-                    $io->section('Properties of '.$entity->getTable().' Entity :');
+                    $io->section('Properties of '.$entity->getTable().' Entity:');
                     $io->listing($properties);
-                    $continue = $io->confirm("Want you add field in your entity ?");
+                    $continue = $io->confirm("Want you add field in your entity?");
                     if ($continue) {
-                        $newProperty = $io->choice("Which one ?", $propertiesChoices);
+                        $newProperty = $io->choice("Which one?", $propertiesChoices);
                         $properties[] = $newProperty;
+                        $alias = $io->ask("What is the property name?", lcfirst($newProperty));
+                        /** @var Property $property */
+                        foreach ($entity->getProperties() as $property) {
+                            if ($property->getField() === $newProperty) {
+                                $property->setAlias($alias);
+                            }
+                        }
                         unset($propertiesChoices[array_search($newProperty, $propertiesChoices)]);
                         $io->success($newProperty." added to the entity !");
                     }
