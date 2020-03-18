@@ -1,7 +1,6 @@
 {
   "name": "w3com-sas/boom",
   "description": "Business One Object Manager",
-  "version": "3.0.0-beta",
   "type": "symfony-bundle",
   "keywords": [
     "SAP",
