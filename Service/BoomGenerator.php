@@ -44,12 +44,12 @@ class BoomGenerator
      * BoomGenerator constructor.
      * @param BoomManager $manager
      * @param AdapterInterface $cache
-     * @throws AnnotationException
+     * @param AppInspector $appInspector
      */
-    public function __construct(BoomManager $manager, AdapterInterface $cache)
+    public function __construct(BoomManager $manager, AdapterInterface $cache, AppInspector $appInspector)
     {
         $this->manager = $manager;
-        $this->appInspector = new AppInspector($manager);
+        $this->appInspector = $appInspector;
         $this->SLInspector = new SLInspector($manager, $cache);
         $this->odsInspector = new OdsInspector($manager, $cache);
         $this->classCreator = new ClassCreator($manager, $this);

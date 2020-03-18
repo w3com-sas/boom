@@ -111,7 +111,34 @@ class OdataRestClient implements RestClientInterface
 
     public function patch(string $uri, $data)
     {
-        // TODO: Implement patch() method.
+        try{
+            $param = [
+                'json' => $data,
+            ];
+
+            $res = $this->client->request(
+                'PATCH',
+                $uri,
+                $param
+            );
+
+            return true;
+        } catch (ClientException $e) {
+            $response = $e->getResponse()->getBody()->getContents();
+
+            $this->manager->logger->error($response);
+
+            $json_error = json_decode($response,true);
+            $errMessage = array_key_exists('error',$json_error) ?
+                $json_error['error']['message']['value']:
+                'Unknown error while launching POST request';
+
+            throw new \Exception($errMessage);
+
+        } catch (ConnectException $e) {
+            $this->manager->logger->error($e->getMessage(), $e->getTrace());
+            throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+        }
     }
 
     public function put(string $uri, $data)
