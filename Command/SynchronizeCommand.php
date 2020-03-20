@@ -48,7 +48,6 @@ class SynchronizeCommand extends Command
         $io->title("Boom Synchronize Command");
 
         $all = $io->confirm("Want you synchronize all the project ?", false);
-//        $all = true;
 
         $listEntities = [];
         $listProperties = [];

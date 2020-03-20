@@ -156,6 +156,31 @@ class Entity
     }
 
     /**
+     * @param Property $property
+     */
+    public function addProperty(Property $property)
+    {
+        $this->properties[] = $property;
+    }
+
+    /**
+     * @param Property $propertyToRemove
+     */
+    public function removeProperty(Property $propertyToRemove)
+    {
+        /**
+         * @var  $key
+         * @var Property $property
+         */
+        foreach ($this->properties as $key => $property) {
+            if ($property->getField() === $propertyToRemove->getField()) {
+                unset($this->properties[$key]);
+                break;
+            }
+        }
+    }
+
+    /**
      * @return bool
      */
     public function isToSynchronize(): bool

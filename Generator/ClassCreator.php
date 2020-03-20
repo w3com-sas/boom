@@ -106,24 +106,7 @@ class ClassCreator
         /** @var Property $property */
         foreach ($entity->getProperties() as $property){
 
-            if ($property->getComplexEntity() !== null) {
-                $this->generateClass($property->getComplexEntity(), 'sl', [], true);
-            }
-
-            $annotation = $this->createPropertyAnnotation($property);
-
-            if ($property->isUDF()) {
-                $annotation .= "\n" . $this->createSynchronizeAnnotation($property, $entity->getSapTable());
-            }
-
-            $var = $property->getVar();
-
-            $propertyName = $property->getAlias() ? $property->getAlias() : $property->getName();
-
-            $class
-                ->addProperty($propertyName)
-                ->setVisibility(Property::PROPERTY_VISIBILITY)
-                ->addComment("\n" . '@var ' . $var . "\n" . $annotation . "\n");
+            $class = $this->createPropertyInClass($property, $entity, $class);
 
             $this->addGetter($property, $class);
 
@@ -278,5 +261,119 @@ class ClassCreator
         $annotation .= Property::SYNCHRONIZE_ANNOTATION_END;
 
         return $annotation;
+    }
+
+    public function addPropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, Entity $entity)
+    {
+        foreach ($propertiesToAdd as $property) {
+            $entity->addProperty($property);
+        }
+        foreach ($propertiesToRemove as $property) {
+            $entity->removeProperty($property);
+        }
+        $entity = $this->generator->getSLInspector()->addMetaToEntity($entity);
+
+        [$class, $file] = $this->getExistingClassTypeWithoutProperties($entity->getName(), $propertiesToRemove);
+
+        foreach ($propertiesToAdd as $property) {
+            $class = $this->createPropertyInClass($property, $entity, $class);
+
+            $this->addGetter($property, $class);
+            $this->addSetter($property, $class);
+        }
+
+
+        file_put_contents($this->manager->config['entity_directory'] . '/'
+            . $entity->getName() . '.php', $file);
+    }
+
+    private function getExistingClassTypeWithoutProperties($name, $properties)
+    {
+        $baseClass = ClassType::from($this->manager->config['app_namespace'].'\\HanaEntity\\' . $name);
+        $file = $this->getBaseFile();
+        $namespace = $this->getNamespace($file);
+
+        $class = $namespace->addClass($name);
+        $class
+            ->addExtend(AbstractEntity::class);
+
+        $class->addComment($baseClass->getComment());
+        $class->setConstants($baseClass->getConstants());
+        $propertiesToSet = [];
+        foreach ($baseClass->getProperties() as $propertyMeta) {
+            /** @var Property $propertyToRemove */
+            foreach ($properties as $propertyToRemove) {
+                if ($propertyToRemove->getName() === $propertyMeta->getName()) {
+                    continue 2;
+                }
+            }
+            $propertiesToSet[] = $propertyMeta;
+        }
+        $class->setProperties($propertiesToSet);
+
+        $methodsToSet = [];
+        foreach ($baseClass->getMethods() as $method) {
+            foreach ($properties as $propertyToRemove) {
+                $propertyName = $propertyToRemove->getName();
+                if (strpos($method->getName(), ucfirst($propertyName))) {
+                    continue 2;
+                }
+            }
+            $method->setBody(
+                $this->getMethodBody(
+                    $this->manager->config['app_namespace'].'\\HanaEntity\\' . $name,
+                    $method->getName()
+                )
+            );
+            $methodsToSet[] = $method;
+        }
+        $class->setMethods($methodsToSet);
+
+        return [$class, $file];
+    }
+
+    private function createPropertyInClass(Property $property, Entity $entity, ClassType $class)
+    {
+        if ($property->getComplexEntity() !== null) {
+            $this->generateClass($property->getComplexEntity(), 'sl', [], true);
+        }
+
+        $annotation = $this->createPropertyAnnotation($property);
+
+        if ($property->isUDF()) {
+            $annotation .= "\n" . $this->createSynchronizeAnnotation($property, $entity->getSapTable());
+        }
+
+        $var = $property->getVar();
+
+        $propertyName = $property->getAlias() ? $property->getAlias() : $property->getName();
+
+        $class
+            ->addProperty($propertyName)
+            ->setVisibility(Property::PROPERTY_VISIBILITY)
+            ->addComment("\n" . '@var ' . $var . "\n" . $annotation . "\n");
+
+        return $class;
+    }
+
+    private function getMethodBody($class, $method)
+    {
+        $func = new \ReflectionMethod($class, $method);
+
+        $filename = $func->getFileName();
+        $start_line = $func->getStartLine() +1; // it's actually - 1, otherwise you wont get the function() block
+        $end_line = $func->getEndLine() - 1;
+        $length = $end_line - $start_line;
+
+        $source = file($filename);
+        $lines = array_slice($source, $start_line, $length);
+
+        foreach ($lines as $key => $line) {
+            $lines[$key] = trim($line);
+        }
+
+        $body = implode("\n", $lines);
+
+        return $body;
     }
 }

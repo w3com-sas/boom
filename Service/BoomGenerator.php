@@ -9,6 +9,7 @@ use W3com\BoomBundle\Generator\AppInspector;
 use W3com\BoomBundle\Generator\ClassCreator;
 use W3com\BoomBundle\Generator\EntityComparator;
 use W3com\BoomBundle\Generator\Messenger;
+use W3com\BoomBundle\Generator\Model\Property;
 use W3com\BoomBundle\Generator\OdsInspector;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\SLInspector;
@@ -61,6 +62,11 @@ class BoomGenerator
         $this->getSLInspector()->initEntities();
         $entity = $this->SLInspector->getEntity($tableName);
         $this->classCreator->generateClass($entity, 'sl', $fields);
+    }
+
+    public function addAndRemovePropertiesInAppEntity($propertiesToAdd, $propertiesToRemove, Entity $appEntity)
+    {
+        $this->classCreator->addPropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, $appEntity);
     }
 
     /**
