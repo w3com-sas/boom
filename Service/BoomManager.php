@@ -300,9 +300,21 @@ class BoomManager
 
         $this->currentConnection = $connection;
 
+        if (isset($this->config['odata_service']['connections'][$connection])) {
+            $odataConnection = $this->config['odata_service']['connections'][$connection];
+        } else {
+            $odataConnection = $this->config['odata_service']['connections']['default'];
+        }
+
+        if (isset($this->config['service_layer']['connections'][$connection])) {
+            $slConnection = $this->config['service_layer']['connections'][$connection];
+        } else {
+            $slConnection = $this->config['service_layer']['connections']['default'];
+        }
+
         $this->currentConnectionsData = [
-            'service_layer' => $this->config['service_layer']['connections'][$connection],
-            'odata_service' => $this->config['odata_service']['connections'][$connection]
+            'service_layer' => $slConnection,
+            'odata_service' => $odataConnection
         ];
 
         if (!array_key_exists($connection, $this->clients)) {
