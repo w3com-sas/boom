@@ -94,4 +94,26 @@ Entity creation...
  [OK] Success in entity creation !    
  ```
                                                                                                                         
+## Modification d'une entité
 
+Lors du choix de la table, si vous choisissez une table ayant déjà une entité, vous aurez ce menu, vous pouvez choisir de la modifier.
+
+```console
+ An entity of BusinessPartnerGroups exists in your project. Want you edit it or create a new entity?:
+  [0] Edit
+  [1] Create
+ > Edit
+
+```
+
+Vous pourrez alors ajouter, ou supprimer une propriété sans que cela n'affecte le reste du code.
+
+```console
+Entity edition...
+-----------------
+
+ What do you want to do?:
+  [0] Add property
+  [1] Remove property
+ > 
+```
