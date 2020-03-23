@@ -66,7 +66,7 @@ class BoomGenerator
 
     public function addAndRemovePropertiesInAppEntity($propertiesToAdd, $propertiesToRemove, Entity $appEntity)
     {
-        $this->classCreator->addPropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, $appEntity);
+        $this->classCreator->addAndRemovePropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, $appEntity);
     }
 
     /**

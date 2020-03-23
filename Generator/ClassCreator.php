@@ -263,7 +263,7 @@ class ClassCreator
         return $annotation;
     }
 
-    public function addPropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, Entity $entity)
+    public function addAndRemovePropertiesToExistingClass($propertiesToAdd, $propertiesToRemove, Entity $entity)
     {
         foreach ($propertiesToAdd as $property) {
             $entity->addProperty($property);

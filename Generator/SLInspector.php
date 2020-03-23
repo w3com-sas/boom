@@ -2,22 +2,15 @@
 
 namespace W3com\BoomBundle\Generator;
 
-use DateInterval;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Nette\PhpGenerator\ClassType;
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
-use W3com\BoomBundle\HanaConst\TableNames;
-use W3com\BoomBundle\HanaEntity\FieldDefinition;
 use W3com\BoomBundle\HanaEntity\UserFieldsMD;
 use W3com\BoomBundle\HanaEntity\UserTablesMD;
-use W3com\BoomBundle\HanaRepository\FieldDefinitionRepository;
 use W3com\BoomBundle\HanaRepository\UserFieldsMDRepository;
 use W3com\BoomBundle\HanaRepository\UserTablesMDRepository;
-use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
 use W3com\BoomBundle\Service\BoomManager;
 use W3com\BoomBundle\Utils\StringUtils;

@@ -77,7 +77,7 @@ class MakeSLEntityCommand extends Command
                 }
             }
 
-            $action = 'create';
+            $action = 'Create';
             if ($existingEntity) {
                 $action = $io->choice("An entity of " . $table . " exists in your project. Want you edit it or create a new entity?",
                     [
@@ -107,7 +107,8 @@ class MakeSLEntityCommand extends Command
             $existingEntity = null;
             /** @var Entity $appEntity */
             foreach ($appEntities as $appEntity) {
-                if ($table === $appEntity->getTable()) {
+                if ($table === $appEntity->getTable() ||
+                    'U_' . $table === $appEntity->getTable()) {
                     $existingEntity = $appEntity;
                     break;
                 }
