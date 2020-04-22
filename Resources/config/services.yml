@@ -80,3 +80,10 @@ services:
       - '@W3com\BoomBundle\Form\DataTransformer\SapDateTransformer'
     tags:
       - {name: 'form.type'}
+
+  W3com\BoomBundle\Form\Type\HanaEntityChoiceType:
+    arguments:
+      - '@W3com\BoomBundle\Service\BoomManager'
+      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+    tags:
+      - {name: 'form.type'}
