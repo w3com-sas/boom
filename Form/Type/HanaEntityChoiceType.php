@@ -4,6 +4,11 @@ namespace W3com\BoomBundle\Form\Type;
 
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
+use Symfony\Component\Form\ChoiceList\Factory\CachingFactoryDecorator;
+use Symfony\Component\Form\ChoiceList\Factory\ChoiceListFactoryInterface;
+use Symfony\Component\Form\ChoiceList\Factory\DefaultChoiceListFactory;
+use Symfony\Component\Form\ChoiceList\Factory\PropertyAccessDecorator;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -16,23 +21,29 @@ class HanaEntityChoiceType extends AbstractType
 
     private $cache;
 
-    public function __construct(BoomManager $boom, AdapterInterface $cache)
+    private $choiceListFactory;
+
+    public function __construct(BoomManager $boom, AdapterInterface $cache, ChoiceListFactoryInterface $choiceListFactory = null)
     {
         $this->boom = $boom;
         $this->cache = $cache;
+        $this->choiceListFactory = $choiceListFactory ?: new CachingFactoryDecorator(
+            new PropertyAccessDecorator(
+                new DefaultChoiceListFactory()
+            )
+        );
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choiceList = $this->getChoices($options);
+        $choiceList = $this->getChoiceList($options);
         $builder->setAttribute('choice_list', $choiceList);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver
-            ->setRequired(['choice_value', 'choice_label', 'hana_entity'])
-            ->setAllowedTypes('hana_entity', [AbstractEntity::class]);
+            ->setRequired(['choice_value_property', 'choice_label_property', 'hana_entity']);
 
         $resolver->setDefaults([
             'cache_storage_key' => null,
@@ -40,7 +51,7 @@ class HanaEntityChoiceType extends AbstractType
         ]);
     }
 
-    private function getChoices(array $options): array
+    private function getChoiceList(array $options)
     {
         if (!$options['cache_storage_key'] || empty($this->getCacheData($options))) {
             $data = $this->getBoomData($options);
@@ -61,15 +72,15 @@ class HanaEntityChoiceType extends AbstractType
         $choices = [];
         /** @var AbstractEntity $entity */
         foreach ($data as $entity) {
-            $choices[$entity->get($options['choice_label'])] = $entity->get($options['choice_value']);
+            $choices[$entity->get($options['choice_label_property'])] = $entity->get($options['choice_value_property']);
         }
-        return $choices;
+        return $this->choiceListFactory->createListFromChoices($choices);
     }
 
     private function getBoomData(array $options)
     {
         $repo = $this->boom->getRepository($options['hana_entity']);
-        $params = $repo->createParams()->addSelect([$options['choice_value'], $options['choice_label']]);
+        $params = $repo->createParams()->addSelect([$options['choice_value_property'], $options['choice_label_property']]);
         return $repo->findAll($params);
     }
 
