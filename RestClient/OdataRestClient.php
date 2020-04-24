@@ -33,8 +33,8 @@ class OdataRestClient implements RestClientInterface
         $this->manager = $manager;
         $this->client = $manager->getOdsClient();
         $this->auth = [
-            $this->manager->config['odata_service']['connections'][$manager->getCurrentConnection()]['username'], // login
-            $this->manager->config['odata_service']['connections'][$manager->getCurrentConnection()]['password'], // password
+            $this->manager->config['odata_service']['connections'][$manager->getCurrentOdataConnection()]['username'], // login
+            $this->manager->config['odata_service']['connections'][$manager->getCurrentOdataConnection()]['password'], // password
         ];
         $this->xmlEncoder = new XmlEncoder();
         $this->cache = $cache;

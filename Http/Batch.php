@@ -46,9 +46,9 @@ class Batch
     )
     {
         $this->stopwatch = $stopwatch;
-        $this->client = $manager->getCurrentClient();
+        $this->client = $manager->getCurrentSLClient();
         $this->boundary = $boundary ?: mt_rand();
-        $this->rootUrl = $config['service_layer']['connections'][$manager->getCurrentConnection()]['path'];
+        $this->rootUrl = $config['service_layer']['connections'][$manager->getCurrentSLConnection()]['path'];
         $this->batchPath = $batchPath ?: self::BATCH_PATH;
     }
 

@@ -40,7 +40,7 @@ class SLRestClient implements RestClientInterface
     public function get(string $uri, $file = false)
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -105,7 +105,7 @@ class SLRestClient implements RestClientInterface
     {
         $cacheMetadata = $this->cache->getItem($this::STORAGE_KEY);
         if (!$cacheMetadata->isHit()){
-            $client = $this->manager->getCurrentClient();
+            $client = $this->manager->getCurrentSLConnection();
             $attempts = 0;
             while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
                 try {
@@ -143,7 +143,7 @@ class SLRestClient implements RestClientInterface
     public function request(string $uri, $data, $method='POST')
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
 
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
@@ -180,7 +180,7 @@ class SLRestClient implements RestClientInterface
     public function post(string $uri, $data)
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -230,7 +230,7 @@ class SLRestClient implements RestClientInterface
     public function patch(string $uri, $data, $updateCollection = false)
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -297,7 +297,7 @@ class SLRestClient implements RestClientInterface
     public function cancel(string $uri)
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -357,7 +357,7 @@ class SLRestClient implements RestClientInterface
     public function delete(string $uri)
     {
         /** @var Client $client */
-        $client = $this->manager->getCurrentClient();
+        $client = $this->manager->getCurrentSLClient();
         $attempts = 0;
         while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
             try {
@@ -415,12 +415,12 @@ class SLRestClient implements RestClientInterface
 
     public function login()
     {
-        $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentConnection()];
+        $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentSLConnection()];
         $collectedData = $loginData;
         unset($collectedData['password']);
         try {
             $this->manager->stopwatch->start('SL-login');
-            $res = $this->manager->getCurrentClient()->post(
+            $res = $this->manager->getCurrentSLClient()->post(
                 'Login',
                 [
                     'json' => [
