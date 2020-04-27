@@ -45,10 +45,11 @@ class Batch
         $batchPath = null
     )
     {
+
         $this->stopwatch = $stopwatch;
         $this->client = $manager->getCurrentSLClient();
         $this->boundary = $boundary ?: mt_rand();
-        $this->rootUrl = $config['service_layer']['connections'][$manager->getCurrentSLConnection()]['path'];
+        $this->rootUrl = $config['service_layer']['connections']['default']['path'];
         $this->batchPath = $batchPath ?: self::BATCH_PATH;
     }
 
