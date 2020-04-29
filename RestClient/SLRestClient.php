@@ -105,7 +105,7 @@ class SLRestClient implements RestClientInterface
     {
         $cacheMetadata = $this->cache->getItem($this::STORAGE_KEY);
         if (!$cacheMetadata->isHit()){
-            $client = $this->manager->getCurrentSLConnection();
+            $client = $this->manager->getCurrentSLClient();
             $attempts = 0;
             while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
                 try {
