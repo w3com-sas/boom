@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\HanaRepository;
 
+use W3com\BoomBundle\HanaEntity\UserFieldsMD;
 use W3com\BoomBundle\Parameters\Clause;
 use W3com\BoomBundle\Repository\AbstractRepository;
 
@@ -15,7 +16,15 @@ class UserFieldsMDRepository extends AbstractRepository
 
         $result = $this->findAll($params);
 
-        return $result;
+        $res = [];
+        /** @var UserFieldsMD $udf */
+        foreach ($result as $udf) {
+            if ($udf->getTableName() === $tableName) {
+                $res[] = $udf;
+            }
+        }
+
+        return $res;
     }
 
     public function findByTableName($tableName)
@@ -25,6 +34,14 @@ class UserFieldsMDRepository extends AbstractRepository
 
         $result = $this->findAll($params);
 
-        return $result;
+        $res = [];
+        /** @var UserFieldsMD $udf */
+        foreach ($result as $udf) {
+            if ($udf->getTableName() === $tableName) {
+                $res[] = $udf;
+            }
+        }
+
+        return $res;
     }
 }
