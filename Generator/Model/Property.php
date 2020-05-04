@@ -33,6 +33,8 @@ class Property
 
     const FIELD_TYPE_INTEGER = 'Edm.Int32';
 
+    const FIELD_TYPE_INTEGER_16 = 'Edm.Int16';
+
     const FIELD_TYPE_STRING = 'Edm.String';
 
     const FIELD_TYPE_DATE_TIME = 'Edm.DateTime';
@@ -136,6 +138,7 @@ class Property
                 $value = 'date';
                 $var = 'string';
                 break;
+            case self::FIELD_TYPE_INTEGER_16:
             case self::FIELD_TYPE_INTEGER:
                 $value = 'int';
                 $var = 'int';
