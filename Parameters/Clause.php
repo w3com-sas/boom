@@ -28,7 +28,7 @@ class Clause
     public function __construct($column, $value, $operator, $quote, $logicalOperator = self:: AND, $transformFunction = null)
     {
         $this->column = $column;
-        $this->value = $value;
+        $this->value = str_replace("'","''",$value);
         $this->operator = $operator;
         $this->quote = $quote ? "'" : '';
         $this->transformFunction = $transformFunction;
