@@ -99,8 +99,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             } catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
@@ -184,8 +182,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             } catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
@@ -243,8 +239,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             } catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
@@ -319,8 +313,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
@@ -383,8 +375,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             } catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
@@ -439,8 +429,6 @@ class SLRestClient implements RestClientInterface
                 throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
             }catch (\Exception $e) {
                 if (502 == $e->getCode()) {
-                    // 502 Proxy error
-                    $this->manager->logger->error('502 Proxy error detected : relogin');
                     $this->login();
                 } else {
                     $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
@@ -515,8 +503,6 @@ class SLRestClient implements RestClientInterface
             throw new \Exception('Unknown error while loging in (' . $e->getCode() . ') - ' . $e->getMessage());
         }catch (\Exception $e) {
             if (502 == $e->getCode()) {
-                // 502 Proxy error
-                $this->manager->logger->error('502 Proxy error detected : relogin');
                 $this->login();
             } else {
                 $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
