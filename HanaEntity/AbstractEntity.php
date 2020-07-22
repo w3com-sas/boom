@@ -211,6 +211,41 @@ class AbstractEntity
     }
 
     /**
+     * @return array
+     * @throws AnnotationException
+     * @throws \ReflectionException
+     */
+    public function getEntityArray()
+    {
+        $refl = $this->getReflectionClass();
+        $reader = new AnnotationReader();
+        $ar = [];
+        foreach ($refl->getProperties() as $property) {
+
+            if ($annotation = $reader->getPropertyAnnotation(
+                $property,
+                'W3com\\BoomBundle\\Annotation\\EntityColumnMeta'
+            )) {
+
+                if ($this->get($property->getName()) instanceof AbstractEntity && !in_array($property->getName(), ["collabPackField", "changedFields"])){
+                    $ar[$annotation->column] = $this->get($property->getName())->getEntityArray();
+                    continue;
+                }
+
+                if (is_iterable($this->get($property->getName())) && !in_array($property->getName(), ["collabPackField", "changedFields"])){
+                    foreach ($this->get($property->getName()) as $hanaEntity){
+                        $ar[$annotation->column][] = $hanaEntity->getEntityArray();
+                    }
+                    continue;
+                }
+
+                $ar[$annotation->column] = $this->get($property->getName());
+            }
+        }
+        return $ar;
+    }
+
+    /**
      * @throws \ReflectionException
      */
     private function getReflectionClass()
