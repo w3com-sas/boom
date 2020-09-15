@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\HanaEntity;
 
+use App\HanaEntity\W3cPvVh;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use W3com\BoomBundle\Annotation\EntityColumnMeta;
@@ -256,5 +257,20 @@ class AbstractEntity
         return $this->refl;
     }
 
-
+    /**
+     * @param string $collectionProperty
+     * @param string $field
+     * @param $value
+     * @return AbstractEntity|null
+     */
+    public function getOneInCollection(string $collectionProperty, string $field, $value)
+    {
+        /** @var AbstractEntity $collection */
+        foreach ($this->get($collectionProperty) as $collection) {
+            if ($collection->get($field) === $value) {
+                return $collection;
+            }
+        }
+        return null;
+    }
 }
