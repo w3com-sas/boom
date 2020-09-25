@@ -18,6 +18,10 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchEvent;
+use W3com\BoomBundle\BoomEvents;
+use W3com\BoomBundle\Event\PreAddEvent;
+use W3com\BoomBundle\Event\PreDeleteEvent;
+use W3com\BoomBundle\Event\PreUpdateEvent;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Http\Batch;
@@ -563,6 +567,7 @@ class BoomManager
      */
     public function update(AbstractEntity $entity)
     {
+        $this->dispatchEvent(BoomEvents::PRE_UPDATE_EVENT, new PreUpdateEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity, true);
         $this->batch->add(new Request('PATCH', $data['uri'], ['Content-Type' => 'application/json'],
             json_encode($data['data'])));
@@ -574,6 +579,7 @@ class BoomManager
      */
     public function delete(AbstractEntity $entity)
     {
+        $this->dispatchEvent(BoomEvents::PRE_DELETE_EVENT, new PreDeleteEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity, true);
         $this->batch->add(new Request('DELETE', $data['uri'], ['Content-Type' => 'application/json'],
             json_encode($data['data'])));
@@ -585,6 +591,7 @@ class BoomManager
      */
     public function add(AbstractEntity $entity)
     {
+        $this->dispatchEvent(BoomEvents::PRE_ADD_EVENT, new PreAddEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity);
         $this->batch->add(new Request('POST', $data['uri'], ['Content-Type' => 'application/json'],
             json_encode($data['data'])));
@@ -667,5 +674,10 @@ class BoomManager
         return $this->currentOdataConnection;
     }
 
-
+    private function dispatchEvent(string $eventName, $event)
+    {
+        if ($this->dispatcher->hasListeners($eventName)){
+            $this->dispatcher->dispatch($event, $eventName);
+        }
+    }
 }
