@@ -392,7 +392,7 @@ class BoomManager
                 $repo = new DefaultRepository($metadata, $this->dispatcher);
             }
         } else {
-            $repo = new $repoClassName($metadata);
+            $repo = new $repoClassName($metadata, $this->dispatcher);
             $this->logger->info("Loaded custom repo $repoClassName");
         }
         $this->repositories[$entityName] = $repo;
