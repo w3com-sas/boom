@@ -12,6 +12,7 @@ use GuzzleHttp\Psr7\Request;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -103,6 +104,11 @@ class BoomManager
     private $last_cookie_file_path = '';
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
+    /**
      * BoomManager constructor.
      *
      * @param array $config
@@ -110,9 +116,10 @@ class BoomManager
      * @param Stopwatch|null $stopwatch
      * @param AdapterInterface $cache
      * @param RequestStack $request
-     * @throws AnnotationException
+     * @param EventDispatcherInterface $dispatcher
+     * @throws \Exception
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
     {
         if ($request->getCurrentRequest() != null) {
             $query = $request->getCurrentRequest()->query;
@@ -133,6 +140,7 @@ class BoomManager
         $this->reader = new AnnotationReader();
         $this->logger = $logger;
         $this->stopwatch = $stopwatch;
+        $this->dispatcher = $dispatcher;
 
         // creating cookie jar if needed
         $fs = new Filesystem();
@@ -375,9 +383,9 @@ class BoomManager
         if (!class_exists($repoClassName)) {
             $repoClassName = 'W3com\\BoomBundle\\HanaRepository\\' . $entityName . 'Repository';
             if (class_exists($repoClassName)) {
-                $repo = new $repoClassName($metadata);
+                $repo = new $repoClassName($metadata, $this->dispatcher);
             } else {
-                $repo = new DefaultRepository($metadata);
+                $repo = new DefaultRepository($metadata, $this->dispatcher);
             }
         } else {
             $repo = new $repoClassName($metadata);

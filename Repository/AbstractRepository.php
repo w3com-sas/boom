@@ -2,7 +2,9 @@
 
 namespace W3com\BoomBundle\Repository;
 
-use phpDocumentor\Reflection\Types\Null_;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use W3com\BoomBundle\BoomEvents;
+use W3com\BoomBundle\Event\PreDeleteEvent;
 use W3com\BoomBundle\HanaEntity\AbstractEntity;
 use W3com\BoomBundle\Parameters\Parameters;
 use W3com\BoomBundle\Service\BoomConstants;
@@ -65,11 +67,16 @@ abstract class AbstractRepository implements RepositoryInterface
     private $metadata;
 
     /**
-     * AbstractRepository constructor.
-     *
-     * @param RepoMetadata $metadata
+     * @var EventDispatcherInterface
      */
-    public function __construct(RepoMetadata $metadata)
+    private $dispatcher;
+
+    /**
+     * AbstractRepository constructor.
+     * @param RepoMetadata $metadata
+     * @param EventDispatcherInterface $dispatcher
+     */
+    public function __construct(RepoMetadata $metadata, EventDispatcherInterface $dispatcher)
     {
         $this->entityName = $metadata->getEntityName();
         $this->className = $metadata->getEntityClassName();
@@ -82,6 +89,7 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->key = $metadata->getKey();
         $this->columns = $metadata->getColumns();
         $this->metadata = $metadata;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -233,6 +241,11 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function update(AbstractEntity $entity, $updateCollection = false)
     {
+        if ($this->dispatcher->hasListeners(BoomEvents::PRE_UPDATE_EVENT)){
+            $event = new PreDeleteEvent($entity, BoomEvents::TYPE_ONE);
+            $this->dispatcher->dispatch($event, BoomEvents::PRE_UPDATE_EVENT);
+        }
+
         $id = $entity->get($this->key);
 
         if (BoomConstants::SL == $this->write) {
@@ -317,6 +330,11 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function add(AbstractEntity $entity)
     {
+        if ($this->dispatcher->hasListeners(BoomEvents::PRE_ADD_EVENT)){
+            $event = new PreDeleteEvent($entity, BoomEvents::TYPE_ONE);
+            $this->dispatcher->dispatch($event, BoomEvents::PRE_ADD_EVENT);
+        }
+
         if (BoomConstants::SL == $this->write) {
             $uri = $this->aliasWrite;
             $data = $this->getDataToSend($entity->getChangedFields(), $entity);
