@@ -372,12 +372,18 @@ abstract class AbstractRepository implements RepositoryInterface
                 if (is_array($complexEntities) && count($complexEntities) > 0 && $complexEntities[array_rand($complexEntities)] instanceof AbstractEntity) {
                     /** @var AbstractEntity $complexEntity */
                     foreach ($complexEntities as $complexEntity) {
-                        $complexData[] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                        $changedData = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                        if (!empty($changedData)) {
+                            $complexData[] = $changedData;
+                        }
                     }
                     $data[$repository->columns[$field]['column']] = $complexData;
 
                 } elseif (($complexEntity = $entity->get($field)) instanceof AbstractEntity) {
-                    $data[$repository->columns[$field]['column']] = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                    $changedData = $this->getDataToSend($complexEntity->getChangedFields(), $complexEntity, $complexRepository);
+                    if (!empty($changedData)){
+                        $data[$repository->columns[$field]['column']] = $changedData;
+                    }
                 } elseif (is_array($complexEntities)/* && count($complexEntities) > 0*/) {
                     $data[$repository->columns[$field]['column']] = $complexEntities;
                 }
