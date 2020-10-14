@@ -76,9 +76,19 @@ services:
     tags:
       - {name: 'form.type'}
 
+  W3com\BoomBundle\Form\DataTransformer\SapTimeTransformer:
+    tags:
+      - {name: 'form.type'}
+
   W3com\BoomBundle\Form\Type\SapDateType:
     arguments:
       - '@W3com\BoomBundle\Form\DataTransformer\SapDateTransformer'
+    tags:
+      - {name: 'form.type'}
+
+  W3com\BoomBundle\Form\Type\SapTimeType:
+    arguments:
+      - '@W3com\BoomBundle\Form\DataTransformer\SapTimeTransformer'
     tags:
       - {name: 'form.type'}
 

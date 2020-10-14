@@ -14,6 +14,7 @@ use Symfony\Component\Form\FormTypeGuesserInterface;
 use Symfony\Component\Form\Guess\Guess;
 use Symfony\Component\Form\Guess\TypeGuess;
 use W3com\BoomBundle\Form\Type\SapDateType;
+use W3com\BoomBundle\Form\Type\SapTimeType;
 
 class BoomTypeGuesser implements FormTypeGuesserInterface
 {
@@ -65,6 +66,8 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
                 return new TypeGuess(IntegerType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
             case 'date':
                 return new TypeGuess(SapDateType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
+            case 'time':
+                return new TypeGuess(SapTimeType::class, ['label' => $annotations['label']], Guess::MEDIUM_CONFIDENCE);
             case 'float':
             case 'double':
             case 'real':
