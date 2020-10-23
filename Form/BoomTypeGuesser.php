@@ -30,7 +30,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @throws ReflectionException
      */
-    public function guessType(string $class, string $property)
+    public function guessType($class, $property)
     {
         $annotations = $this->readPhpDocAnnotations($class, $property);
 
@@ -152,7 +152,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return void A guess for the field's required setting
      */
-    public function guessRequired(string $class, string $property)
+    public function guessRequired($class, $property)
     {
         return null;
     }
@@ -165,7 +165,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return Guess\ValueGuess|null A guess for the field's maximum length
      */
-    public function guessMaxLength(string $class, string $property)
+    public function guessMaxLength($class, $property)
     {
         return null;
     }
@@ -185,7 +185,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return Guess\ValueGuess|null A guess for the field's required pattern
      */
-    public function guessPattern(string $class, string $property)
+    public function guessPattern($class, $property)
     {
         return null;
     }
@@ -214,7 +214,6 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
                 $ar['type'] = $annotation->type;
             }
         }
-
 
         return $ar;
     }
