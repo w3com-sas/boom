@@ -2,6 +2,7 @@
   "name": "w3com-sas/boom",
   "description": "Business One Object Manager",
   "type": "symfony-bundle",
+  "minimum-stability": "dev",
   "keywords": [
     "SAP",
     "Service Layer"
