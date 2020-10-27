@@ -264,7 +264,7 @@ class MakeSLEntityCommand extends Command
 
         $io->success('Success in entity creation !');
 
-        return 1;
+        return 0;
     }
 
     private function entityEditing(SymfonyStyle $io, Entity $appEntity, Entity $slEntity)
@@ -327,6 +327,8 @@ class MakeSLEntityCommand extends Command
             $action = $io->confirm('Continue editing?', true);
         }
         $this->generator->addAndRemovePropertiesInAppEntity($propertiesToAdd, $propertiesToRemove, $appEntity);
+        return 0;
+
     }
 
     private function _getPropertiesChoiceToAdd(Entity $slEntity, Entity $appEntity)

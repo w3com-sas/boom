@@ -103,10 +103,17 @@ class SLInspector implements InspectorInterface
             /** @var UserTablesMDRepository $udtRepo */
             $udtRepo = $this->boom->getRepository('UserTablesMD');
             /** @var UserTablesMD $udt */
-            $udt =  $udtRepo->find(substr($entity->getTable(), 2));
 
-            if ($udt == false) {
-                $udt = $udtRepo->find($entity->getTable());
+            $tableName = $entity->getTable();
+            if (substr($tableName, 0, 2) === 'U_'){
+                $tableName = substr($tableName, 2);
+                $entity->setTable($tableName);
+            }
+
+            $udt =  $udtRepo->find($tableName);
+            if ($udt === null){
+                $tableName .= '_ENTETE';
+                $udt = $udtRepo->find($tableName);
             }
 
             $entity->setDescription($udt->getTableDescription());
@@ -118,11 +125,13 @@ class SLInspector implements InspectorInterface
         /** @var UserFieldsMDRepository $udfRepo */
         $udfRepo = $this->boom->getRepository('UserFieldsMD');
 
-        if (strpos($entity->getTable(), 'U_') !== false) {
-            $sapTableName = '@' . substr($entity->getTable(), 2);
-        } else {
-            $sapTableName = '@' . $entity->getTable();
-        }
+//        if (strpos($entity->getTable(), 'U_') !== false) {
+//            $sapTableName = '@' . substr($entity->getTable(), 2);
+//        } else {
+//            $sapTableName = '@' . $entity->getTable();
+//        }
+
+        $sapTableName = '@' . $tableName;
 
         $udfs = $udfRepo->findByTableName($sapTableName);
 

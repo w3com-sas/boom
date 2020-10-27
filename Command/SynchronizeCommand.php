@@ -139,6 +139,7 @@ class SynchronizeCommand extends Command
                 }
             }
         }
+        return 0;
     }
 
     private function nameOfEntity(Entity $entity)

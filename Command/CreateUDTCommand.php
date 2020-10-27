@@ -319,5 +319,7 @@ class CreateUDTCommand extends Command
         }
 
         $io->success('You can now use ' . $udtName . ' in your project !');
+        return 0;
+
     }
 }

@@ -60,8 +60,10 @@ class MakeODSEntityCommand extends Command
             $this->generator->createODSEntity($entity);
         } catch (\Exception $e) {
             $io->error($e->getMessage());
-            return;
+            return 1;
         }
         $io->success($cv.' successfully created.');
+        return 0;
+
     }
 }

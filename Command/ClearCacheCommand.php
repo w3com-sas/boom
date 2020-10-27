@@ -41,8 +41,10 @@ class ClearCacheCommand extends Command
 
         if($this->cache->deleteItems($this->toRemoveItems)){
             $io->success('Cache was successfully cleared');
+            return 0;
         } else {
             $io->error('Failed to clear cache');
+            return 1;
         }
     }
 }
