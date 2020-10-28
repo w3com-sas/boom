@@ -107,7 +107,6 @@ class SLInspector implements InspectorInterface
             $tableName = $entity->getTable();
             if (substr($tableName, 0, 2) === 'U_'){
                 $tableName = substr($tableName, 2);
-                $entity->setTable($tableName);
             }
 
             $udt =  $udtRepo->find($tableName);
