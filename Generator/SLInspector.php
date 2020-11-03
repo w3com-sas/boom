@@ -99,12 +99,13 @@ class SLInspector implements InspectorInterface
      */
     public function addMetaToEntity(Entity $entity)
     {
+        $tableName = $entity->getTable();
+
         if ($entity->isToSynchronize()) {
             /** @var UserTablesMDRepository $udtRepo */
             $udtRepo = $this->boom->getRepository('UserTablesMD');
             /** @var UserTablesMD $udt */
 
-            $tableName = $entity->getTable();
             if (substr($tableName, 0, 2) === 'U_'){
                 $tableName = substr($tableName, 2);
             }
