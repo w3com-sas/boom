@@ -2,8 +2,10 @@
 
 namespace W3com\BoomBundle\RestClient;
 
+use Exception;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
@@ -72,12 +74,12 @@ class OdataRestClient implements RestClientInterface
             } else {
                 $this->manager->logger->error($uri);
                 $this->manager->logger->error($e->getResponse()->getBody()->getContents());
-                throw new \Exception('Unknown error while launching GET request');
+                throw new Exception('Unknown error while launching GET request');
             }
         } catch (ConnectException $e) {
             $this->manager->stopwatch->stop('ODS-get');
             $this->manager->logger->error($e->getMessage());
-            throw new \Exception('Connection error, check if config is OK, or if some needed VPN is on.');
+            throw new Exception('Connection error, check if config is OK, or if some needed VPN is on.');
         }
     }
 
@@ -104,9 +106,40 @@ class OdataRestClient implements RestClientInterface
         return $cacheMetadata->get();
     }
 
+    /**
+     * @param $data
+     * @return array|mixed|string
+     * @throws GuzzleException
+     * @throws Exception
+     */
     public function post(string $uri, $data)
     {
-        // TODO: Implement post() method.
+        try{
+            $this->manager->stopwatch->start('ODS-post');
+            $response = $this->client->request(
+                'POST',
+                $uri,
+                ['json' => $data]
+            );
+            $stop = $this->manager->stopwatch->stop('ODS-post');
+            $content = $response->getBody()->getContents();
+            $this->manager->addToCollectedData('ods', $response->getStatusCode(), $uri, $data, $content, $stop);
+        } catch (ClientException $e) {
+            $response = $e->getResponse()->getBody()->getContents();
+            $this->manager->logger->error($response);
+            $json_error = json_decode($response,true);
+            $errMessage = array_key_exists('error',$json_error)
+                ? $json_error['error']['message']['value']
+                : 'Unknown error while launching POST request'
+            ;
+
+            throw new Exception($errMessage);
+        } catch (ConnectException $e) {
+            $this->manager->logger->error($e->getMessage(), $e->getTrace());
+            throw new Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+        }
+
+        return $this->getValuesFromXmlResponse($content);
     }
 
     public function patch(string $uri, $data)
@@ -133,11 +166,11 @@ class OdataRestClient implements RestClientInterface
                 $json_error['error']['message']['value']:
                 'Unknown error while launching POST request';
 
-            throw new \Exception($errMessage);
+            throw new Exception($errMessage);
 
         } catch (ConnectException $e) {
             $this->manager->logger->error($e->getMessage(), $e->getTrace());
-            throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            throw new Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
         }
     }
 
@@ -156,7 +189,7 @@ class OdataRestClient implements RestClientInterface
         $ar = json_decode($response, true);
         if (0 != json_last_error()) {
             $this->manager->logger->error(substr($response, 0, 255));
-            throw new \Exception('Error while parsing response');
+            throw new Exception('Error while parsing response');
         }
         if (is_int($ar)) {
             return $ar;

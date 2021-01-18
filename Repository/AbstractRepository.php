@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Repository;
 
+use Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use W3com\BoomBundle\BoomEvents;
 use W3com\BoomBundle\Event\PreAddEvent;
@@ -99,7 +100,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param $id
      * @return null|AbstractEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function find($id)
     {
@@ -120,7 +121,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= $this->createParams()->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception('Unknown entity READ method');
+            throw new Exception('Unknown entity READ method');
         }
         if (null == $res) {
             return null;
@@ -134,7 +135,7 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @param Parameters|null $params
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function findAll(Parameters $params = null)
     {
@@ -154,7 +155,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= $params->setFormat('json')->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception('Unknown entity READ method');
+            throw new Exception('Unknown entity READ method');
         }
         $ret = [];
 
@@ -169,7 +170,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * Deletes an object from SAP
      *
      * @param $id
-     * @throws \Exception
+     * @throws Exception
      */
     public function delete($id)
     {
@@ -179,7 +180,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $res = $this->manager->restClients['sl']->delete($uri . "($quotes" . $id . "$quotes)");
         } elseif (BoomConstants::ODS == $this->read) {
         } else {
-            throw new \Exception('Unknown entity delete method');
+            throw new Exception('Unknown entity delete method');
         }
     }
 
@@ -187,7 +188,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * Counts objects in SAP
      * @param Parameters|null $params
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function count(Parameters $params = null)
     {
@@ -210,7 +211,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri .= (null == $params) ? '' : $params->getParameters();
             $res = $this->manager->restClients['odata']->get($uri);
         } else {
-            throw new \Exception('Unknown entity READ method');
+            throw new Exception('Unknown entity READ method');
         }
 
         return $res;
@@ -239,7 +240,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param mixed|null $id DEPRECATED
      * @param bool $batch
      * @return AbstractEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function update(AbstractEntity $entity, $updateCollection = false)
     {
@@ -285,7 +286,7 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             return $entity;
         } else {
-            throw new \Exception('Unknown entity WRITE method');
+            throw new Exception('Unknown entity WRITE method');
         }
     }
 
@@ -295,7 +296,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param AbstractEntity $entity
      * @param mixed|null $id DEPRECATED
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function cancel(AbstractEntity $entity, $id = null)
     {
@@ -318,19 +319,20 @@ abstract class AbstractRepository implements RepositoryInterface
 
             return true;
         } elseif (BoomConstants::ODS == $this->write) {
-            throw new \Exception('Cancel operation is not permitted in this context');
+            throw new Exception('Cancel operation is not permitted in this context');
         } else {
-            throw new \Exception('Unknown entity WRITE method');
+            throw new Exception('Unknown entity WRITE method');
         }
     }
 
     /**
      * Adds a new object in SAP
+     *
      * @param AbstractEntity $entity
-     * @return AbstractEntity
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function add(AbstractEntity $entity)
+    public function add(AbstractEntity $entity): AbstractEntity
     {
         if ($this->dispatcher->hasListeners(BoomEvents::PRE_ADD_EVENT)){
             $event = new PreAddEvent($entity, BoomEvents::TYPE_ONE);
@@ -341,11 +343,17 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $this->aliasWrite;
             $data = $this->getDataToSend($entity->getChangedFields(), $entity);
             $res = $this->manager->restClients['sl']->post($uri, $data);
-            return $this->hydrate($res);
+            $hydratedResponse =  $this->hydrate($res);
         } elseif (BoomConstants::ODS == $this->write) {
+            $uri = $this->aliasWrite;
+            $data = $this->getDataToSend($entity->getChangedFields(), $entity);
+            $res = $this->manager->restClients['odata']->post($uri, $data);
+            $hydratedResponse = $this->hydrate($res, $res['content']['m:properties']);
         } else {
-            throw new \Exception('Unknown entity WRITE method');
+            throw new Exception('Unknown entity WRITE method');
         }
+
+        return $hydratedResponse;
     }
 
     /**
@@ -353,7 +361,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param AbstractEntity $entity
      * @param AbstractRepository|null $repository
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getDataToSend(array $updateFields, AbstractEntity $entity, AbstractRepository $repository = null)
     {
@@ -396,25 +404,30 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param $array
      * @param null $columns
      * @param null $objClassName
-     * @return AbstractEntity
-     * @throws \Exception
+     *
+     * @throws Exception
      */
-    public function hydrate($array, $columns = null, $objClassName = null)
+    public function hydrate($array, $columns = null, $objClassName = null): AbstractEntity
     {
         $columns = $columns === null ? $this->columns : $columns;
         /** @var AbstractEntity $obj */
         $obj = $objClassName === null ? new $this->className() : new $objClassName();
 
         foreach ($columns as $attribute => $column) {
-            if (array_key_exists($column['column'], $array) && $column['complexEntity'] === null) {
-                $obj->set($attribute, $array[$column['column']], false);
-            } elseif (array_key_exists($column['readColumn'], $array) && $column['complexEntity'] === null) {
-                $obj->set($attribute, $array[$column['readColumn']], false);
-            } elseif ($column['complexEntity'] !== null && array_key_exists($column['column'], $array)) {
-                $value = $this->hydrateComplexEntity($array[$column['column']], $column['complexEntity']);
-                $obj->set($attribute, $value, false);
+            if (array_key_exists('column', $column)) {
+                if (array_key_exists($column['column'], $array) && $column['complexEntity'] === null) {
+                    $obj->set($attribute, $array[$column['column']], false);
+                } elseif (array_key_exists($column['readColumn'], $array) && $column['complexEntity'] === null) {
+                    $obj->set($attribute, $array[$column['readColumn']], false);
+                } elseif ($column['complexEntity'] !== null && array_key_exists($column['column'], $array)) {
+                    $value = $this->hydrateComplexEntity($array[$column['column']], $column['complexEntity']);
+                    $obj->set($attribute, $value, false);
+                }
+            } elseif (array_key_exists('#', $column)) {
+                $obj->set(substr($attribute, 2), $column['#'], false);
             }
         }
+
         return $obj;
     }
 
@@ -422,7 +435,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param $array
      * @param $complexEntity
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function hydrateComplexEntity($array, $complexEntity)
     {
@@ -467,7 +480,7 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @return int
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function getNextCode()
     {
@@ -484,7 +497,7 @@ abstract class AbstractRepository implements RepositoryInterface
                     break;
             }
         } else {
-            throw new \Exception('Unsupported entity, is there a Code column ?');
+            throw new Exception('Unsupported entity, is there a Code column ?');
         }
     }
 

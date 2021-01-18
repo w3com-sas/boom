@@ -216,6 +216,9 @@ class BoomManager
 
     }
 
+    /**
+     * It seems this function is used to display data in the profiler.
+     */
     public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
     {
         $data = [
