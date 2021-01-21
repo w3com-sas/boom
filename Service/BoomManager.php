@@ -2,14 +2,15 @@
 
 namespace W3com\BoomBundle\Service;
 
-use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -34,9 +35,6 @@ use W3com\BoomBundle\Utils\StringUtils;
 
 class BoomManager
 {
-    const BATCH_CREATE = 'CREATE';
-    const BATCH_UPDATE = 'UPDATE';
-
     /**
      * @var string current connection key (ex: default, connection1), as defined in config
      */
@@ -85,7 +83,7 @@ class BoomManager
     /**
      * @var array
      */
-    private $collectedData;
+    private $collectedData = [];
 
     /**
      * @var bool
@@ -115,15 +113,16 @@ class BoomManager
     /**
      * BoomManager constructor.
      *
-     * @param array $config
-     * @param Logger $logger
-     * @param Stopwatch|null $stopwatch
-     * @param AdapterInterface $cache
-     * @param RequestStack $request
-     * @param EventDispatcherInterface $dispatcher
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
+    public function __construct(
+        array $config,
+        Logger $logger,
+        Stopwatch $stopwatch,
+        AdapterInterface $cache,
+        RequestStack $request,
+        EventDispatcherInterface $dispatcher
+    )
     {
         if ($request->getCurrentRequest() != null) {
             $query = $request->getCurrentRequest()->query;
@@ -182,12 +181,12 @@ class BoomManager
         $this->batch = new Batch($this, $config, $stopwatch);
     }
 
-    public function getCollectedData()
+    public function getCollectedData(): array
     {
         return $this->collectedData;
     }
 
-    public function reloginToSL()
+    public function reloginToSL(): array
     {
         $loginData = $this->currentConnectionsData['service_layer'];
 
@@ -205,21 +204,18 @@ class BoomManager
 
             return [
                 'valid' => true,
-                'data' => $res
+                'data' => $res,
             ];
         } catch (ClientException $e) {
             return [
                 'valid' => false,
-                'data' => $e
+                'data' => $e,
             ];
         }
 
     }
 
-    /**
-     * It seems this function is used to display data in the profiler.
-     */
-    public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
+    public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null): void
     {
         $data = [
             'type' => $type,
@@ -238,19 +234,17 @@ class BoomManager
         $this->collectedData[] = $data;
     }
 
-    /**
-     * @return Client
-     */
-    public function getCurrentSLClient()
+    public function getCurrentSLClient(): Client
     {
         return $this->clients[$this->currentSLConnection];
     }
 
     /**
+     * Config parameters are taking in default connection
+     *
      * @param $SLContext
      * @param $UserName
      * @param $CompanyDB
-     * Config parameters are taking in default connection
      */
     public function setSLContextToCurrentConnection($SLContext, $UserName, $CompanyDB)
     {
@@ -263,7 +257,12 @@ class BoomManager
             // creating the cookie jar
             $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $CompanyDB . '_' . $UserName;
-            file_put_contents($cookiePath, StringUtils::convertSLContextToCookieJarFileContent($SLContext, $this->config['service_layer']['connections']['default']['uri']));
+            file_put_contents(
+                $cookiePath,
+                StringUtils::convertSLContextToCookieJarFileContent(
+                    $SLContext, $this->config['service_layer']['connections']['default']['uri']
+                )
+            );
             $jar = new FileCookieJar($cookiePath, true);
 
             $client = new Client(
@@ -280,18 +279,12 @@ class BoomManager
         }
     }
 
-    /**
-     * @return Client
-     */
-    public function getOdsClient()
+    public function getOdsClient(): Client
     {
         return $this->clients['odata'];
     }
 
-    /**
-     * @return Client
-     */
-    public function getSlClient()
+    public function getSlClient(): Client
     {
         trigger_error('Is deprecated to use getSlClient, use getSlCurrentClient instead.', E_USER_DEPRECATED);
         return $this->restClients['sl'];
@@ -300,41 +293,29 @@ class BoomManager
     /**
      * @param $connection
      *
-     * @return BoomManager
-     *
-     * @throws \Exception
+     * @throws Exception
      *
      * @internal param mixed $currentConnection
      */
-    public function setCurrentConnection($connection)
+    public function setCurrentConnection($connection): BoomManager
     {
         if (!array_key_exists($connection, $this->config['service_layer']['connections'])) {
-            throw new \Exception("Unknown $connection connection. Check configuration.");
+            throw new Exception("Unknown $connection connection. Check configuration.");
         }
 
         $this->currentSLConnection = $connection;
 
         $this->currentOdataConnection = isset($this->config['odata_service']['connections'][$connection])
             ? $connection
-            : 'default';
+            : 'default'
+        ;
 
-        /*        if (isset($this->config['service_layer']['connections'][$connection])) {
-                    $slConnection = $this->config['service_layer']['connections'][$connection];
-                } else {
-                    $slConnection = $this->config['service_layer']['connections']['default'];
-                }
-
-                 $this->currentConnectionsData = [
-                     'service_layer' => $slConnection,
-                     'odata_service' => $odataConnection
-                 ];
-         */
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
-
             $this->last_cookie_file_path = $this->config['service_layer']['cookies_storage_path'] . '/' .
                 $connection . '_' . $this->config['service_layer']['connections'][$this->currentSLConnection]['database'] . '_' .
-                str_replace('\\', '_', $this->config['service_layer']['connections'][$this->currentSLConnection]['username']);
+                str_replace('\\', '_', $this->config['service_layer']['connections'][$this->currentSLConnection]['username'])
+            ;
             $jar = new FileCookieJar($this->last_cookie_file_path, true);
 
             $client = new Client(
@@ -342,26 +323,21 @@ class BoomManager
                     'cookies' => $jar,
                     'base_uri' =>
                         $this->config['service_layer']['connections'][$this->currentSLConnection]['uri']
-                        . $this->config['service_layer']['connections'][$this->currentSLConnection]['path'],
+                        . $this->config['service_layer']['connections'][$this->currentSLConnection]['path']
+                    ,
                     'verify' => $this->config['service_layer']['verify_https'],
                 ]
             );
             $this->clients[$connection] = $client;
         }
 
-        //  $this->batch = new Batch($this, $this->config, $this->stopwatch);
-
         return $this;
     }
 
     /**
-     * @param string $entityName
-     *
-     * @return AbstractRepository
-     *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function getRepository($entityName)
+    public function getRepository(string $entityName): AbstractRepository
     {
         if (array_key_exists($entityName, $this->repositories)) {
             return $this->repositories[$entityName];
@@ -399,6 +375,7 @@ class BoomManager
             $this->logger->info("Loaded custom repo $repoClassName");
         }
         $this->repositories[$entityName] = $repo;
+
         return $repo;
     }
 
@@ -410,15 +387,12 @@ class BoomManager
     }
 
     /**
-     * @param string $entityClassName
      * @param $entityName
      *
-     * @return RepoMetadata
-     *
-     * @throws \ReflectionException
-     * @throws \Exception
+     * @throws ReflectionException
+     * @throws Exception
      */
-    private function getAnnotationMetadata($entityClassName, $entityName)
+    private function getAnnotationMetadata(string $entityClassName, $entityName): RepoMetadata
     {
         $entityClass = new ReflectionClass($entityClassName);
 
@@ -453,15 +427,15 @@ class BoomManager
         );
 
         if (null == $key && !$annotation->isComplex) {
-            throw new \Exception("No key attribute for $entityName class.");
+            throw new Exception("No key attribute for $entityName class.");
         }
 
 
-        $read = !$annotation ? "" : $annotation->read;
-        $write = !$annotation ? "" : $annotation->write;
-        $aliasRead = !$annotation ? "" : $annotation->aliasRead;
-        $aliasWrite = !$annotation ? "" : $annotation->aliasWrite;
-        $aliasSearch = !$annotation ? "" : $annotation->aliasSearch;
+        $read = !$annotation ? '' : $annotation->read;
+        $write = !$annotation ? '' : $annotation->write;
+        $aliasRead = !$annotation ? '' : $annotation->aliasRead;
+        $aliasWrite = !$annotation ? '' : $annotation->aliasWrite;
+        $aliasSearch = !$annotation ? '' : $annotation->aliasSearch;
 
         $this->logger->info("Successfully read $entityName entity class");
 
@@ -482,20 +456,20 @@ class BoomManager
     /**
      * @param $entityClassName
      * @param $entityName
-     * @return RepoMetadata
-     * @throws \ReflectionException
+
+     * @throws ReflectionException
      */
-    private function getYamlMetadata($entityClassName, $entityName)
+    private function getYamlMetadata($entityClassName, $entityName): RepoMetadata
     {
         return $this->getAnnotationMetadata($entityClassName, $entityName);
     }
 
-    public function sendAttachment($documents, $absoluteEntry = 0)
+    public function sendAttachment($documents, $absoluteEntry = 0): int
     {
         $isNew = intval($absoluteEntry) == 0;
         $client = $this->restClients['sl'];
         $customBoundary = md5(time());
-        $rawBody = "";
+        $rawBody = '';
 
 
         foreach ($documents as $document) {
@@ -518,7 +492,8 @@ class BoomManager
                 . "Content-Disposition: form-data; name=\"files\"; filename=\"" . $serverFilename . "\"\r\n"
                 . "Content-Type: " . $filetype . "\r\n"
                 . "\r\n"
-                . file_get_contents($document['path']) . "\r\n";
+                . file_get_contents($document['path']) . "\r\n"
+            ;
         }
 
         $rawBody .= "--$customBoundary--\r\n\r\n";
@@ -535,7 +510,7 @@ class BoomManager
             );
             $absoluteEntry = $response['AbsoluteEntry'];
         } else {
-            $response = $client->request(
+            $client->request(
                 'Attachments2(' . $absoluteEntry . ')',
                 [
                     'headers' => [
@@ -565,75 +540,103 @@ class BoomManager
     }
 
     /**
-     * @param AbstractEntity $entity
-     * @throws \Exception
+     * @throws Exception
      */
     public function update(AbstractEntity $entity)
     {
         $this->dispatchEvent(BoomEvents::PRE_UPDATE_EVENT, new PreUpdateEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity, true);
-        $this->batch->add(new Request('PATCH', $data['uri'], ['Content-Type' => 'application/json'],
-            json_encode($data['data'])));
+        $this->batch->add(
+            new Request(
+                'PATCH',
+                $data['uri'],
+                ['Content-Type' => 'application/json'],
+                json_encode($data['data'])
+            )
+        );
     }
 
     /**
-     * @param AbstractEntity $entity
-     * @throws \Exception
+     * @throws Exception
      */
     public function delete(AbstractEntity $entity)
     {
         $this->dispatchEvent(BoomEvents::PRE_DELETE_EVENT, new PreDeleteEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity, true);
-        $this->batch->add(new Request('DELETE', $data['uri'], ['Content-Type' => 'application/json'],
-            json_encode($data['data'])));
+        $this->batch->add(
+            new Request(
+                'DELETE',
+                $data['uri'],
+                ['Content-Type' => 'application/json'],
+                json_encode($data['data'])
+            )
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function cancel(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity, true);
+        $this->batch->add(
+            new Request(
+                'POST',
+                $data['uri'] . '/Cancel',
+                ['Content-Type' => 'application/json'],
+                null
+            )
+        );
     }
 
     /**
      * @param AbstractEntity $entity
-     * @throws \Exception
+     * @throws Exception
      */
     public function add(AbstractEntity $entity)
     {
         $this->dispatchEvent(BoomEvents::PRE_ADD_EVENT, new PreAddEvent($entity, BoomEvents::TYPE_BATCH));
         $data = $this->getDataFromEntity($entity);
-        $this->batch->add(new Request('POST', $data['uri'], ['Content-Type' => 'application/json'],
-            json_encode($data['data'])));
-    }
-
-    public function cancel(AbstractEntity $entity)
-    {
-        $data = $this->getDataFromEntity($entity, true);
-        $this->batch->add(new Request('POST', $data['uri'] . '/Cancel', ['Content-Type' => 'application/json'],
-            null));
+        $this->batch->add(
+            new Request(
+                'POST',
+                $data['uri'],
+                ['Content-Type' => 'application/json'],
+                json_encode($data['data'])
+            )
+        );
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * @throws GuzzleException
      */
-    public function flush()
+    public function flush(string $requestType = BoomConstants::SL)
     {
         try {
             $this->stopwatch->start('SL-batch');
-            $response = $this->batch->execute();
+            $response = $this->batch->execute($requestType);
             $stop = $this->stopwatch->stop('SL-batch');
-            $this->addToCollectedData('SL-BATCH', $response->getStatusCode(),
-                '$batch', null, (string)$response->getBody()->getContents(), $stop);
+            $this->addToCollectedData(
+                'SL-BATCH',
+                $response->getStatusCode(),
+                '$batch',
+                null,
+                (string) $response->getBody()->getContents(),
+                $stop
+            );
         } catch (ClientException $exception) {
             if ($exception->getCode() === 401) {
                 $this->getSlClient()->login();
-                return $this->flush();
+                $this->flush();
             }
         }
     }
 
     /**
-     * @param AbstractEntity $entity
-     * @param bool $objectExist
-     * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    private function getDataFromEntity(AbstractEntity $entity, $objectExist = false)
+    private function getDataFromEntity(AbstractEntity $entity, $objectExist = false): array
     {
         $class = substr(get_class($entity), strrpos(get_class($entity), '\\') + 1);
         $repo = $this->getRepository($class);
@@ -641,14 +644,18 @@ class BoomManager
         $uri = $repoMetadata->getAliasWrite();
         if ($objectExist) {
             $id = $entity->get($repoMetadata->getKey());
-            $quotes = $repoMetadata->getColumns()[$repoMetadata->getKey()]['quotes'] ? "'" : "";
+            $quotes = $repoMetadata->getColumns()[$repoMetadata->getKey()]['quotes'] ? "'" : '';
             $uri .= '(' . $quotes . $id . $quotes . ')';
         }
         $data = $repo->getDataToSend($entity->getChangedFields(), $entity);
-        return ['data' => $data, 'uri' => $uri];
+
+        return [
+            'data' => $data,
+            'uri' => $uri,
+        ];
     }
 
-    public function setDatabase($database)
+    public function setDatabase($database): bool
     {
         $oldDatabase = $this->currentConnectionsData['service_layer']['database'];
         $this->currentConnectionsData['service_layer']['database'] = $database;
@@ -661,17 +668,11 @@ class BoomManager
         return true;
     }
 
-    /**
-     * @return string
-     */
     public function getCurrentSLConnection(): string
     {
         return $this->currentSLConnection;
     }
 
-    /**
-     * @return string
-     */
     public function getCurrentOdataConnection(): string
     {
         return $this->currentOdataConnection;
