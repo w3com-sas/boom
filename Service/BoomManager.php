@@ -216,6 +216,58 @@ class BoomManager
 
     }
 
+    /**
+     * @param string $username
+     * @param string $password
+     * @param string $companyDb
+     * @return array
+     */
+    public function loginForSlContext(string $username, string $password, string $companyDb)
+    {
+        try {
+            $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' .
+                'Direct_' . $companyDb . '_' . $username;
+            $jar = new FileCookieJar($cookiePath, true);
+
+            $client = new Client(
+                [
+                    'cookies' => $jar,
+                    'base_uri' =>
+                        $this->config['service_layer']['connections']['default']['uri']
+                        . $this->config['service_layer']['connections']['default']['path'],
+                    'verify' => $this->config['service_layer']['verify_https'],
+                ]
+            );
+
+
+
+            $res = $client->post(
+                'Login',
+                [
+                    'json' => [
+                        'UserName' => $username,
+                        'Password' => $password,
+                        'CompanyDB' => $companyDb,
+                    ],
+                ]
+            );
+
+            return [
+                'valid' => true,
+                'data' => [
+                    'username' => $username,
+                    'companydb' => $companyDb,
+                    'slcontext' => file_get_contents($cookiePath)
+                ]
+            ];
+        } catch (ClientException $e) {
+            return [
+                'valid' => false,
+                'data' => $e
+            ];
+        }
+    }
+
     public function addToCollectedData($type, $code, $uri, $params, $response, $stop = null)
     {
         $data = [
