@@ -384,6 +384,68 @@ class SLRestClient implements RestClientInterface
         }
     }
 
+    public function close(string $uri)
+    {
+        /** @var Client $client */
+        $client = $this->manager->getCurrentSLClient();
+        $attempts = 0;
+        while ($attempts < $this->manager->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+                $this->manager->stopwatch->start('SL-close');
+                $res = $client->request(
+                    'POST',
+                    $uri . '/Close'
+                );
+                $stop = $this->manager->stopwatch->stop('SL-close');
+                $this->manager->addToCollectedData(
+                    'sl',
+                    $res->getStatusCode(),
+                    $uri,
+                    null,
+                    $res->getBody()->getContents(),
+                    $stop
+                );
+
+                return true;
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->login();
+                } else {
+                    $stop = $this->manager->stopwatch->stop('SL-close');
+                    $response = $e->getResponse()->getBody()->getContents();
+                    $this->manager->addToCollectedData(
+                        'sl',
+                        $e->getResponse()->getStatusCode(),
+                        $uri,
+                        null,
+                        $response,
+                        $stop
+                    );
+                    $this->manager->logger->error($response);
+
+                    $json_error = json_decode($response, true);
+                    $errMessage = array_key_exists('error', $json_error) ?
+                        $json_error['error']['message']['value'] :
+                        'Unknown error while launching CLOSE request';
+
+                    throw new \Exception($errMessage);
+                }
+            } catch (ConnectException $e) {
+                $this->manager->stopwatch->stop('SL-close');
+                $this->manager->logger->error($e->getMessage(), $e->getTrace());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            } catch (\Exception $e) {
+                if (502 == $e->getCode()) {
+                    $this->login();
+                } else {
+                    $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage());
+                    throw new \Exception('');
+                }
+            }
+        }
+    }
+
     public function put(string $uri, $data)
     {
         // TODO: Implement put() method.
