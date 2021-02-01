@@ -290,7 +290,7 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * Updates an object
+     * Cancel an object
      *
      * @param AbstractEntity $entity
      * @param mixed|null $id DEPRECATED
@@ -315,6 +315,41 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $uri . "($quotes" . $id . "$quotes)";
 
             $this->manager->restClients['sl']->cancel($uri);
+
+            return true;
+        } elseif (BoomConstants::ODS == $this->write) {
+            throw new \Exception('Cancel operation is not permitted in this context');
+        } else {
+            throw new \Exception('Unknown entity WRITE method');
+        }
+    }
+
+    /**
+     * Close an object
+     *
+     * @param AbstractEntity $entity
+     * @param mixed|null $id DEPRECATED
+     * @return bool
+     * @throws \Exception
+     */
+    public function close(AbstractEntity $entity, $id = null)
+    {
+        if ($id === null) {
+            $id = $entity->get($this->key);
+        } else {
+            @trigger_error(
+                'When updating an object with Boom, specifying the entity ID is useless since 1.0 and will be removed in 2.0. Remove the second argument.',
+                E_USER_DEPRECATED
+            );
+        }
+
+        if (BoomConstants::SL == $this->write) {
+            // update
+            $quotes = $this->columns[$this->key]['quotes'] ? "'" : '';
+            $uri = $this->aliasWrite;
+            $uri = $uri . "($quotes" . $id . "$quotes)";
+
+            $this->manager->restClients['sl']->close($uri);
 
             return true;
         } elseif (BoomConstants::ODS == $this->write) {

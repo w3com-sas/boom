@@ -656,6 +656,13 @@ class BoomManager
             null));
     }
 
+    public function close(AbstractEntity $entity)
+    {
+        $data = $this->getDataFromEntity($entity, true);
+        $this->batch->add(new Request('POST', $data['uri'] . '/Close', ['Content-Type' => 'application/json'],
+            null));
+    }
+
     /**
      * @throws \Exception
      * @throws GuzzleException
