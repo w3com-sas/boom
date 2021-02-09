@@ -153,7 +153,7 @@ class OdataRestClient implements RestClientInterface
 
     public function getValuesFromResponse($response)
     {
-        $ar = json_decode($response, true);
+        $ar = json_decode($response, true,512, JSON_INVALID_UTF8_IGNORE);
         if (0 != json_last_error()) {
             $this->manager->logger->error(substr($response, 0, 255));
             throw new \Exception('Error while parsing response');
