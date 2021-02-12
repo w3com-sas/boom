@@ -160,6 +160,18 @@ class BoomManager
         return $this->userManager;
     }
 
+    public function setConfig(array $config)
+    {
+        $this->config = $config;
+        return $this;
+    }
+
+    public function setClients(array $clients)
+    {
+        $this->clients = $clients;
+        return $this;
+    }
+
     public function getCollectedData()
     {
         return $this->collectedData;
@@ -345,17 +357,6 @@ class BoomManager
             ? $connection
             : 'default';
 
-        /*        if (isset($this->config['service_layer']['connections'][$connection])) {
-                    $slConnection = $this->config['service_layer']['connections'][$connection];
-                } else {
-                    $slConnection = $this->config['service_layer']['connections']['default'];
-                }
-
-                 $this->currentConnectionsData = [
-                     'service_layer' => $slConnection,
-                     'odata_service' => $odataConnection
-                 ];
-         */
         if (!array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
 
@@ -375,9 +376,6 @@ class BoomManager
             );
             $this->clients[$connection] = $client;
         }
-
-        //  $this->batch = new Batch($this, $this->config, $this->stopwatch);
-
         return $this;
     }
 

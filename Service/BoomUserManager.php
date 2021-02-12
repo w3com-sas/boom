@@ -16,7 +16,7 @@ class BoomUserManager
     private $config;
 
     /** @var BoomManager */
-    private $manager;
+    private $boom;
 
     /** @var string $credentialsPath */
     private $credentialsPath;
@@ -27,7 +27,7 @@ class BoomUserManager
     public function __construct($config, BoomManager $boom, array $clients)
     {
         $this->config = $config;
-        $this->manager = $boom;
+        $this->boom = $boom;
         $this->clients = $clients;
         $this->filesystem = new Filesystem();
         $this->credentialsPath = $config['service_layer']['cookies_storage_path'] . '/CREDENTIALS_';
@@ -47,24 +47,35 @@ class BoomUserManager
                 ]
             );
             $this->saveCredentials($username, $password, $companyDb);
+            $this->boom->setCurrentConnection(
+                $this->getConnectionId($username, $companyDb)
+            );
             return ['valid' => true];
         } catch (ClientException $e) {
             return ['valid' => false, 'message' => $e];
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function setConnectedUser(string $username, string $companyDb)
     {
         $credentials = $this->getCredentials($username, $companyDb);
-        $this->buildUserClient($credentials['username'], $credentials['password'], $companyDb['company_db']);
+        $this->buildUserClient($credentials['username'], $credentials['password'], $credentials['company_db']);
+        $this->boom->setCurrentConnection($this->getConnectionId($username, $companyDb));
+    }
+
+    public function getConnectionId(string $username, string $companyDb)
+    {
+        return $companyDb . '_' . $username;
     }
 
     private function buildUserClient(string $username, string $password, string $companyDb): Client
     {
-        $key = $companyDb . '_' . $username;
+        $key = $this->getConnectionId($username, $companyDb);
         $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' . 'USER_' . $key;
         $defaultConnection = $this->config['service_layer']['connections']['default'];
-
         $jar = new FileCookieJar($cookiePath, true);
         $client = new Client(
             [
@@ -83,14 +94,19 @@ class BoomUserManager
             "database" => $companyDb
         ];
 
+        $this->boom
+            ->setClients($this->clients)
+            ->setConfig($this->config);
+
         return $client;
     }
 
-    private function getCredentials(string $username, string $companyDb): ?array
+    private function getCredentials(string $username, string $companyDb)
     {
         if ($this->filesystem->exists($this->credentialsPath . $username . '_' . $companyDb)) {
             return json_decode(
-                file_get_contents($this->credentialsPath . $username . '_' . $companyDb)
+                file_get_contents($this->credentialsPath . $username . '_' . $companyDb),
+                true
             );
         }
         return null;
@@ -107,4 +123,6 @@ class BoomUserManager
             ])
         );
     }
+
+
 }
