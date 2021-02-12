@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Service;
 
-use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
@@ -83,7 +82,7 @@ class BoomManager
     private $dispatcher;
 
     /** @var BoomUserManager */
-    private BoomUserManager $userManager;
+    private $userManager;
 
     /**
      * BoomManager constructor.
