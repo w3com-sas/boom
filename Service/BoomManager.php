@@ -37,87 +37,60 @@ class BoomManager
     const BATCH_CREATE = 'CREATE';
     const BATCH_UPDATE = 'UPDATE';
 
-    /**
-     * @var string current connection key (ex: default, connection1), as defined in config
-     */
+    /** @var string current connection key (ex: default, connection1), as defined in config */
     private $currentSLConnection;
 
-    /**
-     * @var string current connection key (ex: default, connection1), as defined in config
-     */
+    /** @var string current connection key (ex: default, connection1), as defined in config */
     private $currentOdataConnection;
 
-    /**
-     * @var array already loaded Guzzle clients
-     */
+    /** @var array already loaded Guzzle clients */
     private $clients = [];
 
-    /**
-     * @var array already loaded repositories
-     */
+    /** @var array already loaded repositories */
     private $repositories = [];
 
-    /**
-     * @var array BOOM configuration
-     */
+    /** @var array BOOM configuration */
     public $config;
 
-    /**
-     * @var array Rest clients (SL and ODS)
-     */
+    /** @var array Rest clients (SL and ODS) */
     public $restClients = [];
 
-    /**
-     * @var AnnotationReader
-     */
+    /** @var AnnotationReader */
     private $reader;
 
-    /**
-     * @var Logger linked to 'hana' channel
-     */
+    /** @var Logger linked to 'hana' channel */
     public $logger;
 
-    /**
-     * @var null|Stopwatch
-     */
+    /** @var null|Stopwatch */
     public $stopwatch;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $collectedData;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $inSlContextMode = false;
 
-    /**
-     * @var Batch
-     */
+    /** @var Batch */
     private $batch;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $currentConnectionsData;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $last_cookie_file_path = '';
 
-    /**
-     * @var EventDispatcherInterface
-     */
+    /** @var EventDispatcherInterface */
     private $dispatcher;
+
+    /** @var BoomUserManager */
+    private BoomUserManager $userManager;
 
     /**
      * BoomManager constructor.
      *
      * @param array $config
      * @param Logger $logger
-     * @param Stopwatch|null $stopwatch
+     * @param Stopwatch $stopwatch
      * @param AdapterInterface $cache
      * @param RequestStack $request
      * @param EventDispatcherInterface $dispatcher
@@ -180,6 +153,12 @@ class BoomManager
         $odataRestClient = new OdataRestClient($this, $cache);
         $this->restClients['odata'] = $odataRestClient;
         $this->batch = new Batch($this, $config, $stopwatch);
+        $this->userManager = new BoomUserManager($this->config, $this, $this->clients);
+    }
+
+    public function getUserManager()
+    {
+        return $this->userManager;
     }
 
     public function getCollectedData()
