@@ -97,17 +97,21 @@ class BoomManager
      */
     public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
     {
-        if ($request->getCurrentRequest() != null) {
-            $query = $request->getCurrentRequest()->query;
-            $session = $request->getCurrentRequest()->getSession();
+        $request = $request->getCurrentRequest();
 
-            if ($query->has('slcontext') && $query->has('username') && $query->has('companydb')) {
-                $session->set('username', $query->get('username'));
-                $session->set('companydb', $query->get('companydb'));
-                $session->set('slcontext', $query->get('slcontext'));
-            }
-            if ($session->has('username') && $session->has('companydb') && $session->has('slcontext')) {
-                $this->inSlContextMode = true;
+        if ($request != null) {
+            $query = $request->query;
+            $session = $request->hasSession() ? $request->getSession() : null;
+
+            if ($session) {
+                if ($query->has('slcontext') && $query->has('username') && $query->has('companydb')) {
+                    $session->set('username', $query->get('username'));
+                    $session->set('companydb', $query->get('companydb'));
+                    $session->set('slcontext', $query->get('slcontext'));
+                }
+                if ($session->has('username') && $session->has('companydb') && $session->has('slcontext')) {
+                    $this->inSlContextMode = true;
+                }
             }
         } else {
             $session = null;
@@ -228,7 +232,6 @@ class BoomManager
                     'verify' => $this->config['service_layer']['verify_https'],
                 ]
             );
-
 
 
             $res = $client->post(
@@ -711,7 +714,7 @@ class BoomManager
 
     private function dispatchEvent(string $eventName, $event)
     {
-        if ($this->dispatcher->hasListeners($eventName)){
+        if ($this->dispatcher->hasListeners($eventName)) {
             $this->dispatcher->dispatch($event, $eventName);
         }
     }
