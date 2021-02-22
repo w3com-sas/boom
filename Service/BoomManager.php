@@ -652,8 +652,23 @@ class BoomManager
             $this->stopwatch->start('SL-batch');
             $response = $this->batch->execute();
             $stop = $this->stopwatch->stop('SL-batch');
+            $batchResponse = (string) $response->getBody()->getContents();
             $this->addToCollectedData('SL-BATCH', $response->getStatusCode(),
-                '$batch', null, (string)$response->getBody()->getContents(), $stop);
+                '$batch', null, $batchResponse, $stop);
+
+            // Response treatment
+            $reg = '#/b1s/v1/([a-zA-Z0-9]{1,})\((\'?[a-zA-Z0-9]{1,}\'?)\)#';
+            preg_match_all($reg,$batchResponse,$output);
+            $return = [];
+            if(count($output[0]) > 0){
+                foreach($output[0] as $indice=>$data){
+                    $return[] = [
+                        'Object' => $output[1][$indice],
+                        'Key' => str_replace("'",'',$output[2][$indice])
+                    ];
+                }
+            }
+            return $return;
         } catch (ClientException $exception) {
             if ($exception->getCode() === 401) {
                 $this->getSlClient()->login();
