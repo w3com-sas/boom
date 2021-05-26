@@ -370,8 +370,8 @@ class BoomManager
                 [
                     'cookies' => $jar,
                     'base_uri' =>
-                        $this->config['odata_service']['connections'][$connection]['uri']
-                        . '/' . $this->config['odata_service']['connections'][$connection]['path'],
+                        $this->config['odata_service']['connections'][$this->currentOdataConnection]['uri']
+                        . '/' . $this->config['odata_service']['connections'][$this->currentOdataConnection]['path'],
                     'verify' => $this->config['odata_service']['verify_https'],
                 ]
             );
