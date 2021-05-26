@@ -348,19 +348,37 @@ class BoomManager
      *
      * @internal param mixed $currentConnection
      */
-    public function setCurrentConnection($connection)
+    public function setCurrentConnection($connection,$sl=true,$ods=true)
     {
-        if (!array_key_exists($connection, $this->config['service_layer']['connections'])) {
+        if ($sl && !array_key_exists($connection, $this->config['service_layer']['connections'])) {
             throw new \Exception("Unknown $connection connection. Check configuration.");
         }
 
-        $this->currentSLConnection = $connection;
+        if($sl){
+            $this->currentSLConnection = $connection;
+        }
 
-        $this->currentOdataConnection = isset($this->config['odata_service']['connections'][$connection])
-            ? $connection
-            : 'default';
+        if($ods){
+            $this->currentOdataConnection = isset($this->config['odata_service']['connections'][$connection])
+                ? $connection
+                : 'default';
 
-        if (!array_key_exists($connection, $this->clients)) {
+            //TODO : faire autrement
+            $jar = new FileCookieJar($this->config['service_layer']['cookies_storage_path'] . '/odata', true);
+
+            $client = new Client(
+                [
+                    'cookies' => $jar,
+                    'base_uri' =>
+                        $this->config['odata_service']['connections'][$connection]['uri']
+                        . '/' . $this->config['odata_service']['connections'][$connection]['path'],
+                    'verify' => $this->config['odata_service']['verify_https'],
+                ]
+            );
+            $this->clients['odata'] = $client;
+        }
+
+        if ($sl && !array_key_exists($connection, $this->clients)) {
             // creating the cookie jar
 
             $this->last_cookie_file_path = $this->config['service_layer']['cookies_storage_path'] . '/' .
@@ -379,6 +397,7 @@ class BoomManager
             );
             $this->clients[$connection] = $client;
         }
+
         return $this;
     }
 

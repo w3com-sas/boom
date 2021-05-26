@@ -42,6 +42,9 @@ class OdataRestClient implements RestClientInterface
 
     public function get(string $uri)
     {
+        //TODO : hack pour gérer le multi client
+        $this->client = $this->manager->getOdsClient();
+
         try {
             $this->manager->stopwatch->start('ODS-get');
 
