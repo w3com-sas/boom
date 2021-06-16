@@ -59,6 +59,26 @@ class Parameters
      */
     private $columns;
 
+    private $caseInsensitive = false;
+
+    /**
+     * @return mixed
+     */
+    public function getCaseInsensitive()
+    {
+        return $this->caseInsensitive;
+    }
+
+    /**
+     * @param mixed $caseInsensitive
+     * @return Parameters
+     */
+    public function setCaseInsensitive($caseInsensitive)
+    {
+        $this->caseInsensitive = $caseInsensitive;
+        return $this;
+    }
+
     /**
      * Parameters constructor.
      *

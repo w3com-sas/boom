@@ -37,7 +37,7 @@ class SLRestClient implements RestClientInterface
         $this->xmlEncoder = new XmlEncoder();
     }
 
-    public function get(string $uri, $file = false)
+    public function get(string $uri, $file = false, $caseInsensitive = false)
     {
         /** @var Client $client */
         $client = $this->manager->getCurrentSLClient();
@@ -53,10 +53,11 @@ class SLRestClient implements RestClientInterface
                     'headers' => [
                         'Prefer' => 'odata.maxpagesize=10000',
                         'cache-control' => 'no-cache',
-                        'B1S-CaseInsensitive' => 'true',
                     ]
                 ];
-
+                if ($caseInsensitive){
+                    $param['headers']['B1S-CaseInsensitive'] = 'true';
+                }
                 $res = $client->request('GET', $uri, $param);
                 $stop = $this->manager->stopwatch->stop('SL-get');
                 $response = $res->getBody()->getContents();

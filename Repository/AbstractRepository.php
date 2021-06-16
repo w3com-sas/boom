@@ -141,11 +141,11 @@ abstract class AbstractRepository implements RepositoryInterface
         if (BoomConstants::SL == $this->read) {
             $uri = $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
-            $res = $this->manager->restClients['sl']->get($uri);
+            $res = $this->manager->restClients['sl']->get($uri, false, $params->getCaseInsensitive());
         } elseif (BoomConstants::ODSL == $this->read) {
             $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
-            $res = $this->manager->restClients['sl']->get($uri);
+            $res = $this->manager->restClients['sl']->get($uri, false, $params->getCaseInsensitive());
         } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasRead;
             if (null === $params) {
