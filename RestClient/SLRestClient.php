@@ -52,7 +52,8 @@ class SLRestClient implements RestClientInterface
                 $param = [
                     'headers' => [
                         'Prefer' => 'odata.maxpagesize=10000',
-                        'cache-control' => 'no-cache'
+                        'cache-control' => 'no-cache',
+                        'B1S-CaseInsensitive' => 'true',
                     ]
                 ];
 
