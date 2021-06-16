@@ -138,14 +138,18 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     public function findAll(Parameters $params = null)
     {
+        $caseInsensitive = false;
+        if (isset($params)){
+            $caseInsensitive = $params->getCaseInsensitive();
+        }
         if (BoomConstants::SL == $this->read) {
             $uri = $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
-            $res = $this->manager->restClients['sl']->get($uri, false, $params->getCaseInsensitive());
+            $res = $this->manager->restClients['sl']->get($uri, false, $caseInsensitive);
         } elseif (BoomConstants::ODSL == $this->read) {
             $uri = $this->manager->config['service_layer']['semantic_layer_suffix'] . $this->aliasRead;
             $uri .= (null == $params) ? '' : $params->getParameters();
-            $res = $this->manager->restClients['sl']->get($uri, false, $params->getCaseInsensitive());
+            $res = $this->manager->restClients['sl']->get($uri, false, $caseInsensitive);
         } elseif (BoomConstants::ODS == $this->read) {
             $uri = $this->aliasRead;
             if (null === $params) {
