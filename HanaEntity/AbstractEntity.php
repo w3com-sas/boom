@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\HanaEntity;
 
-use App\HanaEntity\W3cPvVh;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use W3com\BoomBundle\Annotation\EntityColumnMeta;
