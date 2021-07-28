@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\HanaEntity;
 
-use App\HanaEntity\W3cPvVh;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use W3com\BoomBundle\Annotation\EntityColumnMeta;
@@ -244,6 +243,32 @@ class AbstractEntity
             }
         }
         return $ar;
+    }
+
+    /**
+     * Normalize the Entity to an array.
+     *
+     * TODO : If this, result same as the @getEntityToArray in a ComplexEntity case ...
+     * TODO : ... @getEntityToArray will become deprecated.
+     * TODO : But probably not usable like @getEntityToArray because of the the substring.
+     */
+    public function normalize(): array
+    {
+        $entityArray = (array) $this;
+        $normalize = [];
+
+        foreach ($entityArray as $key => $value) {
+            if (!strpos($key, 'changedFields')
+                && !strpos($key, 'refl')
+                && !strpos($key, 'propertiesAnnotation')
+                && !strpos($key, 'collabPackField')
+            ) {
+                // Substring of the key needed cause the array casting create 3 chars related to the field visibility
+                $normalize[ucfirst(substr($key, 3))] = $value;
+            }
+        }
+
+        return $normalize;
     }
 
     /**
