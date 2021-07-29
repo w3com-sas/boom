@@ -95,7 +95,7 @@ class ClearCacheCommand extends Command
             foreach ($bundles as $bundle) {
                 if ($bundle->getName() === self::HULK_BUNDLE_NAME) {
                     $found = true;
-                    $io->success('Hulk bundle exists in this project, hulk:clear will be ran instead.');
+                    $io->success('Hulk bundle exists in this project, hulk:clear will be run instead.');
                     $command = $this->getApplication()->find('hulk:clear');
                     $command->run($input, $output);
                     $returnValue = 0;
