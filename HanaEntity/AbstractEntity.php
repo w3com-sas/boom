@@ -248,9 +248,9 @@ class AbstractEntity
     /**
      * Normalize the Entity to an array.
      *
-     * TODO : If this, result same as the @getEntityToArray in a ComplexEntity case ...
-     * TODO : ... @getEntityToArray will become deprecated.
-     * TODO : But probably not usable like @getEntityToArray because of the the substring.
+     * TODO : If this, result same as the @see getEntityToArray in a ComplexEntity case ...
+     * TODO : ... @see getEntityToArray will become deprecated.
+     * TODO : But probably not usable like @see getEntityToArray because of the the substring.
      */
     public function normalize(): array
     {
