@@ -65,8 +65,9 @@ services:
   W3com\BoomBundle\Command\ClearCacheCommand:
     arguments:
       - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\HttpKernel\KernelInterface'
     tags:
-    - { name: 'console.command', command: 'boom:cl' }
+    - { name: 'console.command', command: 'boom:clear' }
 
   W3com\BoomBundle\Form\BoomTypeGuesser:
     tags:
