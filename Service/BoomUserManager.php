@@ -2,6 +2,7 @@
 
 namespace W3com\BoomBundle\Service;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Exception\ClientException;
@@ -9,19 +10,29 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class BoomUserManager
 {
-    /** @var Filesystem */
+    /**
+     * @var Filesystem
+     */
     private $filesystem;
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private $config;
 
-    /** @var BoomManager */
+    /**
+     * @var BoomManager
+     */
     private $boom;
 
-    /** @var string $credentialsPath */
+    /**
+     * @var string
+     */
     private $credentialsPath;
 
-    /** @var array $clients */
+    /**
+     * @var array
+     */
     private $clients;
 
     public function __construct($config, BoomManager $boom, array $clients)
@@ -33,10 +44,15 @@ class BoomUserManager
         $this->credentialsPath = $config['service_layer']['cookies_storage_path'] . '/CREDENTIALS_';
     }
 
+    /**
+     * @return array|bool[]
+     * @throws Exception
+     */
     public function loginForUser(string $username, string $password, string $companyDb): array
     {
         try {
             $client = $this->buildUserClient($username, $password, $companyDb);
+
             $client->post('Login',
                 [
                     'json' => [
@@ -46,10 +62,12 @@ class BoomUserManager
                     ]
                 ]
             );
+
             $this->saveCredentials($username, $password, $companyDb);
             $this->boom->setCurrentConnection(
                 $this->getConnectionId($username, $companyDb)
             );
+
             return ['valid' => true];
         } catch (ClientException $e) {
             return ['valid' => false, 'message' => $e];
@@ -57,16 +75,27 @@ class BoomUserManager
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function setConnectedUser(string $username, string $companyDb)
+    public function setConnectedUser(string $username, string $companyDb, bool $useDefault = true): bool
     {
+        $connected = false;
         $credentials = $this->getCredentials($username, $companyDb);
-        $this->buildUserClient($credentials['username'], $credentials['password'], $credentials['company_db']);
-        $this->boom->setCurrentConnection($this->getConnectionId($username, $companyDb));
+
+        if (!empty($credentials)) {
+            $this->buildUserClient($credentials['username'], $credentials['password'], $credentials['company_db']);
+            $connected = true;
+        }
+
+        if ($useDefault) {
+            $this->boom->setCurrentConnection('default');
+            $connected = true;
+        }
+
+        return $connected;
     }
 
-    public function getConnectionId(string $username, string $companyDb)
+    public function getConnectionId(string $username, string $companyDb): string
     {
         return $companyDb . '_' . $username;
     }
@@ -77,21 +106,21 @@ class BoomUserManager
         $cookiePath = $this->config['service_layer']['cookies_storage_path'] . '/' . 'USER_' . $key;
         $defaultConnection = $this->config['service_layer']['connections']['default'];
         $jar = new FileCookieJar($cookiePath, true);
-        $client = new Client(
-            [
-                'cookies' => $jar,
-                'base_uri' => $defaultConnection['uri'] . $defaultConnection['path'],
-                'verify' => $this->config['service_layer']['verify_https'],
-            ]
-        );
+
+        $client = new Client([
+            'cookies' => $jar,
+            'base_uri' => $defaultConnection['uri'] . $defaultConnection['path'],
+            'verify' => $this->config['service_layer']['verify_https'],
+        ]);
+
         $this->clients[$key] = $client;
 
         $this->config['service_layer']['connections'][$key] = [
-            "uri" => $defaultConnection["uri"],
-            "path" => $defaultConnection["path"],
-            "username" => $username,
-            "password" => $password,
-            "database" => $companyDb
+            'uri' => $defaultConnection['uri'],
+            'path' => $defaultConnection['path'],
+            'username' => $username,
+            'password' => $password,
+            'database' => $companyDb
         ];
 
         $this->boom
@@ -101,6 +130,9 @@ class BoomUserManager
         return $client;
     }
 
+    /**
+     * @return array|mixed
+     */
     private function getCredentials(string $username, string $companyDb)
     {
         if ($this->filesystem->exists($this->credentialsPath . $username . '_' . $companyDb)) {
@@ -109,7 +141,8 @@ class BoomUserManager
                 true
             );
         }
-        return null;
+
+        return [];
     }
 
     private function saveCredentials(string $username, string $password, string $companyDb)
@@ -123,6 +156,4 @@ class BoomUserManager
             ])
         );
     }
-
-
 }
