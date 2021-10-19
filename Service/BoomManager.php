@@ -104,11 +104,18 @@ class BoomManager
             $session = $request->hasSession() ? $request->getSession() : null;
 
             if ($session) {
-                if ($query->has('slcontext') && $query->has('username') && $query->has('companydb')) {
+                if ($query->has('username')) {
                     $session->set('username', $query->get('username'));
+                }
+
+                if ($query->has('companydb')) {
                     $session->set('companydb', $query->get('companydb'));
+                }
+
+                if ($query->has('slcontext')) {
                     $session->set('slcontext', $query->get('slcontext'));
                 }
+
                 if ($session->has('username') && $session->has('companydb') && $session->has('slcontext')) {
                     $this->inSlContextMode = true;
                 }
