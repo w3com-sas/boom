@@ -533,6 +533,7 @@ class SLRestClient implements RestClientInterface
                         'UserName' => $loginData['username'],
                         'Password' => $loginData['password'],
                         'CompanyDB' => $loginData['database'],
+                        'Language' => "22"
                     ],
                 ]
             );

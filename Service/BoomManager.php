@@ -200,6 +200,7 @@ class BoomManager
                         'UserName' => $loginData['username'],
                         'Password' => $loginData['password'],
                         'CompanyDB' => $loginData['database'],
+                        'Language' => "22"
                     ],
                 ]
             );
@@ -248,6 +249,7 @@ class BoomManager
                         'UserName' => $username,
                         'Password' => $password,
                         'CompanyDB' => $companyDb,
+                        'Language' => "22"
                     ],
                 ]
             );

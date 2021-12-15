@@ -59,6 +59,7 @@ class BoomUserManager
                         'UserName' => $username,
                         'Password' => $password,
                         'CompanyDB' => $companyDb,
+                        'Language' => "22"
                     ]
                 ]
             );
