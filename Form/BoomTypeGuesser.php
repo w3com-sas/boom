@@ -70,7 +70,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
                             $choices[$element] = $element;
                         }
                     }
-                    if (array_key_exists('Oui', $choices) && array_key_exists('Non', $choices)) {
+                    if (count($choicesElement) === 2 && array_key_exists('Oui', $choices) && array_key_exists('Non', $choices)) {
                         return new TypeGuess(SapCheckboxType::class,
                             [
                                 'label' => $annotations['label'],
