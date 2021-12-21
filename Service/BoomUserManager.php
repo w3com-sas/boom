@@ -128,6 +128,8 @@ class BoomUserManager
             ->setClients($this->clients)
             ->setConfig($this->config);
 
+        $this->boom->setCurrentConnection($key);
+
         return $client;
     }
 
