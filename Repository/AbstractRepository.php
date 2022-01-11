@@ -519,9 +519,11 @@ abstract class AbstractRepository implements RepositoryInterface
                     return 1000000000000;
                     break;
                 default:
+                    if (intval($res[0]->getCode()) < 1000000000000) {
+                        return intval(str_pad($res[0]->getCode(), 13, 0)) + 1;
+                    }
                     return intval($res[0]->getCode()) + 1;
-                    break;
-            }
+                    break;            }
         } else {
             throw new \Exception('Unsupported entity, is there a Code column ?');
         }
