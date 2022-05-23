@@ -90,13 +90,13 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch $stopwatch
-     * @param FilesystemAdapter $cache
      * @param RequestStack $request
      * @param EventDispatcherInterface $dispatcher
      * @throws \Exception
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, FilesystemAdapter $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, RequestStack $request, EventDispatcherInterface $dispatcher)
     {
+        $cache = new FilesystemAdapter();
         $request = $request->getCurrentRequest();
 
         if ($request != null) {

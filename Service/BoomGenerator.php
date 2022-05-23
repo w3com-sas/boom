@@ -47,8 +47,9 @@ class BoomGenerator
      * @param FilesystemAdapter $cache
      * @param AppInspector $appInspector
      */
-    public function __construct(BoomManager $manager, FilesystemAdapter $cache, AppInspector $appInspector)
+    public function __construct(BoomManager $manager, AppInspector $appInspector)
     {
+        $cache = new FilesystemAdapter();
         $this->manager = $manager;
         $this->appInspector = $appInspector;
         $this->SLInspector = new SLInspector($manager, $cache);

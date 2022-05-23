@@ -28,10 +28,10 @@ class HanaConfigManager
      * @param BoomManager      $boom
      * @param FilesystemAdapter $cache
      */
-    public function __construct(BoomManager $boom, FilesystemAdapter $cache)
+    public function __construct(BoomManager $boom)
     {
         $this->boom = $boom;
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
     }
 
     /**

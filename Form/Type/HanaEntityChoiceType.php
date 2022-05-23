@@ -23,10 +23,10 @@ class HanaEntityChoiceType extends AbstractType
 
     private $choiceListFactory;
 
-    public function __construct(BoomManager $boom, FilesystemAdapter $cache, ChoiceListFactoryInterface $choiceListFactory = null)
+    public function __construct(BoomManager $boom, ChoiceListFactoryInterface $choiceListFactory = null)
     {
         $this->boom = $boom;
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
         $this->choiceListFactory = $choiceListFactory ?: new CachingFactoryDecorator(
             new PropertyAccessDecorator(
                 new DefaultChoiceListFactory()

@@ -42,9 +42,9 @@ class ClearCacheCommand extends Command
      */
     private $kernel;
 
-    public function __construct(FilesystemAdapter $cache, KernelInterface $kernel)
+    public function __construct( KernelInterface $kernel)
     {
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
         $this->kernel = $kernel;
         $this->arrayCache = new PhpArrayAdapter(
             substr(AppInspector::ENTITIES_CACHE_DIRECTORY, 1).AppInspector::ENTITIES_CACHE_KEY.'.cache',

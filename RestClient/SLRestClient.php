@@ -29,9 +29,9 @@ class SLRestClient implements RestClientInterface
      */
     private $cache;
 
-    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
+    public function __construct(BoomManager $manager)
     {
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
         $this->manager = $manager;
         $this->xmlEncoder = new XmlEncoder();
     }

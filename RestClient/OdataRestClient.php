@@ -28,8 +28,9 @@ class OdataRestClient implements RestClientInterface
 
     private $cache;
 
-    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
+    public function __construct(BoomManager $manager)
     {
+        $cache = new FilesystemAdapter();
         $this->manager = $manager;
         $this->client = $manager->getOdsClient();
         $this->auth = [

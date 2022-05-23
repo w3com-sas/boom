@@ -49,8 +49,9 @@ class SLInspector implements InspectorInterface
 
     private $complexTypes = [];
 
-    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
+    public function __construct(BoomManager $manager)
     {
+        $cache = new FilesystemAdapter();
         $this->boom = $manager;
         $this->SLClient = new SLRestClient($manager, $cache);
     }

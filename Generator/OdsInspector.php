@@ -31,8 +31,9 @@ class OdsInspector implements InspectorInterface
     private $entities = [];
 
 
-    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
+    public function __construct(BoomManager $manager)
     {
+        $cache = new FilesystemAdapter();
         $this->oDataRestClient = new OdataRestClient($manager, $cache);
     }
 
