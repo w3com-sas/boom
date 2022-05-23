@@ -4,7 +4,7 @@ namespace W3com\BoomBundle\RestClient;
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -28,7 +28,7 @@ class OdataRestClient implements RestClientInterface
 
     private $cache;
 
-    public function __construct(BoomManager $manager, AdapterInterface $cache)
+    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
     {
         $this->manager = $manager;
         $this->client = $manager->getOdsClient();

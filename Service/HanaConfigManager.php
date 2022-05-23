@@ -3,7 +3,7 @@
 namespace W3com\BoomBundle\Service;
 
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 /**
  * Class HanaConfigManager.
@@ -18,7 +18,7 @@ class HanaConfigManager
     private $boom;
 
     /**
-     * @var AdapterInterface
+     * @var FilesystemAdapter
      */
     private $cache;
 
@@ -26,9 +26,9 @@ class HanaConfigManager
      * HanaConfigManager constructor.
      *
      * @param BoomManager      $boom
-     * @param AdapterInterface $cache
+     * @param FilesystemAdapter $cache
      */
-    public function __construct(BoomManager $boom, AdapterInterface $cache)
+    public function __construct(BoomManager $boom, FilesystemAdapter $cache)
     {
         $this->boom = $boom;
         $this->cache = $cache;

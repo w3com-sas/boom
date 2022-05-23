@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
@@ -90,12 +90,12 @@ class BoomManager
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch $stopwatch
-     * @param AdapterInterface $cache
+     * @param FilesystemAdapter $cache
      * @param RequestStack $request
      * @param EventDispatcherInterface $dispatcher
      * @throws \Exception
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, FilesystemAdapter $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
     {
         $request = $request->getCurrentRequest();
 

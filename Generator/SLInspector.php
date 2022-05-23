@@ -3,7 +3,7 @@
 namespace W3com\BoomBundle\Generator;
 
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
 use W3com\BoomBundle\Generator\Model\Property;
@@ -49,7 +49,7 @@ class SLInspector implements InspectorInterface
 
     private $complexTypes = [];
 
-    public function __construct(BoomManager $manager, AdapterInterface $cache)
+    public function __construct(BoomManager $manager, FilesystemAdapter $cache)
     {
         $this->boom = $manager;
         $this->SLClient = new SLRestClient($manager, $cache);

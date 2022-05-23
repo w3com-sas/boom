@@ -5,7 +5,6 @@ namespace W3com\BoomBundle\Command;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\PhpArrayAdapter;
 use Symfony\Component\Console\Command\Command;
@@ -29,7 +28,7 @@ class ClearCacheCommand extends Command
     ];
 
     /**
-     * @var AdapterInterface
+     * @var FilesystemAdapter
      */
     private $cache;
 
@@ -43,7 +42,7 @@ class ClearCacheCommand extends Command
      */
     private $kernel;
 
-    public function __construct(AdapterInterface $cache, KernelInterface $kernel)
+    public function __construct(FilesystemAdapter $cache, KernelInterface $kernel)
     {
         $this->cache = $cache;
         $this->kernel = $kernel;

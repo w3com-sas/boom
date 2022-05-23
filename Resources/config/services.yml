@@ -4,7 +4,7 @@ services:
       - '%boom.config%'
       - '@logger'
       - '@debug.stopwatch'
-      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\Cache\Adapter\FilesystemAdapter'
       - '@Symfony\Component\HttpFoundation\RequestStack'
       - '@Symfony\Component\EventDispatcher\EventDispatcherInterface'
     tags:
@@ -14,7 +14,7 @@ services:
   W3com\BoomBundle\Service\HanaConfigManager:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'
-      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\Cache\Adapter\FilesystemAdapter'
     public: true
 
   W3com\BoomBundle\DataCollector\HanaDataCollector:
@@ -32,7 +32,7 @@ services:
   W3com\BoomBundle\Service\BoomGenerator:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'
-      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\Cache\Adapter\FilesystemAdapter'
       - '@W3com\BoomBundle\Generator\AppInspector'
     public: true
 
@@ -64,7 +64,7 @@ services:
 
   W3com\BoomBundle\Command\ClearCacheCommand:
     arguments:
-      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\Cache\Adapter\FilesystemAdapter'
       - '@Symfony\Component\HttpKernel\KernelInterface'
     tags:
     - { name: 'console.command', command: 'boom:clear' }
@@ -96,6 +96,6 @@ services:
   W3com\BoomBundle\Form\Type\HanaEntityChoiceType:
     arguments:
       - '@W3com\BoomBundle\Service\BoomManager'
-      - '@Symfony\Component\Cache\Adapter\AdapterInterface'
+      - '@Symfony\Component\Cache\Adapter\FilesystemAdapter'
     tags:
       - {name: 'form.type'}
