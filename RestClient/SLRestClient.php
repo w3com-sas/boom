@@ -5,8 +5,7 @@ namespace W3com\BoomBundle\RestClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Psr7\Request;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use W3com\BoomBundle\Service\BoomManager;
 
@@ -26,13 +25,13 @@ class SLRestClient implements RestClientInterface
     private $xmlEncoder;
 
     /**
-     * @var AdapterInterface
+     * @var FilesystemAdapter
      */
     private $cache;
 
-    public function __construct(BoomManager $manager, AdapterInterface $cache)
+    public function __construct(BoomManager $manager)
     {
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
         $this->manager = $manager;
         $this->xmlEncoder = new XmlEncoder();
     }

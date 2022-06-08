@@ -2,7 +2,7 @@
 
 namespace W3com\BoomBundle\Generator;
 
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\Service\BoomManager;
@@ -31,8 +31,9 @@ class OdsInspector implements InspectorInterface
     private $entities = [];
 
 
-    public function __construct(BoomManager $manager, AdapterInterface $cache)
+    public function __construct(BoomManager $manager)
     {
+        $cache = new FilesystemAdapter();
         $this->oDataRestClient = new OdataRestClient($manager, $cache);
     }
 

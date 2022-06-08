@@ -3,7 +3,7 @@
 namespace W3com\BoomBundle\Service;
 
 use Doctrine\Common\Annotations\AnnotationException;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\AppInspector;
 use W3com\BoomBundle\Generator\ClassCreator;
@@ -44,11 +44,12 @@ class BoomGenerator
     /**
      * BoomGenerator constructor.
      * @param BoomManager $manager
-     * @param AdapterInterface $cache
+     * @param FilesystemAdapter $cache
      * @param AppInspector $appInspector
      */
-    public function __construct(BoomManager $manager, AdapterInterface $cache, AppInspector $appInspector)
+    public function __construct(BoomManager $manager, AppInspector $appInspector)
     {
+        $cache = new FilesystemAdapter();
         $this->manager = $manager;
         $this->appInspector = $appInspector;
         $this->SLInspector = new SLInspector($manager, $cache);

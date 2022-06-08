@@ -2,7 +2,7 @@
 
 namespace W3com\BoomBundle\Form\Type;
 
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\ChoiceList\Factory\CachingFactoryDecorator;
@@ -23,10 +23,10 @@ class HanaEntityChoiceType extends AbstractType
 
     private $choiceListFactory;
 
-    public function __construct(BoomManager $boom, AdapterInterface $cache, ChoiceListFactoryInterface $choiceListFactory = null)
+    public function __construct(BoomManager $boom, ChoiceListFactoryInterface $choiceListFactory = null)
     {
         $this->boom = $boom;
-        $this->cache = $cache;
+        $this->cache = new FilesystemAdapter();
         $this->choiceListFactory = $choiceListFactory ?: new CachingFactoryDecorator(
             new PropertyAccessDecorator(
                 new DefaultChoiceListFactory()
