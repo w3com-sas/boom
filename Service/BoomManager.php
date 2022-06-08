@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use ReflectionClass;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
@@ -84,19 +84,21 @@ class BoomManager
     /** @var BoomUserManager */
     private $userManager;
 
+    private string $rawRequest = '';
+
     /**
      * BoomManager constructor.
      *
      * @param array $config
      * @param Logger $logger
      * @param Stopwatch $stopwatch
-     * @param AdapterInterface $cache
      * @param RequestStack $request
      * @param EventDispatcherInterface $dispatcher
      * @throws \Exception
      */
-    public function __construct($config, Logger $logger, Stopwatch $stopwatch, AdapterInterface $cache, RequestStack $request, EventDispatcherInterface $dispatcher)
+    public function __construct($config, Logger $logger, Stopwatch $stopwatch, RequestStack $request, EventDispatcherInterface $dispatcher)
     {
+        $cache = new FilesystemAdapter();
         $request = $request->getCurrentRequest();
 
         if ($request != null) {
@@ -429,7 +431,10 @@ class BoomManager
         if (class_exists($boomEntityClassName)) {
             $entityClassName = $boomEntityClassName;
         } else {
-            $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityName;
+            $entityClassName = $entityName;
+            if (substr($entityClassName, 0, 4) !== $this->config['app_namespace'] . '\\'){
+                $entityClassName = $this->config['app_namespace'] . '\\HanaEntity\\' . $entityClassName;
+            }
             if (!class_exists($entityClassName) && !class_exists($boomEntityClassName)) {
                 throw new EntityNotFoundException($entityClassName);
             }
@@ -442,7 +447,7 @@ class BoomManager
         }
 
         // checks if custom repo exists
-        $repoClassName = $this->config['app_namespace'] . '\\HanaRepository\\' . $entityName . 'Repository';
+        $repoClassName = str_replace('HanaEntity', 'HanaRepository', $entityClassName).'Repository';
         if (!class_exists($repoClassName)) {
             $repoClassName = 'W3com\\BoomBundle\\HanaRepository\\' . $entityName . 'Repository';
             if (class_exists($repoClassName)) {
@@ -676,33 +681,27 @@ class BoomManager
      */
     public function flush()
     {
-        try {
-            $this->stopwatch->start('SL-batch');
-            $response = $this->batch->execute();
-            $stop = $this->stopwatch->stop('SL-batch');
-            $batchResponse = (string) $response->getBody()->getContents();
-            $this->addToCollectedData('SL-BATCH', $response->getStatusCode(),
-                '$batch', null, $batchResponse, $stop);
+        return $this->handleRequest('flushCallback');
+    }
 
-            // Response treatment
-            $reg = '#/b1s/v1/([a-zA-Z0-9]{1,})\((\'?[a-zA-Z0-9]{1,}\'?)\)#';
-            preg_match_all($reg,$batchResponse,$output);
-            $return = [];
-            if(count($output[0]) > 0){
-                foreach($output[0] as $indice=>$data){
-                    $return[] = [
-                        'Object' => $output[1][$indice],
-                        'Key' => str_replace("'",'',$output[2][$indice])
-                    ];
-                }
-            }
-            return $return;
-        } catch (ClientException $exception) {
-            if ($exception->getCode() === 401) {
-                $this->getSlClient()->login();
-                return $this->flush();
+    private function flushCallback()
+    {
+        $response = $this->batch->execute();
+        $batchResponse = (string) $response->getBody()->getContents();
+
+        // Response treatment
+        $reg = '#/b1s/v1/([a-zA-Z0-9]{1,})\((\'?[a-zA-Z0-9]{1,}\'?)\)#';
+        preg_match_all($reg,$batchResponse,$output);
+        $return = [];
+        if(count($output[0]) > 0){
+            foreach($output[0] as $indice=>$data){
+                $return[] = [
+                    'Object' => $output[1][$indice],
+                    'Key' => str_replace("'",'',$output[2][$indice])
+                ];
             }
         }
+        return $return;
     }
 
     /**
@@ -759,6 +758,77 @@ class BoomManager
     {
         if ($this->dispatcher->hasListeners($eventName)) {
             $this->dispatcher->dispatch($event, $eventName);
+        }
+    }
+
+    /**
+     * @param string $rawRequest
+     */
+    public function setRawRequest(string $rawRequest): void
+    {
+        $this->rawRequest = $rawRequest;
+    }
+
+    public function rawRequest()
+    {
+        return $this->handleRequest('rawRequestCallback');
+    }
+
+    private function rawRequestCallback()
+    {
+        $client = $this->getCurrentSLClient();
+        $response = $client->request('GET', $this->rawRequest);
+        return json_decode($response->getBody()->getContents(), );
+    }
+
+    private function handleRequest(string $method)
+    {
+        $attempts = 0;
+        while ($attempts < $this->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+                $this->stopwatch->start('SL-'.$method);
+
+                $result = call_user_func('self::'.$method);
+
+                $stop = $this->stopwatch->stop('SL-'.$method);
+                return $result;
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->getSlClient()->login();
+                } else {
+                    $stop = $this->stopwatch->stop('SL-'.$method);
+                    if (404 == $e->getCode()) {
+                        return null;
+                    } elseif (400 == $e->getCode() && strpos($e->getMessage(), '-304') !== false) {
+                        $this->logger->error('Remove cookie file');
+                        $this->removeLastCookieFile();
+                        $this->getSlClient()->login();
+                    } else {
+                        $this->logger->error('ClientException : (' . $e->getCode() . ') ' . $e->getMessage());
+                        throw new \Exception('Guzzle exception (' . $e->getCode() . ') : '. PHP_EOL . PHP_EOL .
+                            'REQUEST (' . $e->getRequest()->getMethod() . ') :'. PHP_EOL .
+                            'URI : ' . PHP_EOL .
+                            $e->getRequest()->getUri()->getScheme().'://'.$e->getRequest()->getUri()->getHost().
+                            $e->getRequest()->getRequestTarget() . PHP_EOL .
+                            'BODY : ' . PHP_EOL .
+                            $e->getRequest()->getBody() . PHP_EOL . PHP_EOL .
+                            'RESPONSE :'. PHP_EOL .
+                            $e->getResponse()->getBody()->getContents(). PHP_EOL
+                        );
+                    }
+                }
+            } catch (ConnectException $e) {
+                $this->logger->error('ConnectException : (' . $e->getCode() . ') - ' . $e->getMessage());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            } catch (\Exception $e) {
+                if (502 == $e->getCode()) {
+                    $this->getSlClient()->login();
+                } else {
+                    $this->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
+                    throw $e;
+                }
+            }
         }
     }
 }

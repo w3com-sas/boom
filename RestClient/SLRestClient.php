@@ -92,7 +92,16 @@ class SLRestClient implements RestClientInterface
                         $this->login();
                     } else {
                         $this->manager->logger->error('ClientException : (' . $e->getCode() . ') ' . $response);
-                        throw new \Exception('Unknown error while launching GET request : ' . $e->getMessage() . '(' . $e->getCode() . ')');
+                        throw new \Exception('Guzzle exception (' . $e->getCode() . ') : '. PHP_EOL . PHP_EOL .
+                            'REQUEST (' . $e->getRequest()->getMethod() . ') :'. PHP_EOL .
+                            'URI : ' . PHP_EOL .
+                            $e->getRequest()->getUri()->getScheme().'://'.$e->getRequest()->getUri()->getHost().
+                            $e->getRequest()->getRequestTarget() . PHP_EOL .
+                            'BODY : ' . PHP_EOL .
+                            $e->getRequest()->getBody() . PHP_EOL . PHP_EOL .
+                            'RESPONSE :'. PHP_EOL .
+                            $e->getResponse()->getBody()->getContents(). PHP_EOL
+                        );
                     }
                 }
             } catch (ConnectException $e) {
