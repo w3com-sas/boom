@@ -84,7 +84,7 @@ class BoomManager
     /** @var BoomUserManager */
     private $userManager;
 
-    private string $rawRequest = '';
+    private $rawRequest = '';
 
     /**
      * BoomManager constructor.
