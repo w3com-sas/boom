@@ -450,8 +450,12 @@ class BoomManager
         $repoClassName = str_replace('HanaEntity', 'HanaRepository', $entityClassName).'Repository';
         if (!class_exists($repoClassName)) {
             $repoClassName = 'W3com\\BoomBundle\\HanaRepository\\' . $entityName . 'Repository';
+            $repoAppClassName = $this->config['app_namespace'] . '\\HanaRepository\\' . $entityName.'Repository';
+
             if (class_exists($repoClassName)) {
                 $repo = new $repoClassName($metadata, $this->dispatcher);
+            } elseif(class_exists($repoAppClassName)) {
+                $repo = new $repoAppClassName($metadata,$this->dispatcher);
             } else {
                 $repo = new DefaultRepository($metadata, $this->dispatcher);
             }
