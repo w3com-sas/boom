@@ -781,7 +781,12 @@ class BoomManager
     private function rawRequestCallback()
     {
         $client = $this->getCurrentSLClient();
-        $response = $client->request('GET', $this->rawRequest);
+        $response = $client->request('GET', $this->rawRequest,[
+            'headers' => [
+                'Prefer' => 'odata.maxpagesize=10000',
+                'cache-control' => 'no-cache',
+            ]
+        ]);
         return json_decode($response->getBody()->getContents(), );
     }
 
