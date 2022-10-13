@@ -787,7 +787,7 @@ class BoomManager
                 'cache-control' => 'no-cache',
             ]
         ]);
-        return json_decode($response->getBody()->getContents(), );
+        return json_decode($response->getBody()->getContents());
     }
 
     private function handleRequest(string $method)

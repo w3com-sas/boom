@@ -228,6 +228,10 @@ class SLRestClient implements RestClientInterface
                 }  else {
                     $stop = $this->manager->stopwatch->stop('SL-post');
                     $response = $e->getResponse()->getBody()->getContents();
+                    if (strpos($response, '-1116') > 0){
+                        $this->manager->logger->error('SL POST CATCH '.$e->getCode().'->'.$response, [$data, $uri]);
+                        return $this->getValuesFromResponse($response);
+                    }
                     $this->manager->addToCollectedData(
                         'sl',
                         $e->getResponse()->getStatusCode(),
@@ -300,6 +304,10 @@ class SLRestClient implements RestClientInterface
                 } else {
                     $stop = $this->manager->stopwatch->stop('SL-patch');
                     $response = $e->getResponse()->getBody()->getContents();
+                    if (strpos($response, '-1116') > 0){
+                        $this->manager->logger->error('SL PATCH CATCH '.$e->getCode().'->'.$response, [$data, $uri]);
+                        return $this->getValuesFromResponse($response);
+                    }
                     $this->manager->addToCollectedData(
                         'sl',
                         $e->getResponse()->getStatusCode(),
