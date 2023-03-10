@@ -133,6 +133,11 @@
                                 {% endfor %}
                             </ul>
                         </small>
+                        {% if line.parameters is not null %}
+                            <smalll>
+                                {{ line.parameters|json_encode() }}
+                            </smalll>
+                        {% endif %}
                     {% endif %}
                 </td>
 
@@ -149,6 +154,8 @@
                         <hr style="border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);">
                         {% if line.decoded is defined %}
                             {{ dump(line.decoded) }}
+                            <br /><pre class="sf-dump"><span class="sf-dump-str">JSON</span></pre>
+                            <p style="overflow-wrap: anywhere;font-size: 12px">{{ line.decoded|json_encode() }}</p>
                         {% else %}
                             {{ line.response }}
                         {% endif %}
@@ -190,4 +197,3 @@
         </table>
     {% endif %}
 {% endblock %}
-

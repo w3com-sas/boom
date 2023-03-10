@@ -540,54 +540,69 @@ class SLRestClient implements RestClientInterface
         $loginData = $this->manager->config['service_layer']['connections'][$this->manager->getCurrentSLConnection()];
         $collectedData = $loginData;
         unset($collectedData['password']);
-        try {
-            $this->manager->stopwatch->start('SL-login');
-            $res = $this->manager->getCurrentSLClient()->post(
-                'Login',
-                [
-                    'json' => [
-                        'UserName' => $loginData['username'],
-                        'Password' => $loginData['password'],
-                        'CompanyDB' => $loginData['database'],
-                        'Language' => "22"
-                    ],
-                ]
-            );
-            $stop = $this->manager->stopwatch->stop('SL-login');
-            $this->manager->addToCollectedData(
-                'sl',
-                $res->getStatusCode(),
-                'Login',
-                $collectedData,
-                $res->getBody()->getContents(),
-                $stop
-            );
-            if (200 == $res->getStatusCode()) {
-                // on est loggués
-                $this->manager->logger->info('Successfully loggued as ' . $loginData['username'] . '.');
-            } else {
-                // le log a planté :(
-                $this->manager->logger->info('Loging as ' . $loginData['username'] . ' failed.');
-            }
-        } catch (ClientException $e) {
-            $stop = $this->manager->stopwatch->stop('SL-login');
-            $response = $e->getResponse()->getBody()->getContents();
-            $this->manager->addToCollectedData(
-                'sl',
-                $e->getResponse()->getStatusCode(),
-                'Login',
-                $collectedData,
-                $response,
-                $stop
-            );
-            $this->manager->logger->error($response);
-            throw new \Exception('Unknown error while loging in (' . $e->getCode() . ') - ' . $e->getMessage());
-        }catch (\Exception $e) {
-            if (502 == $e->getCode()) {
-                $this->login();
-            } else {
-                $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
-                throw new \Exception('');
+
+        //
+        $attempts = 0;
+        while($attempts < 2){
+            $attempts++;
+            try {
+                $this->manager->stopwatch->start('SL-login');
+                $res = $this->manager->getCurrentSLClient()->post(
+                    'Login',
+                    [
+                        'json' => [
+                            'UserName' => $loginData['username'],
+                            'Password' => $loginData['password'],
+                            'CompanyDB' => $loginData['database'],
+                            'Language' => "22"
+                        ],
+                    ]
+                );
+                $stop = $this->manager->stopwatch->stop('SL-login');
+                $this->manager->addToCollectedData(
+                    'sl',
+                    $res->getStatusCode(),
+                    'Login',
+                    $collectedData,
+                    $res->getBody()->getContents(),
+                    $stop
+                );
+                if (200 == $res->getStatusCode()) {
+                    // on est loggués
+                    $this->manager->logger->info('Successfully logged as ' . $loginData['username'] . '.');
+                    return true;
+                } else {
+                    // le log a planté :(
+                    $this->manager->logger->info('Loging as ' . $loginData['username'] . ' failed.');
+                    // on ne retente pas un log car il s'agit d'un couple login / mdp erronéé
+                    return true;
+                }
+            } catch (ClientException $e) {
+                $stop = $this->manager->stopwatch->stop('SL-login');
+                $response = $e->getResponse()->getBody()->getContents();
+                $this->manager->addToCollectedData(
+                    'sl',
+                    $e->getResponse()->getStatusCode(),
+                    'Login',
+                    $collectedData,
+                    $response,
+                    $stop
+                );
+                $this->manager->logger->error($response);
+                throw new \Exception('Unknown error while loging in (' . $e->getCode() . ') - ' . $e->getMessage());
+            } catch (\Exception $e) {
+                if (502 == $e->getCode()) {
+                    //$this->login();
+                    $this->manager->logger->error('Error 502 detected : '.$attempts.' attempts');
+                } else {
+                    if(strpos($e->getMessage(),'Switch company') === false){
+                        $this->manager->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
+                        throw new \Exception('Error Login : '.$e->getMessage());
+                    } else {
+                        // cas de l'erreur 305 - Switch company
+                        $this->manager->logger->error('Switch company error detected : '.$attempts.' attempts');
+                    }
+                }
             }
         }
     }

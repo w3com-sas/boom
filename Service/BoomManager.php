@@ -801,12 +801,22 @@ class BoomManager
                 $result = call_user_func('self::'.$method);
 
                 $stop = $this->stopwatch->stop('SL-'.$method);
+
+                if($method === 'rawRequestCallback'){
+                    $this->addToCollectedData('sl', '200', $this->rawRequest, null, json_encode($result), $stop);
+                }
+
                 return $result;
             } catch (ClientException $e) {
                 if (401 == $e->getCode()) {
                     $this->getSlClient()->login();
                 } else {
                     $stop = $this->stopwatch->stop('SL-'.$method);
+
+                    if($method === 'rawRequestCallback'){
+                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequest, null, null, $stop);
+                    }
+
                     if (404 == $e->getCode()) {
                         return null;
                     } elseif (400 == $e->getCode() && strpos($e->getMessage(), '-304') !== false) {

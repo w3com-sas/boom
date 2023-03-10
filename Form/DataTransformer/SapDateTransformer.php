@@ -25,6 +25,9 @@ class SapDateTransformer implements DataTransformerInterface
         } elseif (DateTime::createFromFormat('Y-m-d', $value) instanceof \DateTimeInterface) {
             $date = DateTime::createFromFormat('Y-m-d', $value);
             return $date->format('d/m/Y');
+        } elseif (substr($value,-10) === 'T00:00:00Z'){
+            $date = DateTime::createFromFormat('Y-m-d', substr($value,0,10));
+            return $date->format('d/m/Y');
         }
         return $value;
     }
