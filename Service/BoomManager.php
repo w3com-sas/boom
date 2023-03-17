@@ -765,6 +765,42 @@ class BoomManager
         }
     }
 
+    public function findLight($params)
+    {
+        if(!array_key_exists('uri',$params)){
+            throw new Exception('Uri obligatoire');
+        }
+        $uri = $params['uri'].'?$format=json';
+        if(array_key_exists('filter',$params)){
+            $uri .= '&$filter='.$params['filter'];
+        }
+        if(array_key_exists('select',$params)){
+            $uri .= '&$select='.$params['select'];
+        }
+        if(array_key_exists('top',$params)){
+            $uri .= '&$top='.$params['top'];
+        }
+        if(array_key_exists('skip',$params)){
+            $uri .= '&$skip='.$params['skip'];
+        }
+
+        try{
+            $result = $this->restClients['odata']->get($uri);
+            $return = [];
+            if(count($result) > 0){
+                foreach($result as $line){
+                    if(array_key_first($line) === '__metadata'){
+                        array_shift($line);
+                    }
+                    $return[] = $line;
+                }
+            }
+            return $return;
+        } catch(\Exception $e){
+            throw new \Exception('Erreur getLight : '.$e->getMessage());
+        }
+    }
+
     /**
      * @param string $rawRequest
      */
