@@ -11,4 +11,6 @@ class BoDocumentSubType
 	const BOD_EXEMPTBILL = '';
 	const BOD_PURCHASEDEBITMEMO = '';
 	const BOD_EXPORTINVOICE = '';
-}
+    const BOD_GSTTAXINVOICE = '';
+    const BOD_GSTDEBITMEMO = '';
+    const BOD_REFUNDVOUCHER = '';}

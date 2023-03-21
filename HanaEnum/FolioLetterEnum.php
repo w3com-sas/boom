@@ -10,4 +10,7 @@ class FolioLetterEnum
 	const FLETTERE = '';
 	const FLETTERM = '';
 	const FLETTERR = '';
+    const FLETTERT = '';
+    const FLETTERX = '';
+    const FLETTEREMPTY = '';
 }

@@ -133,4 +133,7 @@ class BoObjectTypes
 	const OSTOCKTRANSFERDRAFT = '';
 	const OINVENTORYTRANSFERREQUEST = '';
 	const OPURCHASEREQUEST = '';
+    const ORETURNREQUEST = '';
+    const OGOODSRETURNREQUEST = '';
+
 }

@@ -7,4 +7,5 @@ class BoGenderTypes
 	const GT_FEMALE = '';
 	const GT_MALE = '';
 	const GT_UNDEFINED = '';
+	const GT_MASKED = '';
 }

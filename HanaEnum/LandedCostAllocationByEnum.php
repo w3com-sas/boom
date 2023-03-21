@@ -10,4 +10,6 @@ class LandedCostAllocationByEnum
 	const ASWEIGHT = '';
 	const ASVOLUME = '';
 	const ASEQUAL = '';
+    const ASLEGALCOST = '';
+
 }

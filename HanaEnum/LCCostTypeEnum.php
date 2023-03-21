@@ -6,4 +6,7 @@ class LCCostTypeEnum
 {
 	const ASFIXEDCOSTS = '';
 	const ASVARIABLECOSTS = '';
+
+    const ASLEGALCOSTS = '';
+
 }
