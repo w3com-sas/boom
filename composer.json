@@ -30,7 +30,7 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.3",
     "guzzlehttp/guzzle": "^6.2",
     "symfony/stopwatch": "*",
     "nette/php-generator": "^3.2",
