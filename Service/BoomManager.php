@@ -783,7 +783,9 @@ class BoomManager
         if(array_key_exists('skip',$params)){
             $uri .= '&$skip='.$params['skip'];
         }
-
+        if(array_key_exists('orderby',$params)){
+            $uri .= '&$orderby='.$params['orderby'];
+        }
         try{
             $result = $this->restClients['odata']->get($uri);
             $return = [];
