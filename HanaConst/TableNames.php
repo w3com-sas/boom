@@ -35,4 +35,5 @@ class TableNames
     const USERS                      = 'OUSR';
     const VENDORPAYMENTS             = 'OVPM';
     const WAREHOUSES                 = 'OWHS';
+    const CUSTOMEREQUIPMENTCARDS     = 'OINS';
 }

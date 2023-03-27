@@ -6,4 +6,5 @@ class ReturnTypeEnum
 {
 	const RT26Q = '';
 	const RT27Q = '';
+	const RT27EQ = '';
 }

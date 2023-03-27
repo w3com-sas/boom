@@ -7,4 +7,6 @@ class BoCardCompanyTypes
 	const CCOMPANY = '';
 	const CPRIVATE = '';
 	const CGOVERNMENT = '';
+    const CEMPLOYEE = '';
+
 }

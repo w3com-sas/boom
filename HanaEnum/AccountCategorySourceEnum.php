@@ -6,4 +6,5 @@ class AccountCategorySourceEnum
 {
 	const ACSBALANCESHEET = '';
 	const ACSPROFITANDLOSS = '';
+    const ACSTRIALBALANCE = '';
 }

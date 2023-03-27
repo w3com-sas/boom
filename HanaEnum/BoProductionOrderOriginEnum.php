@@ -7,4 +7,6 @@ class BoProductionOrderOriginEnum
 	const BOPOOMANUAL = '';
 	const BOPOOMRP = '';
 	const BOPOOSALESORDER = '';
+    const BOPOOPRODUCTIONORDER = '';
+
 }

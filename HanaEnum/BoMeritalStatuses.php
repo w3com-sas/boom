@@ -8,4 +8,5 @@ class BoMeritalStatuses
 	const MTS_MARRIED = '';
 	const MTS_DIVORCED = '';
 	const MTS_WIDOWED = '';
+	const MTS_NOTSPECIFIED = '';
 }

@@ -55,26 +55,26 @@ class SLInspector implements InspectorInterface
         $this->boom = $manager;
         $this->SLClient = new SLRestClient($manager, $cache);
     }
-/*
-    public function initEnum()
-    {
-        $metadata = $this->SLClient->getMetadata();
-        $enums = $metadata['edmx:DataServices']['Schema']['EnumType'];
+    /*
+        public function initEnum()
+        {
+            $metadata = $this->SLClient->getMetadata();
+            $enums = $metadata['edmx:DataServices']['Schema']['EnumType'];
 
-        foreach ($enums as $enum) {
-            $class = new ClassType($enum['@Name']);
-            foreach ($enum['Member'] as $property) {
-                if (isset($property['@Name'])) {
-                    $class->addConstant(explode(' ', strtoupper($property['@Name']))[0], '');
+            foreach ($enums as $enum) {
+                $class = new ClassType($enum['@Name']);
+                foreach ($enum['Member'] as $property) {
+                    if (isset($property['@Name'])) {
+                        $class->addConstant(explode(' ', strtoupper($property['@Name']))[0], '');
+                    }
                 }
+                dump($class);
+                file_put_contents(__DIR__ . '/../HanaEnum/'
+                    . $enum['@Name'] . '.php', '<?php' . "\n\n" .
+                    'namespace W3com\\BoomBundle\\HanaEnum;' . "\n\n" .
+                    $class);
             }
-            dump($class);
-            file_put_contents(__DIR__ . '/../HanaEnum/'
-                . $enum['@Name'] . '.php', '<?php' . "\n\n" .
-                'namespace W3com\\BoomBundle\\HanaEnum;' . "\n\n" .
-                $class);
-        }
-    }*/
+        }*/
 
     /**
      * @param $name
@@ -138,12 +138,12 @@ class SLInspector implements InspectorInterface
 
         if ($udfs === []) {
             $tableNameConst = strtoupper($entity->getTable());
-            try {
+            if (defined("W3com\BoomBundle\HanaConst\TableNames::$tableNameConst")){
                 $sapTableName = constant("W3com\BoomBundle\HanaConst\TableNames::$tableNameConst");
-            } catch (\Exception $e) {
-//                throw new \Exception("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
+                $udfs = $udfRepo->findByTableName($sapTableName);
+            } else {
+                dump("Veuillez créer la constante $tableNameConst dans W3com\BoomBundle\HanaConst\TableNames");
             }
-            $udfs = $udfRepo->findByTableName($sapTableName);
         }
 
         $entity->setSapTable($sapTableName);
@@ -264,7 +264,7 @@ class SLInspector implements InspectorInterface
         $entity = new Entity();
 
         if (strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'U_') !== false
-        || strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
+            || strpos($entityMetadata[$this::NAME_ENTITY_PROPERTY], 'W3C_') !== false) {
             $entityName = StringUtils::stringToPascalCase(str_replace('U_', '', Entity::formatTableName($entityMetadata[$this::NAME_ENTITY_PROPERTY])));
             $entity->setToSynchronize(true);
         } else {
@@ -403,7 +403,7 @@ class SLInspector implements InspectorInterface
                         foreach ($enumType['Member'] as $enumChoice) {
                             if (isset($enumChoice['@Name'])) {
 
-                                $const = strtoupper($enumChoice['@Name']);
+                                $const = trim(strtoupper($enumChoice['@Name']));
 
                                 try {
                                     $choice = constant("$enumClassName::$const");
