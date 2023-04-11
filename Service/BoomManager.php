@@ -767,10 +767,15 @@ class BoomManager
 
     public function findLight($params)
     {
+        $modeCount = strpos($params['uri'],'$count') !== false;
         if(!array_key_exists('uri',$params)){
             throw new Exception('Uri obligatoire');
         }
-        $uri = $params['uri'].'?$format=json';
+        if($modeCount){
+            $uri = $params['uri'];
+        } else {
+            $uri = $params['uri'].'?$format=json';
+        }
         if(array_key_exists('filter',$params)){
             $uri .= '&$filter='.$params['filter'];
         }
@@ -788,6 +793,9 @@ class BoomManager
         }
         try{
             $result = $this->restClients['odata']->get($uri);
+            if($modeCount){
+                return $result;
+            }
             $return = [];
             if(count($result) > 0){
                 foreach($result as $line){
