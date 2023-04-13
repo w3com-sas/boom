@@ -550,12 +550,16 @@ class SLRestClient implements RestClientInterface
                 $res = $this->manager->getCurrentSLClient()->post(
                     'Login',
                     [
-                        'json' => [
+                        'json' => array_merge([
                             'UserName' => $loginData['username'],
                             'Password' => $loginData['password'],
-                            'CompanyDB' => $loginData['database'],
-                            'Language' => "22"
+                            'CompanyDB' => $loginData['database']
+
                         ],
+                            $this->manager->config['service_layer']['language'] > 0 ?
+                                ['Language' => "22"]:
+                                []
+                        ),
                     ]
                 );
                 $stop = $this->manager->stopwatch->stop('SL-login');

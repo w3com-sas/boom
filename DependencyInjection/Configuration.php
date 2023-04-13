@@ -27,6 +27,8 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('semantic_layer_suffix')
             ->defaultValue('sml.svc/')
             ->end()
+            ->integerNode('language')
+            ->defaultValue(22)
             ->booleanNode('verify_https')
             ->defaultFalse()
             ->end()

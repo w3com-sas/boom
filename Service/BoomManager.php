@@ -198,12 +198,16 @@ class BoomManager
             $res = $this->getCurrentClient()->post(
                 'Login',
                 [
-                    'json' => [
+                    'json' => array_merge([
                         'UserName' => $loginData['username'],
                         'Password' => $loginData['password'],
-                        'CompanyDB' => $loginData['database'],
-                        'Language' => "22"
+                        'CompanyDB' => $loginData['database']
+
                     ],
+                        $this->config['service_layer']['language'] > 0 ?
+                            ['Language' => "22"]:
+                            []
+                    ),
                 ]
             );
 
@@ -247,12 +251,16 @@ class BoomManager
             $res = $client->post(
                 'Login',
                 [
-                    'json' => [
+                    'json' => array_merge([
                         'UserName' => $username,
                         'Password' => $password,
-                        'CompanyDB' => $companyDb,
-                        'Language' => "22"
+                        'CompanyDB' => $companyDb
+
                     ],
+                        $this->config['service_layer']['language'] > 0 ?
+                            ['Language' => "22"]:
+                            []
+                    ),
                 ]
             );
 
