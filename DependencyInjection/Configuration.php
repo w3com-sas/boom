@@ -29,6 +29,7 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->integerNode('language')
             ->defaultValue(22)
+            ->end()
             ->booleanNode('verify_https')
             ->defaultFalse()
             ->end()
