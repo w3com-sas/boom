@@ -19,4 +19,7 @@ class ElectronicDocProtocolCodeStrEnum
     const EDPCS_IIS_ANNUAL = '';
     const EDPCS_DIGIPOORT = '';
     const EDPCS_EBOOKS = '';
+    const EDPCS_DOX = '';
+    const EDPCS_RTIE = '';
+    const EDPCS_EBILLING = '';
 }

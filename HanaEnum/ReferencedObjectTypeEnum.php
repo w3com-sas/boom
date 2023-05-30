@@ -41,4 +41,5 @@ class ReferencedObjectTypeEnum
     const ROT_INVENTORYCOUNTING = '';
     const ROT_INVENTORYPOSTING = '';
     const ROT_OUTGOINGPAYMENTS = '';
+    const ROT_ORIGINALARDOWNPAYMENT = '';
 }

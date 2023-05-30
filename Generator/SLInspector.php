@@ -315,11 +315,13 @@ class SLInspector implements InspectorInterface
             }
 
             $entity->setTable($entityName);
-            if (array_key_exists($this::NAME_ENTITY_PROPERTY, $entityMetadata[$this::NAME_PROPERTY])) {
-                $this->hydratePropertyModel($entityMetadata[$this::NAME_PROPERTY], $entity);
-            } else {
-                foreach ($entityMetadata[$this::NAME_PROPERTY] as $propertyMetadata) {
-                    $this->hydratePropertyModel($propertyMetadata, $entity);
+            if (array_key_exists($this::NAME_PROPERTY, $entityMetadata)){
+                if (array_key_exists($this::NAME_ENTITY_PROPERTY, $entityMetadata[$this::NAME_PROPERTY])) {
+                    $this->hydratePropertyModel($entityMetadata[$this::NAME_PROPERTY], $entity);
+                } else {
+                    foreach ($entityMetadata[$this::NAME_PROPERTY] as $propertyMetadata) {
+                        $this->hydratePropertyModel($propertyMetadata, $entity);
+                    }
                 }
             }
         }

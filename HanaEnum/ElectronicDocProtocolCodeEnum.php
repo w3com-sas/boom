@@ -19,4 +19,7 @@ class ElectronicDocProtocolCodeEnum
     const EDPC_IIS_ANNUAL= '';
     const EDPC_DIGIPOORT= '';
     const EDPC_EBOOKS= '';
+    const EDPC_DOX= '';
+    const EDPC_RTIE= '';
+    const EDPC_EBILLING= '';
 }
