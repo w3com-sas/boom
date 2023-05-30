@@ -55,12 +55,17 @@ class BoomUserManager
 
             $client->post('Login',
                 [
-                    'json' => [
+
+                    'json' => array_merge([
                         'UserName' => $username,
                         'Password' => $password,
-                        'CompanyDB' => $companyDb,
-                        'Language' => "22"
-                    ]
+                        'CompanyDB' => $companyDb
+
+                    ],
+                $this->config['service_layer']['language'] > 0 ?
+                    ['Language' => "22"]:
+                    []
+            ),
                 ]
             );
 

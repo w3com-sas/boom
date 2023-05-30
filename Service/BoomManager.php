@@ -198,12 +198,16 @@ class BoomManager
             $res = $this->getCurrentClient()->post(
                 'Login',
                 [
-                    'json' => [
+                    'json' => array_merge([
                         'UserName' => $loginData['username'],
                         'Password' => $loginData['password'],
-                        'CompanyDB' => $loginData['database'],
-                        'Language' => "22"
+                        'CompanyDB' => $loginData['database']
+
                     ],
+                        $this->config['service_layer']['language'] > 0 ?
+                            ['Language' => "22"]:
+                            []
+                    ),
                 ]
             );
 
@@ -247,12 +251,16 @@ class BoomManager
             $res = $client->post(
                 'Login',
                 [
-                    'json' => [
+                    'json' => array_merge([
                         'UserName' => $username,
                         'Password' => $password,
-                        'CompanyDB' => $companyDb,
-                        'Language' => "22"
+                        'CompanyDB' => $companyDb
+
                     ],
+                        $this->config['service_layer']['language'] > 0 ?
+                            ['Language' => "22"]:
+                            []
+                    ),
                 ]
             );
 
@@ -767,10 +775,15 @@ class BoomManager
 
     public function findLight($params)
     {
+        $modeCount = strpos($params['uri'],'$count') !== false;
         if(!array_key_exists('uri',$params)){
             throw new Exception('Uri obligatoire');
         }
-        $uri = $params['uri'].'?$format=json';
+        if($modeCount){
+            $uri = $params['uri'];
+        } else {
+            $uri = $params['uri'].'?$format=json';
+        }
         if(array_key_exists('filter',$params)){
             $uri .= '&$filter='.$params['filter'];
         }
@@ -783,9 +796,14 @@ class BoomManager
         if(array_key_exists('skip',$params)){
             $uri .= '&$skip='.$params['skip'];
         }
-
+        if(array_key_exists('orderby',$params)){
+            $uri .= '&$orderby='.$params['orderby'];
+        }
         try{
             $result = $this->restClients['odata']->get($uri);
+            if($modeCount){
+                return $result;
+            }
             $return = [];
             if(count($result) > 0){
                 foreach($result as $line){
