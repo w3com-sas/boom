@@ -572,30 +572,41 @@ class BoomManager
 
 
         foreach ($documents as $document) {
+            //Cas ou le contenu du ficher est directement fourni et non uploadé
+            if (array_key_exists('content', $document)) {
+                $rawBody .=
+                    "--$customBoundary\r\n"
+                    . "Content-Disposition: form-data; name=\"files\"; filename=\"" . $document['filename'] . "\"\r\n"
+                    . "Content-Type: " . 'application/pdf' . "\r\n"
+                    . "\r\n"
+                    . $document['content'] . "\r\n";
 
-            if (!array_key_exists('path', $document)) continue;
-            if (!file_exists($document['path'])) continue;
-
-            $fileUtil = new File($document['path']);
-            $systemFilename = $fileUtil->getFilename();
-            $filetype = $fileUtil->getMimeType();
-
-            if (array_key_exists('filename', $document)) {
-                $serverFilename = $document['filename'];
             } else {
-                $serverFilename = $systemFilename;
+                if (!array_key_exists('path', $document)) continue;
+                if (!file_exists($document['path'])) continue;
+
+                $fileUtil = new File($document['path']);
+                $systemFilename = $fileUtil->getFilename();
+                $filetype = $fileUtil->getMimeType();
+
+                if (array_key_exists('filename', $document)) {
+                    $serverFilename = $document['filename'];
+                } else {
+                    $serverFilename = $systemFilename;
+                }
+
+                $rawBody .=
+                    "--$customBoundary\r\n"
+                    . "Content-Disposition: form-data; name=\"files\"; filename=\"" . $serverFilename . "\"\r\n"
+                    . "Content-Type: " . $filetype . "\r\n"
+                    . "\r\n"
+                    . file_get_contents($document['path']) . "\r\n";
             }
 
-            $rawBody .=
-                "--$customBoundary\r\n"
-                . "Content-Disposition: form-data; name=\"files\"; filename=\"" . $serverFilename . "\"\r\n"
-                . "Content-Type: " . $filetype . "\r\n"
-                . "\r\n"
-                . file_get_contents($document['path']) . "\r\n";
+
         }
 
         $rawBody .= "--$customBoundary--\r\n\r\n";
-
         if ($isNew) {
             $response = $client->request(
                 'Attachments2',
