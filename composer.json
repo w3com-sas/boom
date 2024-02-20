@@ -44,7 +44,7 @@
   },
   "autoload": {
     "psr-4": {
-      "W3com\\BoomBundle\\": "src/"
+      "W3com\\BoomBundle\\": ""
     }
   }
 }
