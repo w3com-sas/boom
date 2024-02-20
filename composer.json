@@ -37,7 +37,7 @@
     "nette/php-generator": "^3.2",
     "symfony/console": "*",
     "symfony/serializer-pack": "*",
-    "doctrine/annotations": "3.*"
+    "doctrine/annotations": "2.*"
   },
   "require-dev": {
     "symfony/phpunit-bridge": "~3.0"
