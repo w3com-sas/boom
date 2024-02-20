@@ -8,8 +8,8 @@ use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use Monolog\Logger;
 use ReflectionClass;
-use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -55,7 +55,7 @@ class BoomManager
     public $restClients = [];
 
     /** @var AnnotationReader */
-    private $reader;
+    private AnnotationReader $reader;
 
     /** @var Logger linked to 'hana' channel */
     public $logger;
@@ -64,7 +64,7 @@ class BoomManager
     public $stopwatch;
 
     /** @var array */
-    private $collectedData;
+    private $collectedData = [];
 
     /** @var bool */
     private $inSlContextMode = false;
