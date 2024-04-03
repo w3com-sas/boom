@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Command;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
@@ -64,7 +63,6 @@ class SynchronizeCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        AnnotationRegistry::registerLoader('class_exists');
         $appInspector = $this->generator->getAppInspector();
         $io = new SymfonyStyle($input, $output);
         $cacheItem = $this->cache->getItem(AppInspector::ENTITIES_CACHE_KEY);

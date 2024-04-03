@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Command;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -68,7 +67,6 @@ class ClearCacheCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        AnnotationRegistry::registerLoader('class_exists');
 
         $io = new SymfonyStyle($input, $output);
         $returnValue = 0;

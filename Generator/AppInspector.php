@@ -3,7 +3,6 @@
 namespace W3com\BoomBundle\Generator;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -116,8 +115,6 @@ class AppInspector implements InspectorInterface
         // One entity per $metadatum
         $entity = new Entity();
         $entity->setName($className);
-
-        AnnotationRegistry::registerLoader('class_exists');
 
         foreach ($this->reader->getClassAnnotations($class) as $annotations) {
 
