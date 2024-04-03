@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Generator;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use W3com\BoomBundle\Exception\EntityNotFoundException;
 use W3com\BoomBundle\Generator\Model\Entity;
@@ -225,8 +224,6 @@ class SLInspector implements InspectorInterface
 
     public function initEntities()
     {
-        AnnotationRegistry::registerLoader('class_exists');
-
         $this->metadata = $this->SLClient->getMetadata();
         $entitiesMetadata = $this->metadata['edmx:DataServices']['Schema']['EntityContainer']['EntitySet'];
         $this->enumTypes = $this->metadata['edmx:DataServices']['Schema']['EnumType'];

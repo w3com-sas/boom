@@ -2,7 +2,6 @@
 
 namespace W3com\BoomBundle\Command;
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -41,8 +40,6 @@ class CreateUDTCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        AnnotationRegistry::registerLoader('class_exists');
-
         $io = new SymfonyStyle($input, $output);
 
         $io->title("UDT Creation command");
