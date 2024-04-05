@@ -5,7 +5,8 @@
   "minimum-stability": "dev",
   "keywords": [
     "SAP",
-    "Service Layer"
+    "Service Layer",
+    "Business One"
   ],
   "authors": [
     {
@@ -17,26 +18,18 @@
       "email": "sdrean@w3com.fr"
     },
     {
-      "name": "Corentin Gillet",
-      "email": "cgillet@w3com.fr"
-    },
-    {
-      "name": "Clément Muset",
-      "email": "cmuset@w3com.fr"
-    },
-    {
       "name": "Arnaud Delanoë",
       "email": "adelanoe@w3com.fr"
     }
   ],
   "require": {
     "php": ">=7.4",
-    "guzzlehttp/guzzle": "^6.2",
+    "guzzlehttp/guzzle": "*",
     "symfony/stopwatch": "*",
     "nette/php-generator": "^3.2",
     "symfony/console": "*",
     "symfony/serializer-pack": "*",
-    "doctrine/annotations": "1.*"
+    "doctrine/annotations": "2.*"
   },
   "require-dev": {
     "symfony/phpunit-bridge": "~3.0"

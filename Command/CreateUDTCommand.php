@@ -38,7 +38,7 @@ class CreateUDTCommand extends Command
      * @return int|null|void
      * @throws \Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 

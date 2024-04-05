@@ -16,7 +16,7 @@ class SapTimeTransformer implements DataTransformerInterface
      *
      * @throws TransformationFailedException when the transformation fails
      */
-    public function transform($value)
+    public function transform($value): mixed
     {
         if ($value === null){
             return null;
@@ -51,7 +51,7 @@ class SapTimeTransformer implements DataTransformerInterface
      *
      * @throws TransformationFailedException when the transformation fails
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value): mixed
     {
         if (empty($value)){
             return null;

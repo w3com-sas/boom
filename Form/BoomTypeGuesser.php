@@ -30,12 +30,12 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @throws ReflectionException
      */
-    public function guessType($class, $property)
+    public function guessType($class, $property): ?TypeGuess
     {
         $annotations = $this->readPhpDocAnnotations($class, $property);
 
         if (!isset($annotations['type'])) {
-            return; // guess nothing if the @var annotation is not available
+            return null; // guess nothing if the @var annotation is not available
         }
 
         // otherwise, base the type on the @var annotation
@@ -152,7 +152,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return void A guess for the field's required setting
      */
-    public function guessRequired($class, $property)
+    public function guessRequired($class, $property): ?\Symfony\Component\Form\Guess\ValueGuess
     {
         return null;
     }
@@ -165,7 +165,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return Guess\ValueGuess|null A guess for the field's maximum length
      */
-    public function guessMaxLength($class, $property)
+    public function guessMaxLength($class, $property): ?\Symfony\Component\Form\Guess\ValueGuess
     {
         return null;
     }
@@ -185,7 +185,7 @@ class BoomTypeGuesser implements FormTypeGuesserInterface
      *
      * @return Guess\ValueGuess|null A guess for the field's required pattern
      */
-    public function guessPattern($class, $property)
+    public function guessPattern($class, $property): ?\Symfony\Component\Form\Guess\ValueGuess
     {
         return null;
     }
