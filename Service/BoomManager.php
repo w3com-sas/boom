@@ -8,8 +8,8 @@ use GuzzleHttp\Cookie\FileCookieJar;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use Monolog\Logger;
 use ReflectionClass;
-use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -29,6 +29,7 @@ use W3com\BoomBundle\Repository\DefaultRepository;
 use W3com\BoomBundle\Repository\RepoMetadata;
 use W3com\BoomBundle\RestClient\OdataRestClient;
 use W3com\BoomBundle\RestClient\SLRestClient;
+use W3com\BoomBundle\Utils\RawRequest;
 use W3com\BoomBundle\Utils\StringUtils;
 
 class BoomManager
@@ -55,7 +56,7 @@ class BoomManager
     public $restClients = [];
 
     /** @var AnnotationReader */
-    private $reader;
+    private AnnotationReader $reader;
 
     /** @var Logger linked to 'hana' channel */
     public $logger;
@@ -64,7 +65,7 @@ class BoomManager
     public $stopwatch;
 
     /** @var array */
-    private $collectedData;
+    private $collectedData = [];
 
     /** @var bool */
     private $inSlContextMode = false;
@@ -84,7 +85,7 @@ class BoomManager
     /** @var BoomUserManager */
     private $userManager;
 
-    private $rawRequest = '';
+    private RawRequest $rawRequest;
 
     /**
      * BoomManager constructor.
@@ -830,29 +831,22 @@ class BoomManager
         }
     }
 
-    /**
-     * @param string $rawRequest
-     */
-    public function setRawRequest(string $rawRequest): void
+    public function rawRequest(RawRequest $rawRequest): void
     {
         $this->rawRequest = $rawRequest;
-    }
-
-    public function rawRequest()
-    {
-        return $this->handleRequest('rawRequestCallback');
+        $this->rawRequest->handleResponse($this->handleRequest('rawRequestCallback'));
     }
 
     private function rawRequestCallback()
     {
         $client = $this->getCurrentSLClient();
-        $response = $client->request('GET', $this->rawRequest,[
+        $response = $client->request('GET', $this->rawRequest->getRequest(),[
             'headers' => [
                 'Prefer' => 'odata.maxpagesize=10000',
                 'cache-control' => 'no-cache',
             ]
         ]);
-        return json_decode($response->getBody()->getContents(), true);
+        return $response->getBody()->getContents();
     }
 
     private function handleRequest(string $method)
@@ -868,7 +862,7 @@ class BoomManager
                 $stop = $this->stopwatch->stop('SL-'.$method);
 
                 if($method === 'rawRequestCallback'){
-                    $this->addToCollectedData('sl', '200', $this->rawRequest, null, json_encode($result), $stop);
+                    $this->addToCollectedData('sl', '200', $this->rawRequest->getRequest(), null, json_encode($result), $stop);
                 }
 
                 return $result;
@@ -879,7 +873,7 @@ class BoomManager
                     $stop = $this->stopwatch->stop('SL-'.$method);
 
                     if($method === 'rawRequestCallback'){
-                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequest, null, null, $stop);
+                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequest->getRequest(), null, null, $stop);
                     }
 
                     if (404 == $e->getCode()) {
