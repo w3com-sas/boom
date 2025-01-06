@@ -245,7 +245,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @return AbstractEntity
      * @throws \Exception
      */
-    public function update(AbstractEntity $entity, $updateCollection = false)
+    public function update(AbstractEntity $entity, $updateCollection = false, $returnHydrated = false)
     {
         if ($this->dispatcher->hasListeners(BoomEvents::PRE_UPDATE_EVENT)){
             $event = new PreUpdateEvent($entity, BoomEvents::TYPE_ONE);
@@ -270,8 +270,11 @@ abstract class AbstractRepository implements RepositoryInterface
             }
             $data = $this->getDataToSend($fields, $entity);
             if (count($data) > 0) {
-                $this->manager->restClients['sl']->patch($uri, $data, $updateCollection);
+                $res = $this->manager->restClients['sl']->patch($uri, $data, $updateCollection);
                 $entity->hydrate('changedFields', []);
+                if ($returnHydrated) {
+                    $this->hydrate($res);
+                }
             }
             return $entity;
         } elseif (BoomConstants::ODS == $this->write) {
@@ -284,8 +287,11 @@ abstract class AbstractRepository implements RepositoryInterface
             $data = $this->getDataToSend($fields, $entity);
 
             if (count($data) > 0) {
-                $this->manager->restClients['odata']->patch($uri, $data);
+                $res = $this->manager->restClients['odata']->patch($uri, $data);
                 $entity->hydrate('changedFields', []);
+                if ($returnHydrated) {
+                    $this->hydrate($res);
+                }
             }
             return $entity;
         } else {
@@ -369,7 +375,7 @@ abstract class AbstractRepository implements RepositoryInterface
      * @return AbstractEntity
      * @throws \Exception
      */
-    public function add(AbstractEntity $entity)
+    public function add(AbstractEntity $entity, $returnHydrated = true)
     {
         if ($this->dispatcher->hasListeners(BoomEvents::PRE_ADD_EVENT)){
             $event = new PreAddEvent($entity, BoomEvents::TYPE_ONE);
@@ -380,11 +386,12 @@ abstract class AbstractRepository implements RepositoryInterface
             $uri = $this->aliasWrite;
             $data = $this->getDataToSend($entity->getChangedFields(), $entity);
             $res = $this->manager->restClients['sl']->post($uri, $data);
-            return $this->hydrate($res);
+            return $returnHydrated ? $this->hydrate($res) : null;
         } elseif (BoomConstants::ODS == $this->write) {
         } else {
             throw new \Exception('Unknown entity WRITE method');
         }
+        return null;
     }
 
     /**

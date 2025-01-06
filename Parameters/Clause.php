@@ -29,6 +29,7 @@ class Clause
     {
         $this->column = $column;
         $this->value = str_replace("'","''",$value);
+//        $this->value = str_replace("%27","''",urlencode($value));
         $this->operator = $operator;
         $this->quote = $quote ? "'" : '';
         $this->transformFunction = $transformFunction;
