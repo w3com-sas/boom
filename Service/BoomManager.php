@@ -85,7 +85,9 @@ class BoomManager
     /** @var BoomUserManager */
     private $userManager;
 
-    private RawRequest $rawRequest;
+    private $rawRequest = '';
+
+    private RawRequest $rawRequestNew;
 
     /**
      * BoomManager constructor.
@@ -831,22 +833,108 @@ class BoomManager
         }
     }
 
-    public function rawRequest(RawRequest $rawRequest): void
+    public function rawRequestNew(RawRequest $rawRequestNew): void
     {
-        $this->rawRequest = $rawRequest;
-        $this->rawRequest->handleResponse($this->handleRequest('rawRequestCallback'));
+        $this->rawRequestNew = $rawRequestNew;
+        $this->rawRequestNew->handleResponse($this->handleRequestNew('rawRequestCallbackNew'));
     }
 
-    private function rawRequestCallback()
+    private function rawRequestCallbackNew()
     {
         $client = $this->getCurrentSLClient();
-        $response = $client->request('GET', $this->rawRequest->getRequest(),[
+        $response = $client->request('GET', $this->rawRequestNew->getRequest(),[
             'headers' => [
                 'Prefer' => 'odata.maxpagesize=10000',
                 'cache-control' => 'no-cache',
             ]
         ]);
         return $response->getBody()->getContents();
+    }
+
+    private function handleRequestNew(string $method)
+    {
+        $attempts = 0;
+        while ($attempts < $this->config['service_layer']['max_login_attempts']) {
+            try {
+                ++$attempts;
+                $this->stopwatch->start('SL-'.$method);
+
+                $result = call_user_func('self::'.$method);
+
+                $stop = $this->stopwatch->stop('SL-'.$method);
+
+                if($method === 'rawRequestCallbackNew'){
+                    $this->addToCollectedData('sl', '200', $this->rawRequestNew->getRequest(), null, json_encode($result), $stop);
+                }
+
+                return $result;
+            } catch (ClientException $e) {
+                if (401 == $e->getCode()) {
+                    $this->getSlClient()->login();
+                } else {
+                    $stop = $this->stopwatch->stop('SL-'.$method);
+
+                    if($method === 'rawRequestCallbackNew'){
+                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequestNew->getRequest(), null, null, $stop);
+                    }
+
+                    if (404 == $e->getCode()) {
+                        return null;
+                    } elseif (400 == $e->getCode() && strpos($e->getMessage(), '-304') !== false) {
+                        $this->logger->error('Remove cookie file');
+                        $this->removeLastCookieFile();
+                        $this->getSlClient()->login();
+                    } else {
+                        $this->logger->error('ClientException : (' . $e->getCode() . ') ' . $e->getMessage());
+                        throw new \Exception('Guzzle exception (' . $e->getCode() . ') : '. PHP_EOL . PHP_EOL .
+                            'REQUEST (' . $e->getRequest()->getMethod() . ') :'. PHP_EOL .
+                            'URI : ' . PHP_EOL .
+                            $e->getRequest()->getUri()->getScheme().'://'.$e->getRequest()->getUri()->getHost().
+                            $e->getRequest()->getRequestTarget() . PHP_EOL .
+                            'BODY : ' . PHP_EOL .
+                            $e->getRequest()->getBody() . PHP_EOL . PHP_EOL .
+                            'RESPONSE :'. PHP_EOL .
+                            $e->getResponse()->getBody()->getContents(). PHP_EOL
+                        );
+                    }
+                }
+            } catch (ConnectException $e) {
+                $this->logger->error('ConnectException : (' . $e->getCode() . ') - ' . $e->getMessage());
+                throw new \Exception('Connection error, check if config is OK, or maybe some needed VPN in on.');
+            } catch (\Exception $e) {
+                if (502 == $e->getCode()) {
+                    $this->getSlClient()->login();
+                } else {
+                    $this->logger->error('Exception : (' . $e->getCode() . ') - ' . $e->getMessage(), $e->getTrace());
+                    throw $e;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $rawRequest
+     */
+    public function setRawRequest(string $rawRequest): void
+    {
+        $this->rawRequest = $rawRequest;
+    }
+
+    public function rawRequest()
+    {
+        return $this->handleRequest('rawRequestCallback');
+    }
+
+    private function rawRequestCallback()
+    {
+        $client = $this->getCurrentSLClient();
+        $response = $client->request('GET', $this->rawRequest,[
+            'headers' => [
+                'Prefer' => 'odata.maxpagesize=10000',
+                'cache-control' => 'no-cache',
+            ]
+        ]);
+        return json_decode($response->getBody()->getContents());
     }
 
     private function handleRequest(string $method)
@@ -862,7 +950,7 @@ class BoomManager
                 $stop = $this->stopwatch->stop('SL-'.$method);
 
                 if($method === 'rawRequestCallback'){
-                    $this->addToCollectedData('sl', '200', $this->rawRequest->getRequest(), null, json_encode($result), $stop);
+                    $this->addToCollectedData('sl', '200', $this->rawRequest, null, json_encode($result), $stop);
                 }
 
                 return $result;
@@ -873,7 +961,7 @@ class BoomManager
                     $stop = $this->stopwatch->stop('SL-'.$method);
 
                     if($method === 'rawRequestCallback'){
-                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequest->getRequest(), null, null, $stop);
+                        $this->addToCollectedData('sl', $e->getCode(), $this->rawRequest, null, null, $stop);
                     }
 
                     if (404 == $e->getCode()) {
