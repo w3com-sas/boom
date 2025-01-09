@@ -616,6 +616,7 @@ class BoomManager
                 [
                     'headers' => [
                         'Content-Type' => 'multipart/form-data;boundary=' . $customBoundary,
+                        'Expect' => false,
                     ],
                     'body' => $rawBody
                 ]
@@ -627,6 +628,7 @@ class BoomManager
                 [
                     'headers' => [
                         'Content-Type' => 'multipart/form-data;boundary=' . $customBoundary,
+                        'Expect' => false,
                     ],
                     'body' => $rawBody
                 ]
